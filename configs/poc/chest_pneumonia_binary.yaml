@@ -1,0 +1,36 @@
+project:
+  name: rav-chest-pneumonia-binary
+  seed: 42
+  output_dir: outputs/poc/chest_pneumonia_binary
+
+data:
+  image_root: data/poc/chest_xray_pneumonia/raw
+  train_csv: data/poc/chest_xray_pneumonia/processed/chest_pneumonia_train.csv
+  val_csv: data/poc/chest_xray_pneumonia/processed/chest_pneumonia_val.csv
+  test_csv: data/poc/chest_xray_pneumonia/processed/chest_pneumonia_test.csv
+  path_column: Path
+
+labels:
+  uncertain_value: 0.0
+  columns:
+    - Pneumonia
+    - No Finding
+
+training:
+  device: auto
+  backbone: densenet121
+  pretrained: true
+  dropout: 0.2
+  image_size: 320
+  batch_size: 16
+  epochs: 12
+  lr: 0.0001
+  weight_decay: 0.00001
+  num_workers: 4
+  pin_memory: true
+  amp: true
+
+evaluation:
+  default_threshold: 0.5
+  threshold_overrides:
+    Pneumonia: 0.5

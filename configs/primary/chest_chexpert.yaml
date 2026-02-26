@@ -1,0 +1,50 @@
+project:
+  name: rav-chest-baseline
+  seed: 42
+  output_dir: outputs/chest_baseline
+
+data:
+  image_root: data/raw/chexpert
+  train_csv: data/processed/chexpert_train.csv
+  val_csv: data/processed/chexpert_val.csv
+  test_csv: data/processed/chexpert_test.csv
+  path_column: Path
+
+labels:
+  uncertain_value: 1.0
+  columns:
+    - Atelectasis
+    - Cardiomegaly
+    - Consolidation
+    - Edema
+    - Enlarged Cardiomediastinum
+    - Fracture
+    - Lung Lesion
+    - Lung Opacity
+    - No Finding
+    - Pleural Effusion
+    - Pleural Other
+    - Pneumonia
+    - Pneumothorax
+    - Support Devices
+
+training:
+  device: auto
+  backbone: densenet121
+  pretrained: true
+  dropout: 0.2
+  image_size: 320
+  batch_size: 16
+  epochs: 20
+  lr: 0.0001
+  weight_decay: 0.00001
+  num_workers: 4
+  pin_memory: true
+  amp: true
+
+evaluation:
+  default_threshold: 0.5
+  threshold_overrides:
+    Pneumothorax: 0.45
+    Pleural Effusion: 0.45
+    Edema: 0.45

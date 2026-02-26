@@ -1,0 +1,32 @@
+project:
+  name: rav-chest-localization-extension
+  output_dir: outputs/chest_localization
+
+data:
+  # Recommend VinDr-CXR for this phase.
+  image_root: data/raw/vindr-cxr
+  train_annotations_csv: data/processed/vindr_train_boxes.csv
+  val_annotations_csv: data/processed/vindr_val_boxes.csv
+  test_annotations_csv: data/processed/vindr_test_boxes.csv
+
+model:
+  architecture: retinanet_resnet50_fpn
+  pretrained_backbone: true
+  image_size: 512
+
+training:
+  device: auto
+  batch_size: 8
+  epochs: 24
+  lr: 0.0001
+  weight_decay: 0.0001
+  num_workers: 4
+
+evaluation:
+  iou_thresholds:
+    - 0.3
+    - 0.5
+  class_names:
+    - Nodule
+    - Mass
+    - Lung tumor

@@ -1,0 +1,39 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment/config secrets
+.env
+.env.*
+
+# Build/distribution artifacts
+build/
+dist/
+*.egg-info/
+
+# Project outputs
+outputs/
+logs/
+
+# Dataset artifacts (keep code/config, ignore heavy data files)
+data/raw/
+data/processed/
+data/poc/
+data/poc/chest_xray_pneumonia/source_archives/
+
+# Editor/project files
+*.sublime-project
+*.sublime-workspace
