@@ -322,8 +322,9 @@ Core files:
 8. `scripts/eval_chest_baseline.py`
 9. `scripts/infer_chest_single.py`
 10. `src/rav_chest/` package
-11. `docs/CHEST_RUNBOOK.md`
-12. `docs/HARDWARE_SIZING.md`
+11. `app/streamlit_app.py`
+12. `docs/CHEST_RUNBOOK.md`
+13. `docs/HARDWARE_SIZING.md`
 
 Primary quickstart (CheXpert):
 ```bash
@@ -336,6 +337,7 @@ python scripts/prepare_chexpert_data.py \
   --output-dir data/processed
 python scripts/train_chest_baseline.py --config configs/primary/chest_chexpert.yaml
 python scripts/eval_chest_baseline.py --config configs/primary/chest_chexpert.yaml --split test
+streamlit run app/streamlit_app.py
 ```
 
 POC quickstart (Kaggle):
@@ -345,4 +347,5 @@ python scripts/poc/prepare_chest_pneumonia_data.py \
   --output-dir data/poc/chest_xray_pneumonia/processed
 python scripts/train_chest_baseline.py --config configs/poc/chest_pneumonia_binary.yaml
 python scripts/eval_chest_baseline.py --config configs/poc/chest_pneumonia_binary.yaml --split test
+streamlit run app/streamlit_app.py
 ```

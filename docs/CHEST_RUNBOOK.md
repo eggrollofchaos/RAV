@@ -65,6 +65,17 @@ python scripts/infer_chest_single.py \
   --image /absolute/path/to/chest_xray.jpg
 ```
 
+### Step E: Streamlit demo UI
+
+```bash
+streamlit run app/streamlit_app.py
+```
+
+In the UI:
+1. Pick config preset (CheXpert primary by default).
+2. Leave checkpoint blank to use `<output_dir>/checkpoints/best.pt`.
+3. Upload image and click "Analyze Image".
+
 ## 3) POC Track (Kaggle chest-xray-pneumonia)
 
 ### Step A: Prepare/extract and build CSVs
@@ -100,6 +111,13 @@ python scripts/eval_chest_baseline.py \
   --config configs/poc/chest_pneumonia_binary.yaml \
   --split test
 ```
+
+Optional POC UI:
+
+```bash
+streamlit run app/streamlit_app.py
+```
+Then pick `POC (Kaggle Binary)` in the sidebar preset.
 
 ## 4) Output Locations
 
