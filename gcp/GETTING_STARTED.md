@@ -1,6 +1,7 @@
 # GCP Spot Runner Quickstart
 
 This guide gets you from zero to a running RAV training job on GCP Spot VMs with checkpoint-safe resume.
+For incident learnings and deeper troubleshooting patterns, see `../GCP_NOTES.md`.
 
 ## 1) What this setup does
 
@@ -69,8 +70,12 @@ Recommended starting values:
 - `ZONE="us-east1-c"`
 - `FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")`
 - `GPU_TYPE="nvidia-tesla-t4"`
-- `GPU_TIMEOUT_SEC="600"` (or `900` if driver init is slow in your zone)
+- `GPU_TIMEOUT_SEC="1200"` (recommended if T4 driver init is slow in your zone)
 - `SYNC_INTERVAL_SEC="180"`
+
+Timeout alignment rule:
+- Ensure `POLL_INTERVAL * PROGRESS_STALL_POLLS >= GPU_TIMEOUT_SEC`
+- Example: `POLL_INTERVAL=120`, `PROGRESS_STALL_POLLS=10`, `GPU_TIMEOUT_SEC=1200`
 
 `IMAGE` should match your Artifact Registry path, for example:
 
@@ -182,7 +187,15 @@ bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
 
 `NO HEARTBEAT` shortly after launch:
 - Check serial logs; common cause is GPU driver not ready before timeout.
-- Increase `GPU_TIMEOUT_SEC` in `gcp/rav_spot.env` (for example `900`) and resubmit.
+- Increase `GPU_TIMEOUT_SEC` in `gcp/rav_spot.env` (for example `1200`) and resubmit.
+- Ensure no-heartbeat window is not shorter than GPU timeout:
+  - `POLL_INTERVAL * PROGRESS_STALL_POLLS >= GPU_TIMEOUT_SEC`
+
+Instances shown in console but missing from CLI (or vice versa):
+- Confirm active gcloud project/account with:
+  - `gcloud auth list`
+  - `gcloud config list`
+- Use explicit `--project` in instance/list/describe commands.
 
 Job runs but no resume occurs:
 - Confirm you reused exactly the same `--run-id`.

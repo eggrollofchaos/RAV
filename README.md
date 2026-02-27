@@ -484,6 +484,7 @@ Streamlit Ask Agent Q&A (optional):
 GCP spot-runner adapter (optional):
 
 Detailed guide: `gcp/GETTING_STARTED.md`
+Operational notes/troubleshooting: `GCP_NOTES.md`
 
 ```bash
 # 1) one-time setup
@@ -491,6 +492,7 @@ cp gcp/rav_spot.env.example gcp/rav_spot.env
 # edit gcp/rav_spot.env: PROJECT/REGION/SA/BUCKET/IMAGE/RUNNER_DIR
 # optional: SYNC_INTERVAL_SEC controls periodic checkpoint sync cadence
 # optional: GPU_TIMEOUT_SEC controls GPU-driver wait before startup fails (default 600)
+# optional: set PROGRESS_STALL_POLLS so (POLL_INTERVAL * PROGRESS_STALL_POLLS) >= GPU_TIMEOUT_SEC
 
 # 2) build and push training image
 bash scripts/gcp_build_image.sh
