@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: February 26, 2026
 
-Current app version: `v0.2.2-gcp-getting-started-docs`
+Current app version: `v0.2.3-gcp-build-hardening`
 
 Changelog: `CHANGELOG.md`
 

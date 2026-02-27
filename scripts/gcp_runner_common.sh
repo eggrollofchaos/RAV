@@ -21,6 +21,10 @@ load_rav_spot_env() {
 
 apply_runner_defaults() {
   : "${RUNNER_DIR:=${RUNNER_DIR_DEFAULT}}"
+  if [[ "${RUNNER_DIR}" != /* ]]; then
+    RUNNER_DIR="${RAV_ROOT}/${RUNNER_DIR}"
+  fi
+  RUNNER_DIR="$(cd "${RUNNER_DIR}" && pwd)"
   : "${ZONE:=us-east1-c}"
   if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
     FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")
@@ -45,6 +49,34 @@ apply_runner_defaults() {
   : "${RUNNER_LABEL:=spot-runner}"
   : "${LOG_LEVEL:=INFO}"
   : "${DISCORD_WEBHOOK_URL:=}"
+}
+
+configure_gcloud_runtime() {
+  : "${CLOUDSDK_CORE_DISABLE_PROMPTS:=1}"
+  export CLOUDSDK_CORE_DISABLE_PROMPTS
+  : "${CLOUDSDK_PYTHON_SITEPACKAGES:=0}"
+  export CLOUDSDK_PYTHON_SITEPACKAGES
+
+  if [[ -n "${CLOUDSDK_PYTHON:-}" ]]; then
+    return 0
+  fi
+
+  local py_candidates=(
+    "${RAV_ROOT}/.venv/bin/python3.12"
+    "${RAV_ROOT}/.venv/bin/python3"
+  )
+
+  local py
+  for py in "${py_candidates[@]}"; do
+    if [[ -x "$py" ]]; then
+      export CLOUDSDK_PYTHON="$py"
+      return 0
+    fi
+  done
+
+  if command -v python3.12 >/dev/null 2>&1; then
+    export CLOUDSDK_PYTHON="$(command -v python3.12)"
+  fi
 }
 
 check_required_spot_vars() {

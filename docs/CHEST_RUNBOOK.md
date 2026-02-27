@@ -9,7 +9,7 @@ Dataset status (2026-02-27):
 2. Full/regular CheXpert at scale: planned via GCP training workflow (WIP).
 3. CheXpert Plus: deferred for current class timeline due storage/ops footprint (~3.5 TB planning estimate).
 
-Current app version: `v0.2.2-gcp-getting-started-docs`
+Current app version: `v0.2.3-gcp-build-hardening`
 Changelog: `CHANGELOG.md`
 
 ## 1) Setup

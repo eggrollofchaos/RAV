@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
+## v0.2.3-gcp-build-hardening - 2026-02-27
+
+Added:
+- Explicit Cloud Build upload rules in `.gcloudignore` (source-only allowlist plus cache/artifact exclusions).
+- Centralized one-off GCP setup/fix commands section in `gcp/GETTING_STARTED.md`.
+
+Updated:
+- GCP wrapper runtime hardening in `scripts/gcp_runner_common.sh`:
+  - `CLOUDSDK_CORE_DISABLE_PROMPTS=1`
+  - `CLOUDSDK_PYTHON_SITEPACKAGES=0`
+  - auto-select `CLOUDSDK_PYTHON` from local `.venv` when available
+  - normalize `RUNNER_DIR` to an absolute path
+- GCP wrapper scripts now consistently apply runtime config before invoking gcloud/runner:
+  - `scripts/gcp_build_image.sh`
+  - `scripts/gcp_submit_primary.sh`
+  - `scripts/gcp_submit_poc.sh`
+  - `scripts/gcp_ops.sh`
+- App version to `v0.2.3-gcp-build-hardening`.
+
 ## v0.2.2-gcp-getting-started-docs - 2026-02-27
 
 Added:

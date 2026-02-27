@@ -9,5 +9,6 @@ load_rav_spot_env
 apply_runner_defaults
 check_required_spot_vars
 check_runner_install
+configure_gcloud_runtime
 
 run_ops_command "$@"

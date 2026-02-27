@@ -1,0 +1,27 @@
+# Explicit Cloud Build upload allowlist for the training image.
+# This avoids fallback-to-.gitignore differences and keeps upload small/stable.
+
+# Ignore everything by default.
+**
+
+# Keep only files required by gcp/Dockerfile.train and build config.
+!requirements.txt
+!.dockerignore
+!src/
+!src/**
+!scripts/
+!scripts/**
+!configs/
+!configs/**
+!app/
+!app/**
+!gcp/
+!gcp/Dockerfile.train
+!gcp/entrypoint.sh
+!gcp/cloudbuild.rav.yaml
+
+# Drop local/cache artifacts even inside allowed directories.
+**/.DS_Store
+**/__pycache__/
+**/__pycache__/**
+*.pyc
