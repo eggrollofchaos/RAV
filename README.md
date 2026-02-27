@@ -4,6 +4,10 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: February 26, 2026
 
+Current app version: `v0.2.0-openai-llm-rewrite`
+
+Changelog: `CHANGELOG.md`
+
 ## 1) TL;DR
 
 Primary direction:
@@ -231,7 +235,7 @@ Exit criteria:
 ### Week 4: Report Generation Layer
 
 - [x] Template-based findings + impression generation.
-- [ ] Constrained rewrite option (optional) wired to an external LLM.
+- [x] Constrained rewrite option (optional) wired to an external LLM (OpenAI wrapper + Streamlit toggle).
 - [x] Grounding guardrails (output constrained to predicted findings).
 
 Exit criteria:
@@ -378,6 +382,7 @@ Core files:
 14. `scripts/monitor_training_eta.py`
 15. `scripts/check_chest_data_sanity.py`
 16. `Makefile`
+17. `src/rav_chest/llm.py` + `scripts/llm_wrapper.py` (OpenAI API wrapper)
 
 Track-specific requirements:
 1. Shared (both tracks):
@@ -447,3 +452,24 @@ make sanity-poc
 make eta-poc-watch
 make streamlit
 ```
+
+Simple LLM wrapper (OpenAI API):
+```bash
+# one-time: cp .env.example .env and set your real key in .env
+
+# direct prompt
+python scripts/llm_wrapper.py \
+  --prompt "Summarize the likely chest findings in one sentence."
+
+# rewrite an existing report payload JSON from model output
+python scripts/llm_wrapper.py \
+  --report-json outputs/poc/chest_pneumonia_binary/reports/sample.json \
+  --output outputs/poc/chest_pneumonia_binary/reports/sample_rewrite.txt
+```
+
+Streamlit LLM rewrite (optional):
+1. Ensure `.env` has `OPENAI_API_KEY` (auto-loaded by the app/wrapper).
+2. In Streamlit Inference page, enable `Rewrite impression with OpenAI`.
+3. Optionally change `LLM Model` (default: `gpt-4.1-mini`).
+4. Run inference; deterministic and rewritten impressions are shown side-by-side.
+5. Downloaded report JSON includes `llm_rewrite` metadata (`enabled`, `model`, `rewritten_impression`, `error`).

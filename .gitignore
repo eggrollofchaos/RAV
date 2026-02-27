@@ -21,6 +21,7 @@ private/
 # Local environment/config secrets
 .env
 .env.*
+!.env.example
 
 # Build/distribution artifacts
 build/

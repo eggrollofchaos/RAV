@@ -214,8 +214,30 @@ def render_probabilities(bundle, probs) -> None:
     st.dataframe(df, width="stretch", hide_index=True)
 
 
+def maybe_rewrite_impression_with_llm(
+    payload: Dict[str, Any], llm_model: str
+) -> Dict[str, Any]:
+    try:
+        from rav_chest.llm import rewrite_report_impression
+    except Exception as exc:
+        return {"ok": False, "error": f"LLM module unavailable: {exc}"}
+
+    model_name = llm_model.strip() or "gpt-4.1-mini"
+    try:
+        rewritten = rewrite_report_impression(report_payload=payload, model=model_name)
+        return {"ok": True, "model": model_name, "text": rewritten}
+    except ValueError as exc:
+        return {"ok": False, "model": model_name, "error": str(exc)}
+    except Exception as exc:
+        return {"ok": False, "model": model_name, "error": f"{type(exc).__name__}: {exc}"}
+
+
 def render_inference_page(
-    config_path: str, checkpoint_override: str, show_all_probs: bool
+    config_path: str,
+    checkpoint_override: str,
+    show_all_probs: bool,
+    llm_rewrite_enabled: bool,
+    llm_model: str,
 ) -> None:
     uploaded = st.file_uploader(
         "Upload chest X-ray image",
@@ -252,8 +274,34 @@ def render_inference_page(
             return
 
         st.success(f"Inference complete in {elapsed_ms:.1f} ms")
-        st.subheader("Impression")
-        st.write(payload["impression"])
+        llm_rewrite_text = ""
+        llm_rewrite_error = ""
+        llm_rewrite_model = llm_model.strip() or "gpt-4.1-mini"
+
+        if llm_rewrite_enabled:
+            i_col1, i_col2 = st.columns(2)
+            with i_col1:
+                st.subheader("Impression (Deterministic)")
+                st.write(payload["impression"])
+            with i_col2:
+                st.subheader("Impression (LLM Rewrite)")
+                with st.spinner(f"Rewriting with OpenAI ({llm_rewrite_model})..."):
+                    rewrite_result = maybe_rewrite_impression_with_llm(
+                        payload=payload,
+                        llm_model=llm_rewrite_model,
+                    )
+                if bool(rewrite_result.get("ok")):
+                    llm_rewrite_text = str(rewrite_result.get("text", "")).strip()
+                    st.write(llm_rewrite_text)
+                else:
+                    llm_rewrite_error = str(
+                        rewrite_result.get("error", "Unknown error")
+                    )
+                    st.caption("LLM rewrite unavailable for this run.")
+                    st.error(llm_rewrite_error)
+        else:
+            st.subheader("Impression")
+            st.write(payload["impression"])
 
         critical = payload.get("critical_flags", [])
         if critical:
@@ -278,6 +326,12 @@ def render_inference_page(
             render_probabilities(bundle, probs)
 
         payload["source_filename"] = uploaded.name
+        payload["llm_rewrite"] = {
+            "enabled": bool(llm_rewrite_enabled),
+            "model": llm_rewrite_model if llm_rewrite_enabled else None,
+            "rewritten_impression": llm_rewrite_text if llm_rewrite_text else None,
+            "error": llm_rewrite_error if llm_rewrite_error else None,
+        }
         payload_json = json.dumps(payload, indent=2)
         st.download_button(
             label="Download Report JSON",
@@ -426,6 +480,17 @@ def main() -> None:
             help="Leave blank to use <output_dir>/checkpoints/best.pt from config.",
         )
         show_all_probs = st.checkbox("Show all class probabilities", value=True)
+        llm_rewrite_enabled = st.checkbox(
+            "Rewrite impression with OpenAI",
+            value=False,
+            disabled=(page != "Inference"),
+            help="Uses OPENAI_API_KEY from .env or environment when enabled.",
+        )
+        llm_model = st.text_input(
+            "LLM Model",
+            value="gpt-4.1-mini",
+            disabled=(page != "Inference" or not llm_rewrite_enabled),
+        )
         metrics_split = st.selectbox(
             "Metrics Split",
             ["test", "val"],
@@ -458,7 +523,13 @@ def main() -> None:
         )
 
     if page == "Inference":
-        render_inference_page(config_path, checkpoint_override, show_all_probs)
+        render_inference_page(
+            config_path,
+            checkpoint_override,
+            show_all_probs,
+            llm_rewrite_enabled,
+            llm_model,
+        )
     else:
         render_model_metrics_page(config_path, checkpoint_override, metrics_split)
 

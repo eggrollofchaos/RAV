@@ -9,6 +9,9 @@ Dataset status (2026-02-27):
 2. Full/regular CheXpert at scale: planned via GCP training workflow (WIP).
 3. CheXpert Plus: deferred for current class timeline due storage/ops footprint (~3.5 TB planning estimate).
 
+Current app version: `v0.2.0-openai-llm-rewrite`
+Changelog: `CHANGELOG.md`
+
 ## 1) Setup
 
 ```bash
@@ -96,6 +99,8 @@ In the UI:
 1. Pick config preset (CheXpert primary by default).
 2. Leave checkpoint blank to use `<output_dir>/checkpoints/best.pt`.
 3. Upload image and click "Analyze Image".
+4. Optional: enable `Rewrite impression with OpenAI` for side-by-side deterministic vs LLM rewrite output.
+5. Downloaded report JSON includes `llm_rewrite` metadata when rewrite is enabled.
 
 ### Step F: While training, do these in parallel
 
@@ -222,3 +227,23 @@ make eval-poc
 make sanity-poc
 make eta-poc-watch
 ```
+
+## 8) Optional OpenAI LLM Wrapper
+
+Use this only as a post-processing layer (never to invent new findings).
+
+```bash
+# one-time: cp .env.example .env and set your real key in .env
+
+# direct prompt mode
+python scripts/llm_wrapper.py \
+  --prompt "Rewrite this radiology impression in plain language."
+
+# report rewrite mode from existing model payload JSON
+python scripts/llm_wrapper.py \
+  --report-json outputs/poc/chest_pneumonia_binary/reports/sample.json
+```
+
+Notes:
+1. `OPENAI_API_KEY` is auto-loaded from `.env` by the wrapper/app when not already exported.
+2. The same model rewrite path is available directly in Streamlit via the sidebar toggle.
