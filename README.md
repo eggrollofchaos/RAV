@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: February 26, 2026
 
-Current app version: `v0.2.3-gcp-build-hardening`
+Current app version: `v0.2.4-agent-qa-chat`
 
 Changelog: `CHANGELOG.md`
 
@@ -471,9 +471,15 @@ python scripts/llm_wrapper.py \
 Streamlit LLM rewrite (optional):
 1. Ensure `.env` has `OPENAI_API_KEY` (auto-loaded by the app/wrapper).
 2. In Streamlit Inference page, enable `Rewrite impression with OpenAI`.
-3. Optionally change `LLM Model` (default: `gpt-4.1-mini`).
+3. Optionally change `LLM Model (Rewrite/Q&A)` (default: `gpt-4.1-mini`).
 4. Run inference; deterministic and rewritten impressions are shown side-by-side.
 5. Downloaded report JSON includes `llm_rewrite` metadata (`enabled`, `model`, `rewritten_impression`, `error`).
+
+Streamlit Ask Agent Q&A (optional):
+1. Run at least one inference in the current session (or upload a report JSON in the Ask Agent page).
+2. Open sidebar page `Ask Agent`.
+3. Ask natural-language questions (for example: "Why was Pneumonia marked positive?").
+4. Answers are grounded in the report context (`findings`, `impression`, `probabilities`) and should not add unsupported findings.
 
 GCP spot-runner adapter (optional):
 

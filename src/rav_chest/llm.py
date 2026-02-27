@@ -12,6 +12,12 @@ DEFAULT_SYSTEM_PROMPT = (
     "You are a concise medical writing assistant. "
     "Do not invent clinical facts that are not provided."
 )
+AGENT_QA_SYSTEM_PROMPT = (
+    "You are a concise radiology assistant for a research prototype. "
+    "Answer only from provided model output context. "
+    "If context is missing, say so clearly. "
+    "Do not provide treatment plans or clinical advice."
+)
 
 
 def _parse_env_value(raw: str) -> str:
@@ -158,6 +164,65 @@ def rewrite_report_impression(
         prompt=prompt,
         model=model,
         system_prompt=DEFAULT_SYSTEM_PROMPT,
+        temperature=temperature,
+        max_output_tokens=max_output_tokens,
+        api_key=api_key,
+        base_url=base_url,
+        client=client,
+    )
+
+
+def build_agent_qa_prompt(
+    report_payload: Mapping[str, Any],
+    question: str,
+    probabilities: Mapping[str, float] | None = None,
+    source_filename: str | None = None,
+) -> str:
+    if not question.strip():
+        raise ValueError("Question must be non-empty.")
+
+    context = {
+        "source_filename": source_filename or report_payload.get("source_filename"),
+        "impression": str(report_payload.get("impression", "")).strip(),
+        "critical_flags": report_payload.get("critical_flags", []),
+        "findings": report_payload.get("findings", []),
+        "probabilities": probabilities or report_payload.get("probabilities", {}),
+    }
+    context_text = json.dumps(context, ensure_ascii=True, indent=2)
+    return (
+        "Answer the user question using only the context below.\n"
+        "Rules:\n"
+        "- Be concise.\n"
+        "- Do not claim findings not present in context.\n"
+        "- If the answer is not in context, say that directly.\n"
+        "- Include a short uncertainty note when probabilities are borderline.\n\n"
+        f"Context:\n{context_text}\n\n"
+        f"User question:\n{question.strip()}"
+    )
+
+
+def answer_question_about_report(
+    report_payload: Mapping[str, Any],
+    question: str,
+    probabilities: Mapping[str, float] | None = None,
+    source_filename: str | None = None,
+    model: str = DEFAULT_MODEL,
+    temperature: float = 0.1,
+    max_output_tokens: int = 260,
+    api_key: str | None = None,
+    base_url: str | None = None,
+    client: OpenAI | None = None,
+) -> str:
+    prompt = build_agent_qa_prompt(
+        report_payload=report_payload,
+        question=question,
+        probabilities=probabilities,
+        source_filename=source_filename,
+    )
+    return generate_text(
+        prompt=prompt,
+        model=model,
+        system_prompt=AGENT_QA_SYSTEM_PROMPT,
         temperature=temperature,
         max_output_tokens=max_output_tokens,
         api_key=api_key,

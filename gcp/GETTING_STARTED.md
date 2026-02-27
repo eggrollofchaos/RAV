@@ -279,6 +279,10 @@ done
 
 ### Sync Datasets to GCS
 
+See [DATASET_TRANSFER.md](DATASET_TRANSFER.md) for the full walkthrough (CheXpert Small from Kaggle, CheXpert Full from Azure via a temporary GCE VM).
+
+Quick reference for CheXpert Small (already downloaded locally):
+
 ```bash
 gcloud storage rsync -r data/raw/chexpert "gs://${BUCKET}/datasets/chexpert/raw"
 gcloud storage rsync -r data/processed "gs://${BUCKET}/datasets/chexpert/processed"

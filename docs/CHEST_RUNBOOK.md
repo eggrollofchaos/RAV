@@ -9,7 +9,7 @@ Dataset status (2026-02-27):
 2. Full/regular CheXpert at scale: planned via GCP training workflow (WIP).
 3. CheXpert Plus: deferred for current class timeline due storage/ops footprint (~3.5 TB planning estimate).
 
-Current app version: `v0.2.3-gcp-build-hardening`
+Current app version: `v0.2.4-agent-qa-chat`
 Changelog: `CHANGELOG.md`
 
 ## 1) Setup
@@ -100,7 +100,8 @@ In the UI:
 2. Leave checkpoint blank to use `<output_dir>/checkpoints/best.pt`.
 3. Upload image and click "Analyze Image".
 4. Optional: enable `Rewrite impression with OpenAI` for side-by-side deterministic vs LLM rewrite output.
-5. Downloaded report JSON includes `llm_rewrite` metadata when rewrite is enabled.
+5. Optional: open page `Ask Agent` and ask natural-language follow-up questions grounded on the latest inference payload.
+6. Downloaded report JSON includes `llm_rewrite` metadata when rewrite is enabled.
 
 ### Step F: While training, do these in parallel
 

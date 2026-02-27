@@ -24,6 +24,8 @@ DEFAULT_CONFIGS = {
     "Primary (CheXpert)": "configs/primary/chest_chexpert.yaml",
     "POC (Kaggle Binary)": "configs/poc/chest_pneumonia_binary.yaml",
 }
+LATEST_REPORT_STATE_KEY = "latest_inference_payload"
+AGENT_CHAT_STATE_KEY = "agent_chat_messages"
 
 
 def resolve_project_path(path_str: str) -> Path:
@@ -214,6 +216,37 @@ def render_probabilities(bundle, probs) -> None:
     st.dataframe(df, width="stretch", hide_index=True)
 
 
+def build_probabilities_map(bundle, probs) -> Dict[str, float]:
+    out: Dict[str, float] = {}
+    for name, p in zip(bundle.class_names, probs.tolist()):
+        out[str(name)] = round(float(p), 6)
+    return out
+
+
+def maybe_answer_question_with_llm(
+    payload: Dict[str, Any], question: str, llm_model: str
+) -> Dict[str, Any]:
+    try:
+        from rav_chest.llm import answer_question_about_report
+    except Exception as exc:
+        return {"ok": False, "error": f"LLM module unavailable: {exc}"}
+
+    model_name = llm_model.strip() or "gpt-4.1-mini"
+    try:
+        answer = answer_question_about_report(
+            report_payload=payload,
+            question=question,
+            probabilities=payload.get("probabilities", {}),
+            source_filename=str(payload.get("source_filename", "")).strip() or None,
+            model=model_name,
+        )
+        return {"ok": True, "model": model_name, "text": answer}
+    except ValueError as exc:
+        return {"ok": False, "model": model_name, "error": str(exc)}
+    except Exception as exc:
+        return {"ok": False, "model": model_name, "error": f"{type(exc).__name__}: {exc}"}
+
+
 def maybe_rewrite_impression_with_llm(
     payload: Dict[str, Any], llm_model: str
 ) -> Dict[str, Any]:
@@ -326,12 +359,14 @@ def render_inference_page(
             render_probabilities(bundle, probs)
 
         payload["source_filename"] = uploaded.name
+        payload["probabilities"] = build_probabilities_map(bundle, probs)
         payload["llm_rewrite"] = {
             "enabled": bool(llm_rewrite_enabled),
             "model": llm_rewrite_model if llm_rewrite_enabled else None,
             "rewritten_impression": llm_rewrite_text if llm_rewrite_text else None,
             "error": llm_rewrite_error if llm_rewrite_error else None,
         }
+        st.session_state[LATEST_REPORT_STATE_KEY] = dict(payload)
         payload_json = json.dumps(payload, indent=2)
         st.download_button(
             label="Download Report JSON",
@@ -340,6 +375,96 @@ def render_inference_page(
             mime="application/json",
             width="stretch",
         )
+
+
+def render_ask_agent_page(llm_model: str) -> None:
+    st.subheader("Ask Agent")
+    st.caption("Ask natural-language questions grounded in model findings.")
+
+    context_source = st.radio(
+        "Context Source",
+        ["Latest inference in this session", "Upload report JSON"],
+        index=0,
+        horizontal=True,
+    )
+
+    payload: Dict[str, Any] | None = None
+    if context_source == "Latest inference in this session":
+        cached_payload = st.session_state.get(LATEST_REPORT_STATE_KEY)
+        if isinstance(cached_payload, dict):
+            payload = dict(cached_payload)
+        else:
+            st.info("Run one inference first, then ask questions here.")
+    else:
+        report_json = st.file_uploader(
+            "Upload report JSON",
+            type=["json"],
+            key="ask_agent_report_json",
+            accept_multiple_files=False,
+        )
+        if report_json is not None:
+            try:
+                parsed = json.load(report_json)
+                if isinstance(parsed, dict):
+                    payload = parsed
+                else:
+                    st.error("Report JSON must be an object.")
+            except Exception as exc:
+                st.error(f"Unable to parse JSON: {exc}")
+
+    if payload is None:
+        return
+
+    preview = {
+        "source_filename": payload.get("source_filename"),
+        "impression": payload.get("impression"),
+        "critical_flags": payload.get("critical_flags", []),
+        "findings": payload.get("findings", []),
+    }
+    with st.expander("Context Preview", expanded=False):
+        st.json(preview)
+
+    if AGENT_CHAT_STATE_KEY not in st.session_state:
+        st.session_state[AGENT_CHAT_STATE_KEY] = []
+    messages = st.session_state[AGENT_CHAT_STATE_KEY]
+
+    clear_col, _ = st.columns([1, 4])
+    with clear_col:
+        if st.button("Clear Chat", width="stretch"):
+            st.session_state[AGENT_CHAT_STATE_KEY] = []
+            st.rerun()
+
+    for msg in messages:
+        role = str(msg.get("role", "assistant"))
+        content = str(msg.get("content", ""))
+        with st.chat_message(role):
+            st.markdown(content)
+
+    question = st.chat_input("Ask a question about findings, confidence, or rationale.")
+    if not question:
+        return
+
+    messages.append({"role": "user", "content": question})
+    with st.chat_message("user"):
+        st.markdown(question)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            result = maybe_answer_question_with_llm(
+                payload=payload,
+                question=question,
+                llm_model=llm_model,
+            )
+        if bool(result.get("ok")):
+            answer_text = str(result.get("text", "")).strip()
+            st.markdown(answer_text)
+            messages.append({"role": "assistant", "content": answer_text})
+        else:
+            err = str(result.get("error", "Unknown error"))
+            st.error(err)
+            messages.append({"role": "assistant", "content": f"Error: {err}"})
+
+    st.session_state[AGENT_CHAT_STATE_KEY] = messages
 
 
 def render_model_metrics_page(
@@ -462,7 +587,7 @@ def main() -> None:
         st.subheader("Page")
         page = st.radio(
             "Page",
-            ["Inference", "Model Metrics"],
+            ["Inference", "Model Metrics", "Ask Agent"],
             index=0,
             label_visibility="collapsed",
         )
@@ -487,9 +612,9 @@ def main() -> None:
             help="Uses OPENAI_API_KEY from .env or environment when enabled.",
         )
         llm_model = st.text_input(
-            "LLM Model",
+            "LLM Model (Rewrite/Q&A)",
             value="gpt-4.1-mini",
-            disabled=(page != "Inference" or not llm_rewrite_enabled),
+            disabled=(page == "Model Metrics" or (page == "Inference" and not llm_rewrite_enabled)),
         )
         metrics_split = st.selectbox(
             "Metrics Split",
@@ -530,6 +655,8 @@ def main() -> None:
             llm_rewrite_enabled,
             llm_model,
         )
+    elif page == "Ask Agent":
+        render_ask_agent_page(llm_model=llm_model)
     else:
         render_model_metrics_page(config_path, checkpoint_override, metrics_split)
 

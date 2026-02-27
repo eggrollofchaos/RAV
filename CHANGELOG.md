@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## v0.2.4-agent-qa-chat - 2026-02-27
+
+Added:
+- Natural-language model Q&A support in `src/rav_chest/llm.py` via `answer_question_about_report`.
+- New Streamlit `Ask Agent` page with chat-style interaction grounded in report context.
+- Inference payload persistence in Streamlit session state so users can run inference then ask follow-up questions immediately.
+
+Updated:
+- Sidebar model selector now supports both rewrite and Q&A flows (`LLM Model (Rewrite/Q&A)`).
+- App version to `v0.2.4-agent-qa-chat`.
+
 ## v0.2.3-gcp-build-hardening - 2026-02-27
 
 Added:
