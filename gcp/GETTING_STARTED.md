@@ -69,6 +69,7 @@ Recommended starting values:
 - `ZONE="us-east1-c"`
 - `FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")`
 - `GPU_TYPE="nvidia-tesla-t4"`
+- `GPU_TIMEOUT_SEC="600"` (or `900` if driver init is slow in your zone)
 - `SYNC_INTERVAL_SEC="180"`
 
 `IMAGE` should match your Artifact Registry path, for example:
@@ -178,6 +179,10 @@ bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
   - `gcloud auth list`
   - `gcloud config list`
 - Verify service account roles and bucket/image permissions.
+
+`NO HEARTBEAT` shortly after launch:
+- Check serial logs; common cause is GPU driver not ready before timeout.
+- Increase `GPU_TIMEOUT_SEC` in `gcp/rav_spot.env` (for example `900`) and resubmit.
 
 Job runs but no resume occurs:
 - Confirm you reused exactly the same `--run-id`.

@@ -490,6 +490,7 @@ Detailed guide: `gcp/GETTING_STARTED.md`
 cp gcp/rav_spot.env.example gcp/rav_spot.env
 # edit gcp/rav_spot.env: PROJECT/REGION/SA/BUCKET/IMAGE/RUNNER_DIR
 # optional: SYNC_INTERVAL_SEC controls periodic checkpoint sync cadence
+# optional: GPU_TIMEOUT_SEC controls GPU-driver wait before startup fails (default 600)
 
 # 2) build and push training image
 bash scripts/gcp_build_image.sh

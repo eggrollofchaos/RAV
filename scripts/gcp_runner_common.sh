@@ -35,6 +35,7 @@ apply_runner_defaults() {
   : "${BOOT_DISK_TYPE:=pd-ssd}"
   : "${CONTAINER_NAME:=rav-trainer}"
   : "${CONDA_ENV:=}"
+  : "${GPU_TIMEOUT_SEC:=600}"
   : "${MAX_RUNTIME_SEC:=172800}"
   : "${POLL_INTERVAL:=120}"
   : "${HEARTBEAT_STALE_SEC:=600}"
@@ -134,6 +135,7 @@ write_runner_config() {
   _emit_var "$cfg" BOOT_DISK_TYPE
   _emit_var "$cfg" CONTAINER_NAME
   _emit_var "$cfg" CONDA_ENV
+  _emit_var "$cfg" GPU_TIMEOUT_SEC
   _emit_var "$cfg" MAX_RUNTIME_SEC
   _emit_var "$cfg" POLL_INTERVAL
   _emit_var "$cfg" HEARTBEAT_STALE_SEC
