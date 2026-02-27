@@ -1,7 +1,7 @@
 # GCP Spot Runner Quickstart
 
 This guide gets you from zero to a running RAV training job on GCP Spot VMs with checkpoint-safe resume.
-For incident learnings and deeper troubleshooting patterns, see `../GCP_NOTES.md`.
+For incident learnings and deeper troubleshooting patterns, see `GCP_NOTES.md` (in this directory).
 
 ## 1) What this setup does
 
@@ -134,10 +134,28 @@ How it works:
 ## 8) Monitor and operate runs
 
 ```bash
-bash scripts/gcp_ops.sh status
-bash scripts/gcp_ops.sh list
-bash scripts/gcp_ops.sh events --since 24h
+bash scripts/gcp_ops.sh status                  # manifest + heartbeat summary
+bash scripts/gcp_ops.sh serial 200              # last 200 lines of serial console
+bash scripts/gcp_ops.sh list all                 # all runner VMs
+bash scripts/gcp_ops.sh events --since 24h       # cloud system events
+bash scripts/gcp_ops.sh watch 60                 # auto-refresh every 60s
+bash scripts/gcp_ops.sh delete --yes             # safe stop (writes .stop + deletes VM)
+bash scripts/gcp_ops.sh delete --all --yes       # delete ALL runner VMs
 ```
+
+To kill a stuck VM and resubmit fresh:
+
+```bash
+# Option A: cleanup-all flag handles kill + submit in one command
+bash scripts/gcp_submit_primary.sh --skip-build --cleanup-all --yes
+
+# Option B: manual kill then submit
+bash scripts/gcp_ops.sh delete --yes
+bash scripts/gcp_submit_primary.sh --skip-build
+```
+
+Note: a normal submit only cleans up VMs from the **same RUN_ID**. To kill VMs
+from a prior run, use `--cleanup-all` or `gcp_ops.sh delete`.
 
 ## 9) Where outputs go
 

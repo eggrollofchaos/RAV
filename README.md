@@ -406,7 +406,7 @@ Track-specific requirements:
 Primary quickstart (CheXpert):
 ```bash
 cd /Users/wax/Documents/Programming/RAV
-python3 -m venv .venv
+python3 -m venv .venv                     # only the first time, to set up the virtual env
 source .venv/bin/activate
 pip install -r requirements.txt
 python scripts/prepare_chexpert_data.py \
@@ -484,7 +484,7 @@ Streamlit Ask Agent Q&A (optional):
 GCP spot-runner adapter (optional):
 
 Detailed guide: `gcp/GETTING_STARTED.md`
-Operational notes/troubleshooting: `GCP_NOTES.md`
+Operational notes/troubleshooting: `gcp/GCP_NOTES.md`
 
 ```bash
 # 1) one-time setup
