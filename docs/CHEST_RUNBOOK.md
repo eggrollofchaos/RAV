@@ -9,7 +9,7 @@ Dataset status (2026-02-27):
 2. Full/regular CheXpert at scale: planned via GCP training workflow (WIP).
 3. CheXpert Plus: deferred for current class timeline due storage/ops footprint (~3.5 TB planning estimate).
 
-Current app version: `v0.2.0-openai-llm-rewrite`
+Current app version: `v0.2.2-gcp-getting-started-docs`
 Changelog: `CHANGELOG.md`
 
 ## 1) Setup
@@ -247,3 +247,47 @@ python scripts/llm_wrapper.py \
 Notes:
 1. `OPENAI_API_KEY` is auto-loaded from `.env` by the wrapper/app when not already exported.
 2. The same model rewrite path is available directly in Streamlit via the sidebar toggle.
+
+## 9) Optional GCP Spot Runner Integration
+
+This repo includes thin wrappers for the external `gcp-spot-runner` project.
+Detailed guide: `gcp/GETTING_STARTED.md`
+
+Setup:
+```bash
+cp gcp/rav_spot.env.example gcp/rav_spot.env
+# edit gcp/rav_spot.env with PROJECT/REGION/SA/BUCKET/IMAGE/RUNNER_DIR
+# optional: SYNC_INTERVAL_SEC controls periodic checkpoint sync cadence
+```
+
+Build image (required):
+```bash
+bash scripts/gcp_build_image.sh
+```
+
+Submit spot jobs:
+```bash
+bash scripts/gcp_submit_primary.sh
+bash scripts/gcp_submit_poc.sh
+```
+
+Resume a previous run by reusing the same run ID:
+```bash
+bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
+bash scripts/gcp_submit_poc.sh --run-id rav-poc-001
+```
+
+Ops/status:
+```bash
+bash scripts/gcp_ops.sh status
+bash scripts/gcp_ops.sh list
+bash scripts/gcp_ops.sh events --since 24h
+```
+
+Notes:
+1. Docker is required for this integration (cloud build + containerized VM execution).
+2. Wrapper submit scripts force `--skip-build`; build/push image first.
+3. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC.
+4. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
+5. On restart with the same `RUN_ID`, wrapper downloads `last.pt` and resumes via `--resume-checkpoint`.
+6. Wrapper job commands copy relevant `outputs/...` into `/app/results/...` so runner upload picks them up.

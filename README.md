@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: February 26, 2026
 
-Current app version: `v0.2.0-openai-llm-rewrite`
+Current app version: `v0.2.2-gcp-getting-started-docs`
 
 Changelog: `CHANGELOG.md`
 
@@ -383,6 +383,7 @@ Core files:
 15. `scripts/check_chest_data_sanity.py`
 16. `Makefile`
 17. `src/rav_chest/llm.py` + `scripts/llm_wrapper.py` (OpenAI API wrapper)
+18. `gcp/` + `scripts/gcp_*.sh` (GCP spot-runner adapter)
 
 Track-specific requirements:
 1. Shared (both tracks):
@@ -473,3 +474,37 @@ Streamlit LLM rewrite (optional):
 3. Optionally change `LLM Model` (default: `gpt-4.1-mini`).
 4. Run inference; deterministic and rewritten impressions are shown side-by-side.
 5. Downloaded report JSON includes `llm_rewrite` metadata (`enabled`, `model`, `rewritten_impression`, `error`).
+
+GCP spot-runner adapter (optional):
+
+Detailed guide: `gcp/GETTING_STARTED.md`
+
+```bash
+# 1) one-time setup
+cp gcp/rav_spot.env.example gcp/rav_spot.env
+# edit gcp/rav_spot.env: PROJECT/REGION/SA/BUCKET/IMAGE/RUNNER_DIR
+# optional: SYNC_INTERVAL_SEC controls periodic checkpoint sync cadence
+
+# 2) build and push training image
+bash scripts/gcp_build_image.sh
+
+# 3) submit spot jobs
+bash scripts/gcp_submit_primary.sh
+bash scripts/gcp_submit_poc.sh
+
+# resume a previous run by reusing the same run id
+bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
+bash scripts/gcp_submit_poc.sh --run-id rav-poc-001
+
+# 4) check status/events
+bash scripts/gcp_ops.sh status
+bash scripts/gcp_ops.sh events --since 24h
+```
+
+Notes:
+1. Yes, Docker is required for this path (image build + VM container launch).
+2. Wrappers default to `--skip-build` on spot submit, so build image first with `gcp_build_image.sh`.
+3. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC tracks.
+4. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
+5. On restart with the same `RUN_ID`, wrapper auto-downloads `last.pt` and resumes via `--resume-checkpoint`.
+6. Wrapper copies `outputs/...` into `/app/results/...` at run end for runner artifact upload.

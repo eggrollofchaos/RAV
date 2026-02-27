@@ -13,7 +13,8 @@ IMAGE ?=
 	infer streamlit \
 	sanity-primary sanity-poc \
 	eta-primary eta-poc \
-	eta-primary-watch eta-poc-watch
+	eta-primary-watch eta-poc-watch \
+	gcp-build-image gcp-submit-primary gcp-submit-poc gcp-ops
 
 help:
 	@echo "Targets:"
@@ -31,6 +32,10 @@ help:
 	@echo "  make eta-poc-watch       # Live ETA watcher for POC run"
 	@echo "  make streamlit           # Launch app via python -m streamlit"
 	@echo "  make infer IMAGE=/path/to/image.jpg [INFER_CONFIG=...]"
+	@echo "  make gcp-build-image     # Build/push RAV training image to Artifact Registry"
+	@echo "  make gcp-submit-primary  # Submit primary (CheXpert) spot run via gcp-spot-runner"
+	@echo "  make gcp-submit-poc      # Submit POC spot run via gcp-spot-runner"
+	@echo "  make gcp-ops ARGS='...'  # Pass-through ops command (default: status)"
 
 install:
 	$(PYTHON) -m pip install --upgrade pip
@@ -81,3 +86,15 @@ eta-primary-watch:
 
 eta-poc-watch:
 	$(PYTHON) scripts/monitor_training_eta.py --config $(POC_CONFIG) --watch --interval-seconds 10
+
+gcp-build-image:
+	bash scripts/gcp_build_image.sh
+
+gcp-submit-primary:
+	bash scripts/gcp_submit_primary.sh
+
+gcp-submit-poc:
+	bash scripts/gcp_submit_poc.sh
+
+gcp-ops:
+	bash scripts/gcp_ops.sh $(ARGS)

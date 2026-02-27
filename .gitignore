@@ -22,6 +22,7 @@ private/
 .env
 .env.*
 !.env.example
+gcp/rav_spot.env
 
 # Build/distribution artifacts
 build/
