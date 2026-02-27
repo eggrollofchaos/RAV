@@ -3,7 +3,8 @@ set -euo pipefail
 
 BUCKET="${GCS_BUCKET:-}"
 RUN_ID="${RUN_ID:-$(date -u +%Y%m%d_%H%M%S)}"
-JOB_COMMAND="${JOB_COMMAND:-echo 'No JOB_COMMAND set'}"
+JOB_COMMAND_RAW="${JOB_COMMAND:-echo 'No JOB_COMMAND set'}"
+JOB_COMMAND="$JOB_COMMAND_RAW"
 INSTANCE_NAME="$(curl -fsS -H 'Metadata-Flavor: Google' \
   'http://metadata.google.internal/computeMetadata/v1/instance/name' 2>/dev/null || hostname)"
 INSTANCE_ZONE="$(curl -fsS -H 'Metadata-Flavor: Google' \
@@ -15,6 +16,16 @@ PROJECT_ID="$(curl -fsS -H 'Metadata-Flavor: Google' \
 if [[ -z "$BUCKET" ]]; then
   echo "[$(date -u)] FATAL: GCS_BUCKET not set."
   exit 1
+fi
+
+# spot-runner submit passes JOB_COMMAND base64-encoded in VM metadata.
+# Decode when input matches base64 syntax; otherwise keep raw command.
+if [[ "$JOB_COMMAND_RAW" =~ ^[A-Za-z0-9+/=]+$ ]]; then
+  if DECODED_JOB_COMMAND="$(printf '%s' "$JOB_COMMAND_RAW" | base64 --decode 2>/dev/null)"; then
+    if [[ -n "$DECODED_JOB_COMMAND" ]]; then
+      JOB_COMMAND="$DECODED_JOB_COMMAND"
+    fi
+  fi
 fi
 
 _now_iso() {
