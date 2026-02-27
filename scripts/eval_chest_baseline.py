@@ -19,7 +19,12 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from rav_chest.data import CheXpertDataset
-from rav_chest.metrics import compute_metrics, per_class_thresholds, sigmoid
+from rav_chest.metrics import (
+    compute_confusion_matrices,
+    compute_metrics,
+    per_class_thresholds,
+    sigmoid,
+)
 from rav_chest.models import build_model
 from rav_chest.utils import ensure_dir, load_yaml, save_json, select_device
 
@@ -43,6 +48,12 @@ def parse_args() -> argparse.Namespace:
         default="test",
         choices=["val", "test"],
         help="Which split CSV to evaluate.",
+    )
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=-1,
+        help="Override DataLoader workers. Use -1 to read from config.",
     )
     return parser.parse_args()
 
@@ -96,6 +107,39 @@ def write_per_class_csv(path: Path, metrics: Dict[str, object]) -> None:
             writer.writerow(out)
 
 
+def write_confusion_csv(path: Path, confusion: Dict[str, Dict[str, float | int]]) -> None:
+    fields = [
+        "class_name",
+        "tp",
+        "tn",
+        "fp",
+        "fn",
+        "support_positive",
+        "support_negative",
+        "threshold",
+        "sensitivity",
+        "specificity",
+        "precision",
+        "npv",
+        "accuracy",
+    ]
+
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        for class_name, row in confusion.items():
+            out = dict(row)
+            out["class_name"] = class_name
+            writer.writerow(out)
+
+
+def select_primary_class(class_names: List[str]) -> str:
+    for name in class_names:
+        if name.strip().lower() != "no finding":
+            return name
+    return class_names[0]
+
+
 def main() -> None:
     args = parse_args()
     cfg = load_yaml(args.config)
@@ -123,13 +167,19 @@ def main() -> None:
         image_size=int(cfg["training"]["image_size"]),
         uncertain_value=float(cfg["labels"]["uncertain_value"]),
     )
+    num_workers = (
+        int(cfg["training"]["num_workers"])
+        if int(args.num_workers) < 0
+        else int(args.num_workers)
+    )
     loader = DataLoader(
         dataset,
         batch_size=int(cfg["training"]["batch_size"]),
         shuffle=False,
-        num_workers=int(cfg["training"]["num_workers"]),
-        pin_memory=bool(cfg["training"]["pin_memory"]),
+        num_workers=num_workers,
+        pin_memory=bool(cfg["training"]["pin_memory"]) and device.type == "cuda",
     )
+    print(f"Using DataLoader num_workers={num_workers}")
 
     model = build_model(
         backbone=cfg["training"]["backbone"],
@@ -155,12 +205,28 @@ def main() -> None:
         class_names=class_names,
         thresholds=thresholds,
     )
+    confusion = compute_confusion_matrices(
+        y_true=true,
+        y_prob=probs,
+        class_names=class_names,
+        thresholds=thresholds,
+    )
     metrics["split"] = args.split
     metrics["loss"] = loss
     metrics["checkpoint"] = str(ckpt_path)
+    metrics["confusion_matrices"] = confusion
 
     save_json(eval_dir / f"{args.split}_metrics.json", metrics)
     write_per_class_csv(eval_dir / f"{args.split}_per_class.csv", metrics)
+    write_confusion_csv(eval_dir / f"{args.split}_confusion_per_class.csv", confusion)
+
+    primary_class = select_primary_class(class_names)
+    primary_conf = confusion[primary_class]
+    print(
+        f"{args.split} {primary_class} confusion: "
+        f"TP={primary_conf['tp']} TN={primary_conf['tn']} "
+        f"FP={primary_conf['fp']} FN={primary_conf['fn']}"
+    )
     print(f"{args.split} loss={loss:.4f}, macro={metrics['macro']}")
 
 

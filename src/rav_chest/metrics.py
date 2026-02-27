@@ -73,3 +73,48 @@ def compute_metrics(
     }
     return {"macro": macro, "per_class": per_class}
 
+
+def compute_confusion_matrices(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    class_names: Sequence[str],
+    thresholds: np.ndarray,
+) -> Dict[str, Dict[str, float | int]]:
+    y_pred = threshold_predictions(y_prob, thresholds)
+    out: Dict[str, Dict[str, float | int]] = {}
+
+    for i, name in enumerate(class_names):
+        true_i = (y_true[:, i] >= 0.5).astype(np.int32)
+        pred_i = y_pred[:, i].astype(np.int32)
+
+        tp = int(np.sum((true_i == 1) & (pred_i == 1)))
+        tn = int(np.sum((true_i == 0) & (pred_i == 0)))
+        fp = int(np.sum((true_i == 0) & (pred_i == 1)))
+        fn = int(np.sum((true_i == 1) & (pred_i == 0)))
+
+        support_pos = int(np.sum(true_i == 1))
+        support_neg = int(np.sum(true_i == 0))
+        total = int(len(true_i))
+
+        sensitivity = float(tp / (tp + fn)) if (tp + fn) else 0.0
+        specificity = float(tn / (tn + fp)) if (tn + fp) else 0.0
+        precision = float(tp / (tp + fp)) if (tp + fp) else 0.0
+        npv = float(tn / (tn + fn)) if (tn + fn) else 0.0
+        accuracy = float((tp + tn) / total) if total else 0.0
+
+        out[str(name)] = {
+            "tp": tp,
+            "tn": tn,
+            "fp": fp,
+            "fn": fn,
+            "support_positive": support_pos,
+            "support_negative": support_neg,
+            "threshold": float(thresholds[i]),
+            "sensitivity": sensitivity,
+            "specificity": specificity,
+            "precision": precision,
+            "npv": npv,
+            "accuracy": accuracy,
+        }
+
+    return out

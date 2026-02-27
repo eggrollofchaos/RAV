@@ -18,9 +18,9 @@ All numbers are planning estimates, not guarantees.
 
 | Profile | Typical Single-Image Latency | Notes |
 |---|---:|---|
-| CPU laptop | 150-450 ms | Works for demo, but slower batch workloads |
-| M3 Pro (MPS) | 40-140 ms | Good local interactive demo experience |
-| T4/L4 GPU | 15-60 ms | Suitable for class demo with moderate concurrency |
+| CPU laptop | 150-450 ms | Works for Kaggle proof-of-concept, but slower batch workloads |
+| M3 Pro (MPS) | 40-140 ms | Good local interactive experience |
+| T4/L4 GPU | 15-60 ms | Suitable for multi-class prediction with moderate concurrency |
 | A10G/A100 | 8-35 ms | Suitable for load testing and larger batch runs |
 
 ## 3) Localization Extension Sizing (VinDr Path)
@@ -41,6 +41,11 @@ Recommended minimums:
 2. Checkpoints + metrics + artifacts: 20-100 GB.
 3. High-speed local SSD or equivalent attached volume.
 
+Current dataset planning note:
+1. Local development currently uses CheXpert-v1.0-small (Kaggle mirror) plus Kaggle POC data.
+2. Full/regular CheXpert training is intended for GCP (WIP) due runtime and storage pressure.
+3. CheXpert Plus is deferred for this class timeline (planning estimate: ~3.5 TB footprint).
+
 ## 5) Practical Recommendation for This Project
 
 1. Development and smoke tests: run on M3 Pro.
@@ -59,4 +64,3 @@ If too slow:
 1. Increase `num_workers`.
 2. Validate data caching/storage throughput.
 3. Profile dataloader and GPU utilization before changing model architecture.
-

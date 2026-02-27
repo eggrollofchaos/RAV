@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--chexpert-root",
         type=str,
-        default="data/raw/chexpert/CheXpert-v1.0",
+        default="data/raw/chexpert/CheXpert-v1.0-small",
         help="Directory containing CheXpert train.csv, valid.csv, and image folders.",
     )
     parser.add_argument(
@@ -131,4 +131,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

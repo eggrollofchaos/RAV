@@ -51,6 +51,12 @@ Brain route tradeoff:
 | MIMIC-CXR-JPG | Paired report workflows and robustness | Very large report-linked corpus | Access requires PhysioNet credentialing + DUA |
 | VinDr-CXR | Localization and tumor-adjacent labels | Includes nodule/mass/lung tumor labels and localization support | Access friction via controlled access terms |
 
+Current dataset execution status:
+- [x] Using **CheXpert-v1.0-small** from Kaggle for active development:
+  https://www.kaggle.com/datasets/ashery/chexpert
+- [ ] Full/regular CheXpert training fit via GCP is planned and in progress (WIP).
+- [ ] CheXpert Plus was originally explored but is currently deferred as operationally untenable for this course timeline (project planning estimate: ~3.5 TB footprint).
+
 ### Optional Comparison/Deferred Dataset Track
 
 | Dataset | Route | Notes |
@@ -189,67 +195,66 @@ Mitigations:
 2. Freeze a canonical label map early.
 3. Use constrained template reports before free-form generation.
 
-## 11) 6-Week Chest-First Build Plan
+## 11) 6-Week Chest-First Build Plan (Status Checklist)
+
+Status date: 2026-02-27
+Legend: checkboxes marked complete can be track-specific; explicit notes call out `POC` vs `CheXpert` status.
 
 ### Week 1: Scope Lock and Data Access
 
-Deliverables:
-1. Confirm v1 dataset stack.
-2. Finalize label set and evaluation protocol.
-3. Complete access tasks for controlled datasets.
+- [x] Confirm v1 dataset stack for active tracks (CheXpert + Kaggle POC).
+- [x] Finalize label set and evaluation protocol in current configs.
+- [ ] Complete access tasks for controlled datasets (MIMIC-CXR-JPG, VinDr-CXR); keep CheXpert Plus deferred unless storage plan changes.
 
 Exit criteria:
-- One complete train/val/test split prepared.
+- [x] Train/val/test split pipeline exists for each active track.
 
 ### Week 2: Baseline Classifier
 
-Deliverables:
-1. Training pipeline for multi-label chest classification.
-2. First benchmark run with per-class AUROC/F1.
-3. Initial calibration curves.
+- [x] Training pipeline for multi-label chest classification.
+- [x] First benchmark run with per-class AUROC/F1 for Kaggle POC track.
+- [ ] First benchmark run with per-class AUROC/F1 for primary CheXpert track.
+- [ ] Initial calibration curves documented.
 
 Exit criteria:
-- Reproducible baseline metrics.
+- [ ] Reproducible baseline metrics artifacts saved under `outputs/.../metrics/` for both tracks.
 
 ### Week 3: Structured Findings Layer
 
-Deliverables:
-1. Findings JSON schema implemented.
-2. Threshold policy and confidence buckets.
-3. Batch inference script.
+- [x] Findings JSON schema and output payload implemented.
+- [x] Threshold policy and confidence buckets implemented.
+- [x] Batch/single inference scripts available.
 
 Exit criteria:
-- Stable machine-readable outputs for evaluation set.
+- [x] Stable machine-readable outputs for evaluation set.
 
 ### Week 4: Report Generation Layer
 
-Deliverables:
-1. Template-based findings + impression generation.
-2. Constrained rewrite option (optional).
-3. Hallucination guardrails and refusal behavior.
+- [x] Template-based findings + impression generation.
+- [ ] Constrained rewrite option (optional) wired to an external LLM.
+- [x] Grounding guardrails (output constrained to predicted findings).
 
 Exit criteria:
-- End-to-end output includes grounded narrative text.
+- [x] End-to-end output includes grounded narrative text.
 
 ### Week 5: Localization Extension and Error Analysis
 
-Deliverables:
-1. Optional localization model for nodule/mass path.
-2. Error taxonomy dashboard.
-3. Calibration and threshold retuning.
+- [ ] Optional localization model for nodule/mass path.
+- [ ] Error taxonomy dashboard.
+- [ ] Calibration and threshold retuning pass.
 
 Exit criteria:
-- Improved performance on key classes with documented tradeoffs.
+- [ ] Improved performance on key classes with documented tradeoffs.
 
-### Week 6: Demo and Comparison Report
+### Week 6: UI and Comparison Report
 
-Deliverables:
-1. Demo UI/API flow.
-2. Final metrics + failure analysis report.
-3. Chest vs brain feasibility/coding-lift comparison write-up.
+- [x] Working UI/API flow (inference + metrics pages) validated on POC.
+- [ ] Working UI/API flow validated with trained CheXpert checkpoint + metrics.
+- [ ] Final metrics + failure analysis report finalized.
+- [x] Chest vs brain feasibility/coding-lift comparison documented.
 
 Exit criteria:
-- Stable demo and reproducible evaluation artifacts.
+- [ ] Stable, final presentation artifact package (metrics report + demo script).
 
 ## 12) Proposed Repo Layout
 
@@ -282,25 +287,70 @@ RAV/
 ## 13) Definition of Done (Chest MVP)
 
 MVP is done when:
-1. Chest classifier meets target baseline metrics on held-out data.
-2. Structured findings JSON is stable and schema-validated.
-3. Generated report text is grounded and low-hallucination.
-4. End-to-end app path is reliable: upload -> inference -> results.
-5. Comparison section documents why brain was deferred.
+- [ ] Chest classifier meets target baseline metrics on held-out data for the primary CheXpert track.
+- [x] Structured findings JSON is stable and schema-validated.
+- [x] Generated report text is grounded and low-hallucination by construction.
+- [x] End-to-end app path is reliable: upload -> inference -> results.
+- [x] Comparison section documents why brain was deferred.
 
-## 14) Next 72 Hours
+## 14) While Training: Productive Checklist
 
-1. Finalize v1 stack: CheXpert Plus first, then MIMIC-CXR-JPG or VinDr-CXR.
-2. Create canonical label map for selected datasets.
-3. Stand up baseline training/eval pipeline.
-4. Implement findings JSON schema and template report generator.
+If a training run is active, do these in parallel:
+- [x] Keep Streamlit environment consistency (`.venv` + `python -m streamlit`).
+- [x] Use ETA monitor from `outputs/.../metrics/history.jsonl`.
+- [x] Prepare test-time evaluation command for `checkpoints/best.pt`.
+- [x] Run data sanity checks (class balance, missing files, split leakage).
+- [x] Draft next experiment configs (`image_size`, `batch_size`, `lr`, `backbone`).
+- [x] Keep one-command reproducible wrappers (for example, `make train-poc`).
 
-## 15) Reference Links
+Useful commands:
+1. `python scripts/monitor_training_eta.py --config configs/poc/chest_pneumonia_binary.yaml --watch`
+2. `python scripts/check_chest_data_sanity.py --config configs/poc/chest_pneumonia_binary.yaml`
+3. `make eta-poc-watch`
+4. `make sanity-poc`
+
+## 15) MVP Minimum Required (Execution Checklist)
+
+Current status for class-project MVP (POC track):
+- [x] One trained checkpoint exists at `outputs/.../checkpoints/best.pt`.
+- [x] Held-out evaluation is saved under `outputs/.../metrics/` with AUROC/F1.
+- [x] Single-image inference works via `scripts/infer_chest_single.py`.
+- [x] Streamlit demo runs from the same `.venv` as training and loads `best.pt`.
+- [x] Findings/report output is grounded only in predicted findings.
+- [x] README + runbook include exact reproduce steps and known caveats.
+
+Current status for primary track (CheXpert):
+- [ ] One trained checkpoint exists at `outputs/chest_baseline/checkpoints/best.pt` from a completed primary run.
+- [ ] Held-out primary evaluation exists under `outputs/chest_baseline/metrics/` with AUROC/F1.
+- [ ] Streamlit model-metrics page verified end-to-end with primary artifacts.
+
+Track equivalence note (POC vs CheXpert):
+- [x] Same training/eval/inference code path is used for both tracks.
+- [x] Same image preprocessing stack is used (`PIL` load -> `RGB` -> resize/normalize tensor transform).
+- [x] Main practical differences are scale and labels: CheXpert is much larger and multi-label (14 findings), while Kaggle POC is smaller and binary (`Pneumonia`/`No Finding`).
+
+## 16) Next 72 Hours
+
+- [ ] Finalize primary-data path: full/regular CheXpert on GCP (WIP), with CheXpert-v1.0-small as local default.
+- [ ] Create canonical label map for selected datasets.
+- [x] Stand up baseline training/eval pipeline.
+- [x] Implement findings JSON schema and template report generator.
+
+## 16A) Slide Commitments Status (From Proposal)
+
+- [x] Output key diagnostic findings in natural language.
+- [ ] Output subtype-level claims (for example `compound/simple fracture`, `malignant/benign tumor`) with validated supervision.
+- [ ] Integrate Gemini 1.5 Flash for natural-language input/output (and define tuning plan).
+- [ ] Evaluate MCP integration via MedAgentBench.
+- [ ] Quantitative evaluation against pathology labels with F1-based reporting for all target tracks (POC complete; CheXpert pending full run).
+- [ ] Qualitative evaluation by a stronger medical LLM (for example MedGemma) with semantic-similarity scoring.
+
+## 17) Reference Links
 
 - Initial proposal PDF: `PDF/EECS E6895 - Initial Proposal - Radiologist - RAV.pdf`
 - Archive plan PDF: `PDF/EECS E6895 - Project Plan - Radiologist - RAV - Archive.pdf`
 - CheXpert: https://aimi.stanford.edu/datasets/chexpert-chest-x-rays
-- CheXpert Plus: https://aimi.stanford.edu/datasets/chexpert-plus
+- CheXpert Plus (deferred in current scope): https://aimi.stanford.edu/datasets/chexpert-plus
 - MIMIC-CXR-JPG: https://physionet.org/content/mimic-cxr-jpg/
 - VinDr-CXR: https://physionet.org/content/vindr-cxr/
 - EVA-X: https://github.com/hustvl/EVA-X
@@ -309,7 +359,7 @@ MVP is done when:
 - BraTS 2021 (deferred comparison): https://www.cancerimagingarchive.net/analysis-result/rsna-asnr-miccai-brats-2021/
 - UPENN-GBM (deferred comparison): https://www.cancerimagingarchive.net/collection/upenn-gbm/
 
-## 16) Implementation Artifacts (Now Included)
+## 18) Implementation Artifacts (Now Included)
 
 Core files:
 1. `requirements.txt`
@@ -325,6 +375,27 @@ Core files:
 11. `app/streamlit_app.py`
 12. `docs/CHEST_RUNBOOK.md`
 13. `docs/HARDWARE_SIZING.md`
+14. `scripts/monitor_training_eta.py`
+15. `scripts/check_chest_data_sanity.py`
+16. `Makefile`
+
+Track-specific requirements:
+1. Shared (both tracks):
+   - Python env from `.venv` and `pip install -r requirements.txt`
+   - Run Streamlit via `python -m streamlit run app/streamlit_app.py`
+2. Primary (CheXpert):
+   - Local default dataset under `data/raw/chexpert/CheXpert-v1.0-small/` (Kaggle mirror) with `train.csv`, `valid.csv`, and image folders
+   - Full/regular CheXpert training path is planned on GCP (WIP)
+   - Prepared CSVs at `data/processed/chexpert_{train,val,test}.csv` from `scripts/prepare_chexpert_data.py`
+3. POC (Kaggle chest-xray-pneumonia):
+   - Raw split folders under `data/poc/chest_xray_pneumonia/raw/{train,val,test}` (or source zips in `data/poc/chest_xray_pneumonia/source_archives/`)
+   - Prepared CSVs at `data/poc/chest_xray_pneumonia/processed/chest_pneumonia_{train,val,test}.csv` from `scripts/poc/prepare_chest_pneumonia_data.py`
+4. Current model backbone in both provided configs:
+   - `densenet121` (`configs/primary/chest_chexpert.yaml`, `configs/poc/chest_pneumonia_binary.yaml`)
+   - Also supported by code: `resnet50`, `efficientnet_b0` (`src/rav_chest/models.py`)
+5. Git sharing note:
+   - `outputs/`, `data/raw/`, `data/processed/`, and `data/poc/` are ignored by git (`.gitignore`)
+   - Teammates cloning the repo still need dataset access and either local training or a separately shared checkpoint (`best.pt`)
 
 Primary quickstart (CheXpert):
 ```bash
@@ -333,11 +404,18 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python scripts/prepare_chexpert_data.py \
-  --chexpert-root data/raw/chexpert/CheXpert-v1.0 \
+  --chexpert-root data/raw/chexpert/CheXpert-v1.0-small \
   --output-dir data/processed
 python scripts/train_chest_baseline.py --config configs/primary/chest_chexpert.yaml
 python scripts/eval_chest_baseline.py --config configs/primary/chest_chexpert.yaml --split test
-streamlit run app/streamlit_app.py
+python -m streamlit run app/streamlit_app.py
+```
+
+Resume training from latest epoch checkpoint:
+```bash
+python scripts/train_chest_baseline.py \
+  --config configs/primary/chest_chexpert.yaml \
+  --resume-checkpoint outputs/chest_baseline/checkpoints/last.pt
 ```
 
 POC quickstart (Kaggle):
@@ -347,5 +425,25 @@ python scripts/poc/prepare_chest_pneumonia_data.py \
   --output-dir data/poc/chest_xray_pneumonia/processed
 python scripts/train_chest_baseline.py --config configs/poc/chest_pneumonia_binary.yaml
 python scripts/eval_chest_baseline.py --config configs/poc/chest_pneumonia_binary.yaml --split test
-streamlit run app/streamlit_app.py
+python -m streamlit run app/streamlit_app.py
+```
+
+Resume POC training:
+```bash
+python scripts/train_chest_baseline.py \
+  --config configs/poc/chest_pneumonia_binary.yaml \
+  --resume-checkpoint outputs/poc/chest_pneumonia_binary/checkpoints/last.pt
+```
+
+If `streamlit` resolves to Conda (`/opt/anaconda3/bin/streamlit`) while training uses `.venv`,
+use `python -m streamlit ...` to avoid Torch linker mismatches.
+
+Convenience make targets:
+```bash
+# use PYTHON=.venv/bin/python if your shell is not already in .venv
+make train-poc
+make eval-poc
+make sanity-poc
+make eta-poc-watch
+make streamlit
 ```

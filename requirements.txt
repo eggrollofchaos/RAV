@@ -7,3 +7,4 @@ streamlit>=1.40,<2
 torch>=2.2,<3
 torchvision>=0.17,<1
 tqdm>=4.66,<5
+watchdog>=6,<7
