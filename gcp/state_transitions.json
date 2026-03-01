@@ -1,0 +1,12 @@
+{
+  "edges": {
+    "null": ["RUNNING", "ORPHANED"],
+    "RUNNING": ["COMPLETE", "FAILED", "PARTIAL", "PREEMPTED", "ORPHANED", "STOPPED"],
+    "PREEMPTED": ["RESTARTING", "STOPPED"],
+    "ORPHANED": ["RESTARTING", "STOPPED"],
+    "RESTARTING": ["RUNNING", "ORPHANED", "STOPPED"]
+  },
+  "actor_guards": {
+    "null:ORPHANED": ["reconciler"]
+  }
+}

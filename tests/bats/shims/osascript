@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# osascript shim — suppress macOS notifications in tests
+[[ "${RAV_BATS_TEST:-}" == "1" ]] || exec /usr/bin/osascript "$@"
+exit 0

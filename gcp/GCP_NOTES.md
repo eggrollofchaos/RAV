@@ -245,7 +245,18 @@ gcloud logging read 'logName:"google_metadata_script_runner"' \
   --format='value(timestamp,jsonPayload.message)'
 ```
 
-## 10) Current Recommendation for CheXpert Spot Runs
+## 10) Spot VM Resilience (v0.2.6)
+
+After Feb 27 preemption incident (two VMs preempted without notification or auto-restart), the following was added:
+
+- **State machine** (`state_transitions.json`): Canonical states with CAS transitions via `if_generation_match`. Terminal states (COMPLETE, FAILED, PARTIAL, STOPPED) cannot be overwritten.
+- **Preemption watcher**: Background process in container polls GCE metadata every 5s. On preempt → CAS PREEMPTED + Discord notification.
+- **Startup terminal guard**: Container reads `state.json` before owner-lock. If terminal → self-delete, no work executed.
+- **Cloud reconciler** (`cloud_reconciler/`): Cloud Function for stale detection + restart. Two-stage: heartbeat stale + VM gone → ORPHANED.
+- **Restart lock** (`restart.lock`): Shared GCS lock prevents dual restart from local orchestrator + reconciler.
+- **`caffeinate` + HUP trap**: Local submit scripts survive terminal close and macOS idle sleep.
+
+## 11) Current Recommendation for CheXpert Spot Runs
 
 Starting point:
 - `GPU_TIMEOUT_SEC="1200"`

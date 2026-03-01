@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: February 26, 2026
 
-Current app version: `v0.2.4-agent-qa-chat`
+Current app version: `v0.2.6-gcp-spot-resilience`
 
 Changelog: `CHANGELOG.md`
 

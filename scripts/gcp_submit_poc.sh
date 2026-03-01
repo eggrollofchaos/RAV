@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+# Prevent macOS idle sleep and survive terminal close
+if [[ -z "${_IXQT_CAFFEINATED:-}" ]] && command -v caffeinate &>/dev/null; then
+  exec env _IXQT_CAFFEINATED=1 caffeinate -i "$0" "$@"
+fi
+trap '' HUP
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

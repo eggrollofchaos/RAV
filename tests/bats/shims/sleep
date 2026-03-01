@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# sleep shim — skip sleeps in tests for speed
+[[ "${RAV_BATS_TEST:-}" == "1" ]] || exec /bin/sleep "$@"
+# No-op in tests
+exit 0

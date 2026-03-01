@@ -33,6 +33,13 @@ apply_runner_defaults() {
   : "${GPU_TYPE:=nvidia-tesla-t4}"
   : "${BOOT_DISK_SIZE:=100}"
   : "${BOOT_DISK_TYPE:=pd-ssd}"
+  : "${DATA_DISK_ENABLED:=false}"
+  : "${DATA_DISK_NAME:=}"
+  : "${DATA_DISK_SIZE_GB:=500}"
+  : "${DATA_DISK_TYPE:=pd-ssd}"
+  : "${DATA_DISK_DEVICE_NAME:=spot-data}"
+  : "${DATA_DISK_MOUNT_PATH:=/mnt/spot-data}"
+  : "${DATA_DISK_FS_TYPE:=ext4}"
   : "${CONTAINER_NAME:=rav-trainer}"
   : "${CONDA_ENV:=}"
   : "${GPU_TIMEOUT_SEC:=600}"
@@ -50,6 +57,7 @@ apply_runner_defaults() {
   : "${RUNNER_LABEL:=spot-runner}"
   : "${LOG_LEVEL:=INFO}"
   : "${DISCORD_WEBHOOK_URL:=}"
+  : "${NOTIFY_SECRET:=}"
 }
 
 configure_gcloud_runtime() {
@@ -133,6 +141,13 @@ write_runner_config() {
   _emit_var "$cfg" GPU_TYPE
   _emit_var "$cfg" BOOT_DISK_SIZE
   _emit_var "$cfg" BOOT_DISK_TYPE
+  _emit_var "$cfg" DATA_DISK_ENABLED
+  _emit_var "$cfg" DATA_DISK_NAME
+  _emit_var "$cfg" DATA_DISK_SIZE_GB
+  _emit_var "$cfg" DATA_DISK_TYPE
+  _emit_var "$cfg" DATA_DISK_DEVICE_NAME
+  _emit_var "$cfg" DATA_DISK_MOUNT_PATH
+  _emit_var "$cfg" DATA_DISK_FS_TYPE
   _emit_var "$cfg" CONTAINER_NAME
   _emit_var "$cfg" CONDA_ENV
   _emit_var "$cfg" GPU_TIMEOUT_SEC
@@ -150,6 +165,7 @@ write_runner_config() {
   _emit_var "$cfg" RUNNER_LABEL
   _emit_var "$cfg" LOG_LEVEL
   _emit_var "$cfg" DISCORD_WEBHOOK_URL
+  _emit_var "$cfg" NOTIFY_SECRET
 
   printf 'FALLBACK_ZONES=(' >> "$cfg"
   local zone

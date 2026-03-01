@@ -25,6 +25,7 @@ EVAL_SPLIT=""
 SYNC_INTERVAL_SEC=180
 GCS_PREFIX=""
 SKIP_EVAL=false
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -69,6 +70,11 @@ fi
 : "${GCS_BUCKET:?GCS_BUCKET is required}"
 : "${RUN_ID:?RUN_ID is required}"
 
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  echo "Python interpreter not found: ${PYTHON_BIN}" >&2
+  exit 127
+fi
+
 if [[ -z "$GCS_PREFIX" ]]; then
   GCS_PREFIX="gs://${GCS_BUCKET}/runs/${RUN_ID}/checkpoint_sync"
 fi
@@ -78,7 +84,7 @@ if ! [[ "$SYNC_INTERVAL_SEC" =~ ^[0-9]+$ ]] || [[ "$SYNC_INTERVAL_SEC" -le 0 ]];
   exit 1
 fi
 
-OUTPUT_DIR="$(python3 -c 'import sys,yaml; cfg=yaml.safe_load(open(sys.argv[1])); print(cfg["project"]["output_dir"])' "$CONFIG")"
+OUTPUT_DIR="$("$PYTHON_BIN" -c 'import sys,yaml; cfg=yaml.safe_load(open(sys.argv[1])); print(cfg["project"]["output_dir"])' "$CONFIG")"
 CHECKPOINT_DIR="${OUTPUT_DIR}/checkpoints"
 METRICS_DIR="${OUTPUT_DIR}/metrics"
 REPORTS_DIR="${OUTPUT_DIR}/reports"
@@ -154,7 +160,7 @@ echo "[$(date -u)] Starting periodic sync loop (${SYNC_INTERVAL_SEC}s)"
 sync_loop &
 SYNC_PID=$!
 
-TRAIN_CMD=(python scripts/train_chest_baseline.py --config "$CONFIG")
+TRAIN_CMD=("$PYTHON_BIN" scripts/train_chest_baseline.py --config "$CONFIG")
 if [[ -n "$RESUME_CKPT" ]]; then
   echo "[$(date -u)] Resuming from ${RESUME_CKPT}"
   TRAIN_CMD+=(--resume-checkpoint "$RESUME_CKPT")
@@ -167,7 +173,7 @@ echo
 
 if [[ "$SKIP_EVAL" != true ]] && [[ -n "$EVAL_SPLIT" ]]; then
   echo "[$(date -u)] Running eval on split=${EVAL_SPLIT}"
-  python scripts/eval_chest_baseline.py --config "$CONFIG" --split "$EVAL_SPLIT" || true
+  "$PYTHON_BIN" scripts/eval_chest_baseline.py --config "$CONFIG" --split "$EVAL_SPLIT" || true
 fi
 
 sync_once

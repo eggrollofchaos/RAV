@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# caffeinate shim — skip in tests
+[[ "${RAV_BATS_TEST:-}" == "1" ]] || exec /usr/bin/caffeinate "$@"
+echo "caffeinate $*" >> "${SHIM_LOG:-/dev/null}"
+# Execute the command without caffeinate
+shift  # drop -i
+exec "$@"

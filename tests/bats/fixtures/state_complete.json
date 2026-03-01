@@ -1,0 +1,1 @@
+{"state":"COMPLETE","prev_state":"RUNNING","state_version":2,"owner_id":"test-vm","instance_name":"test-vm","zone":"us-east1-c","attempt":0,"updated_at":"2026-02-28T12:30:00Z","updated_by":"vm","reason":"job_exit_0","history":[]}

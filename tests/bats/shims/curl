@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Strict curl shim for bats tests.
+[[ "${RAV_BATS_TEST:-}" == "1" ]] || { echo "ERROR: curl shim invoked outside bats" >&2; exit 99; }
+echo "curl $*" >> "$SHIM_LOG"
+
+# Metadata: preemption endpoint
+for arg in "$@"; do
+    case "$arg" in
+        *"/instance/preempted")
+            echo "${CURL_PREEMPT_RESULT:-FALSE}"
+            exit 0
+            ;;
+        *"/instance/name")
+            echo "test-vm-001"
+            exit 0
+            ;;
+        *"/instance/zone")
+            echo "projects/ixqt-488109/zones/us-east1-c"
+            exit 0
+            ;;
+        *"/project/project-id")
+            echo "ixqt-488109"
+            exit 0
+            ;;
+        *"/service-accounts/default/token")
+            echo "${CURL_TOKEN_RESULT:-{\"access_token\":\"fake-token\",\"expires_in\":3600,\"token_type\":\"Bearer\"}}"
+            exit 0
+            ;;
+        *"secretmanager.googleapis.com"*)
+            # Secret Manager API response (base64-encoded secret)
+            local encoded
+            encoded="$(echo -n "${CURL_SECRET_VALUE:-test-webhook-url}" | base64)"
+            echo "{\"payload\":{\"data\":\"${encoded}\"}}"
+            exit 0
+            ;;
+    esac
+done
+
+# Discord webhook
+if [[ "$*" == *"discord"* || "$*" == *"webhook"* ]]; then
+    exit 0
+fi
+
+# Compute API DELETE (self-delete)
+if [[ "$*" == *"-X DELETE"* && "$*" == *"compute.googleapis.com"* ]]; then
+    exit 0
+fi
+
+# Default: return empty
+exit 0

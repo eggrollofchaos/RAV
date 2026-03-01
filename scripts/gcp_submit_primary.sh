@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+# Prevent macOS idle sleep and survive terminal close
+if [[ -z "${_IXQT_CAFFEINATED:-}" ]] && command -v caffeinate &>/dev/null; then
+  exec env _IXQT_CAFFEINATED=1 caffeinate -i "$0" "$@"
+fi
+trap '' HUP
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,7 +19,7 @@ check_runner_install
 configure_gcloud_runtime
 
 SYNC_INTERVAL_SEC_VALUE="${SYNC_INTERVAL_SEC:-180}"
-DEFAULT_JOB_COMMAND="set -euo pipefail; bash scripts/gcp_train_with_checkpoint_sync.sh --config configs/primary/chest_chexpert.yaml --eval-split val --sync-interval-sec ${SYNC_INTERVAL_SEC_VALUE}"
+DEFAULT_JOB_COMMAND="set -euo pipefail; bash scripts/gcp_sync_chexpert_cache.sh --raw-uri gs://${BUCKET}/datasets/chexpert/raw --processed-uri gs://${BUCKET}/datasets/chexpert/processed --cache-root data; bash scripts/gcp_train_with_checkpoint_sync.sh --config configs/primary/chest_chexpert.yaml --eval-split val --sync-interval-sec ${SYNC_INTERVAL_SEC_VALUE}"
 JOB_COMMAND_VALUE="${JOB_COMMAND_PRIMARY:-$DEFAULT_JOB_COMMAND}"
 
 echo "Submitting PRIMARY (CheXpert) run via spot runner..."

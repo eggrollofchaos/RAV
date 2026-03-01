@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# Strict gcloud shim for bats tests.
+[[ "${RAV_BATS_TEST:-}" == "1" ]] || { echo "ERROR: gcloud shim invoked outside bats" >&2; exit 99; }
+echo "gcloud $*" >> "$SHIM_LOG"
+
+# -- storage cat (read GCS objects) --
+if [[ "$*" == *"storage cat"* ]]; then
+    # Check for specific object overrides via env
+    if [[ "$*" == *"state.json"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_STATE_JSON:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_STATE_JSON"
+        exit 0
+    fi
+    if [[ "$*" == *"status.txt"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_STATUS_TXT:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_STATUS_TXT"
+        exit 0
+    fi
+    if [[ "$*" == *"heartbeat.json"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_HEARTBEAT:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_HEARTBEAT"
+        exit 0
+    fi
+    if [[ "$*" == *"restart_config.json"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_RESTART_CONFIG:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_RESTART_CONFIG"
+        exit 0
+    fi
+    if [[ "$*" == *"restart.lock"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_RESTART_LOCK:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_RESTART_LOCK"
+        exit 0
+    fi
+    if [[ "$*" == *".owner.lock"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_OWNER_LOCK:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_OWNER_LOCK"
+        exit 0
+    fi
+    if [[ "$*" == *"run_manifest.json"* ]] && [[ -n "${GCLOUD_STORAGE_CAT_MANIFEST:-}" ]]; then
+        echo "$GCLOUD_STORAGE_CAT_MANIFEST"
+        exit 0
+    fi
+    echo "${GCLOUD_STORAGE_CAT_RESULT:-}"
+    exit 0
+fi
+
+# -- storage stat (object metadata) --
+if [[ "$*" == *"storage stat"* ]]; then
+    echo "  Generation: ${GCLOUD_STORAGE_STAT_GEN:-1234567890}"
+    exit 0
+fi
+
+# -- storage cp with if-generation-match:0 (atomic create) --
+if [[ "$*" == *"storage cp"* && "$*" == *"x-goog-if-generation-match=0"* ]]; then
+    case "${GCLOUD_STORAGE_CP_ATOMIC_RESULT:-ok}" in
+        ok)     exit 0 ;;
+        locked|exists) exit 1 ;;
+        *)      exit 1 ;;
+    esac
+fi
+
+# -- storage cp with if-generation-match (CAS) --
+if [[ "$*" == *"storage cp"* && "$*" == *"x-goog-if-generation-match"* ]]; then
+    case "${GCLOUD_STORAGE_CP_CAS_RESULT:-ok}" in
+        ok)     exit 0 ;;
+        mismatch|conflict) exit 1 ;;
+        *)      exit 1 ;;
+    esac
+fi
+
+# -- storage cp (general) --
+if [[ "$*" == *"storage cp"* ]]; then
+    case "${GCLOUD_STORAGE_CP_RESULT:-ok}" in
+        ok)     exit 0 ;;
+        *)      exit 1 ;;
+    esac
+fi
+
+# -- storage rm with if-generation-match --
+if [[ "$*" == *"storage rm"* && "$*" == *"x-goog-if-generation-match"* ]]; then
+    case "${GCLOUD_STORAGE_RM_CAS_RESULT:-ok}" in
+        ok)     exit 0 ;;
+        mismatch) exit 1 ;;
+        *)      exit 1 ;;
+    esac
+fi
+
+# -- storage rm --
+if [[ "$*" == *"storage rm"* ]]; then
+    exit 0
+fi
+
+# -- compute instances describe --
+if [[ "$*" == *"instances describe"* ]]; then
+    if [[ "${GCLOUD_VM_EXISTS:-true}" == "true" ]]; then
+        echo "name: fake-vm"
+        echo "status: RUNNING"
+        exit 0
+    else
+        echo "ERROR: (gcloud.compute.instances.describe) Could not fetch resource" >&2
+        exit 1
+    fi
+fi
+
+# -- compute instances create --
+if [[ "$*" == *"instances create"* ]]; then
+    # Extract zone
+    _zone=""
+    for _arg in "$@"; do
+        if [[ "$_arg" == --zone=* ]]; then
+            _zone="${_arg#--zone=}"
+            break
+        fi
+    done
+    _zone_var="GCLOUD_CREATE_RESULT_${_zone//-/_}"
+    _zone_result="${!_zone_var:-}"
+    _result="${_zone_result:-$GCLOUD_CREATE_RESULT}"
+    case "$_result" in
+        ok)
+            echo "Created VM"
+            exit 0 ;;
+        ZONE_RESOURCE_POOL_EXHAUSTED)
+            echo "ERROR: ZONE_RESOURCE_POOL_EXHAUSTED" >&2
+            exit 1 ;;
+        *)
+            echo "ERROR: $_result" >&2
+            exit 1 ;;
+    esac
+fi
+
+# -- compute instances delete --
+if [[ "$*" == *"instances delete"* ]]; then
+    exit 0
+fi
+
+# -- compute instances list --
+if [[ "$*" == *"instances list"* ]]; then
+    exit 0
+fi
+
+# -- builds submit --
+if [[ "$*" == *"builds submit"* ]]; then
+    exit 0
+fi
+
+echo "SHIM ERROR: unrecognized gcloud pattern: $*" >&2
+exit 98

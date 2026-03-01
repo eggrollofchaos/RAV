@@ -33,8 +33,10 @@ COPY scripts /app/scripts
 COPY configs /app/configs
 COPY app /app/app
 COPY gcp/entrypoint.sh /app/entrypoint.sh
+COPY gcp/state_transitions.json /app/gcp/state_transitions.json
 
-RUN chmod +x /app/entrypoint.sh && mkdir -p /app/results /app/logs /app/outputs /app/data
+RUN python3 -m pip install google-cloud-storage && \
+    chmod +x /app/entrypoint.sh && mkdir -p /app/results /app/logs /app/outputs /app/data
 
 ENV PYTHONPATH=/app/src
 
