@@ -268,3 +268,66 @@ If repeated GPU timeout persists:
 - try alternate zone
 - use larger machine shape temporarily
 - evaluate non-spot for baseline validation run
+
+## 12) Incident: CheXpert-Small Run Ended with `exit_code=1` (Not Preemption)
+
+Run investigated:
+- `RUN_ID=rav-chexpert-20260228-073711`
+- Manifest:
+  - `phase=finished`
+  - `exit_code=1`
+  - `started_at=2026-02-28T09:19:49Z`
+  - `finished_at=2026-02-28T10:53:58Z`
+- Attempts:
+  - `instances/0.json` created at `2026-02-28T07:37:44Z`
+  - `instances/1.json` created at `2026-02-28T09:17:03Z`
+
+Preemption verdict:
+- `bash scripts/gcp_ops.sh preempt --run-id rav-chexpert-20260228-073711 --since 72h`
+  returned no preemption events.
+- This failure mode was app-level/container exit, not spot preemption.
+
+Observed behavior before failure:
+- Startup completed image pull + GPU driver install.
+- Container job command started and entered dataset sync:
+  - `gcloud storage rsync -r gs://.../datasets/chexpert/raw data/raw/chexpert`
+  - Log progress reached `listed 223652...`.
+- Run never produced training artifacts:
+  - `checkpoint_sync/metrics/history.jsonl` exists but size is `0`.
+  - No `results/**` objects.
+
+Likely failure stage:
+- Failure occurred during or immediately after large dataset `rsync` in the
+  startup job command, before `train_chest_baseline.py` produced metrics/checkpoints.
+- Exact terminal error line was not retained in available Cloud Logging slices
+  (copy-line volume dominated metadata-script output).
+
+Related stale run note:
+- `RUN_ID=rav-chexpert-20260228-070057` has `.stop` and stale heartbeat but
+  manifest still reports `phase=running`.
+
+Action item:
+- Persist full startup/container stdout+stderr to GCS per run
+  (for example `gs://<BUCKET>/runs/<RUN_ID>/startup.log`) so next non-zero exit
+  has a recoverable terminal error line.
+
+## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
+
+Current version map:
+- `RAV` app version: `v0.2.7-gcp-docs-version-sync` (`src/rav_chest/version.py`)
+- `gcp-spot-runner` runner version: `v0.3.0-ixqt-rav-gcp-resilience` (`version.py`)
+
+Primary docs by repo:
+- `RAV`:
+  - `README.md`
+  - `CHANGELOG.md`
+  - `gcp/GCP_NOTES.md`
+- `gcp-spot-runner`:
+  - `README.md`
+  - `CHANGELOG.md`
+  - `GCP_FINDINGS_REVIEW_2026-03-01.md`
+
+Operational note:
+- Keep this version map synchronized whenever submit/startup/entrypoint behavior
+  changes so runbooks and incident triage steps always match the deployed
+  runner behavior.

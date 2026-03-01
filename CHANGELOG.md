@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## v0.2.7-gcp-docs-version-sync - 2026-03-01
+
+Added:
+- Cross-repo version lineage documentation in README (`RAV` + `gcp-spot-runner` mapping).
+- GCP notes updates for recent CheXpert incident triage and run-history interpretation.
+
+Updated:
+- App version to `v0.2.7-gcp-docs-version-sync`.
+- Documentation pointers for active GCP operations notes and runner-version context.
+
 ## v0.2.6-gcp-spot-resilience - 2026-03-01
 
 Added:

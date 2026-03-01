@@ -2,11 +2,13 @@
 
 Comprehensive execution plan for building an agentic radiology prototype, now optimized for chest X-ray delivery speed and feasibility.
 
-Date: February 26, 2026
+Date: March 1, 2026
 
-Current app version: `v0.2.6-gcp-spot-resilience`
+Current app version: `v0.2.7-gcp-docs-version-sync`
+Spot runner lineage version: `gcp-spot-runner v0.3.0-ixqt-rav-gcp-resilience`
 
 Changelog: `CHANGELOG.md`
+GCP operations notes: `gcp/GCP_NOTES.md`
 
 ## 1) TL;DR
 
