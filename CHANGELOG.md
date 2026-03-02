@@ -22,13 +22,14 @@ Added:
   - `scripts/gcp_monitor.sh` thin wrapper for `spotctl monitor --profile rav`.
 
 Updated:
+- `scripts/gcp_runner_common.sh` now defaults `DATA_DISK_MOUNT_PATH` to `/var/lib/spot-data` (COS writable path) to match runner profile/runtime defaults.
 - `scripts/gcp_build_image.sh` now delegates build execution (including staged-source fallback) through `spotctl build --profile rav`.
 - `gcp/cloud_reconciler/deploy.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical install checks and `spotctl` execution wiring.
 - `tests/bats/test_runner_adapter.bats` now stages a fake shared adapter helper in reconciler-wrapper fixture setup to keep adapter contract coverage aligned with deploy wrapper behavior.
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.0-unification-closure` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.1-cos-disk-mount-default` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.17-reconciler-adapter-wrapper`.
+- App version to `v0.2.18-cos-disk-mount-default`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:

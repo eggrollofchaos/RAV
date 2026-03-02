@@ -44,7 +44,7 @@ apply_runner_defaults() {
   : "${DATA_DISK_SIZE_GB:=500}"
   : "${DATA_DISK_TYPE:=pd-ssd}"
   : "${DATA_DISK_DEVICE_NAME:=spot-data}"
-  : "${DATA_DISK_MOUNT_PATH:=/mnt/spot-data}"
+  : "${DATA_DISK_MOUNT_PATH:=/var/lib/spot-data}"
   : "${DATA_DISK_FS_TYPE:=ext4}"
   : "${CONTAINER_NAME:=rav-trainer}"
   : "${CONDA_ENV:=}"
