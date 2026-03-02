@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+Updated:
+- Runner lineage docs to `gcp-spot-runner v0.5.0-spotctl-cli-shims` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+
 ## v0.2.9-reconciler-centralized-wrapper - 2026-03-02
 
 Updated:

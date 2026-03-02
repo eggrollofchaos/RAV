@@ -350,7 +350,7 @@ Action item:
 
 Current version map:
 - `RAV` app version: `v0.2.9-reconciler-centralized-wrapper` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.4.0-reconciler-centralization` (`version.py`)
+- `gcp-spot-runner` runner version: `v0.5.0-spotctl-cli-shims` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 
 Primary docs by repo:
