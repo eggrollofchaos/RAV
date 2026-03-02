@@ -7,6 +7,10 @@ Reconciler ownership note:
 - `gcp/cloud_reconciler/` in this repo is a thin wrapper layer.
 - Canonical reconciler implementation lives in `../gcp-spot-runner/cloud_reconciler/`.
 
+Operator CLI note:
+- Use `./scripts/rav-gcp.sh` as the canonical command entrypoint.
+- `scripts/gcp_*.sh` remain thin compatibility wrappers.
+
 ## 1) What this setup does
 
 - Builds a training image from this repo.
@@ -95,10 +99,10 @@ IMAGE="${REGION}-docker.pkg.dev/<PROJECT_ID>/rav-train/rav-chest:latest"
 From repo root:
 
 ```bash
-bash scripts/gcp_build_image.sh
+./scripts/rav-gcp.sh build
 ```
 
-`gcp_build_image.sh` routes the primary build path through:
+`rav-gcp.sh build` routes the primary build path through:
 - `python3 -m spotctl build --profile rav --config gcp/rav_spot.env ...`
 
 It uses `gcp/cloudbuild.rav.yaml` and `gcp/Dockerfile.train`; staged-source fallback is handled by `spotctl build` if the primary build path fails.
@@ -108,13 +112,13 @@ It uses `gcp/cloudbuild.rav.yaml` and `gcp/Dockerfile.train`; staged-source fall
 Primary (CheXpert):
 
 ```bash
-bash scripts/gcp_submit_primary.sh
+./scripts/rav-gcp.sh submit
 ```
 
 POC (Kaggle binary):
 
 ```bash
-bash scripts/gcp_submit_poc.sh
+./scripts/rav-gcp.sh poc
 ```
 
 Both wrappers run checkpoint-safe training with periodic sync.
@@ -124,15 +128,15 @@ Both wrappers run checkpoint-safe training with periodic sync.
 To resume after preemption, submit again with the same `RUN_ID`:
 
 ```bash
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
 # later resume:
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
 ```
 
 Same for POC:
 
 ```bash
-bash scripts/gcp_submit_poc.sh --run-id rav-poc-001
+./scripts/rav-gcp.sh poc --run-id rav-poc-001
 ```
 
 How it works:
@@ -144,29 +148,29 @@ How it works:
 ## 8) Monitor and operate runs
 
 ```bash
-bash scripts/gcp_ops.sh status                  # manifest + heartbeat summary
-bash scripts/gcp_ops.sh serial 200              # last 200 lines of serial console
-bash scripts/gcp_ops.sh list all                 # all runner VMs
-bash scripts/gcp_ops.sh events --since 24h       # cloud system events
-bash scripts/gcp_ops.sh watch 60                 # auto-refresh every 60s
-bash scripts/gcp_ops.sh delete --yes             # safe stop (writes .stop + deletes VM)
-bash scripts/gcp_ops.sh delete --all --yes       # delete ALL runner VMs
-bash scripts/gcp_monitor.sh --single --pin-run-id  # tmux monitor workspace
+./scripts/rav-gcp.sh status                      # manifest + heartbeat summary
+./scripts/rav-gcp.sh serial 200                  # last 200 lines of serial console
+./scripts/rav-gcp.sh list all                    # all runner VMs
+./scripts/rav-gcp.sh events --since 24h          # cloud system events
+./scripts/rav-gcp.sh watch 60                    # auto-refresh every 60s
+./scripts/rav-gcp.sh delete --yes                # safe stop (writes .stop + deletes VM)
+./scripts/rav-gcp.sh delete --all --yes          # delete ALL runner VMs
+./scripts/rav-gcp.sh monitor --single --pin-run-id  # tmux monitor workspace
 ```
 
 To kill a stuck VM and resubmit fresh:
 
 ```bash
 # Option A: cleanup-all flag handles kill + submit in one command
-bash scripts/gcp_submit_primary.sh --skip-build --cleanup-all --yes
+./scripts/rav-gcp.sh submit --skip-build --cleanup-all --yes
 
 # Option B: manual kill then submit
-bash scripts/gcp_ops.sh delete --yes
-bash scripts/gcp_submit_primary.sh --skip-build
+./scripts/rav-gcp.sh delete --yes
+./scripts/rav-gcp.sh submit --skip-build
 ```
 
 Note: a normal submit only cleans up VMs from the **same RUN_ID**. To kill VMs
-from a prior run, use `--cleanup-all` or `gcp_ops.sh delete`.
+from a prior run, use `--cleanup-all` or `rav-gcp.sh delete`.
 
 ## 9) Where outputs go
 
@@ -188,16 +192,16 @@ Inside the repo conventions:
 cp gcp/rav_spot.env.example gcp/rav_spot.env
 
 # 1) build image
-bash scripts/gcp_build_image.sh
+./scripts/rav-gcp.sh build
 
 # 2) submit
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
 
 # 3) monitor
-bash scripts/gcp_ops.sh status
+./scripts/rav-gcp.sh status
 
 # 4) if preempted / interrupted, resume
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
 ```
 
 ## 11) Troubleshooting
@@ -236,7 +240,7 @@ Job runs but no resume occurs:
   - `gs://<BUCKET>/runs/<RUN_ID>/checkpoint_sync/checkpoints/last.pt`
 
 No artifacts in `results/`:
-- Check training wrapper logs and run manifest via `gcp_ops.sh events`.
+- Check training wrapper logs and run manifest via `rav-gcp.sh events`.
 - Ensure training reached final copy stage into `/app/results`.
 
 ## 12) Centralized One-Off Commands
@@ -344,7 +348,7 @@ gcloud storage rsync -r data/processed "gs://${BUCKET}/datasets/chexpert/process
 Wrapper build:
 
 ```bash
-bash scripts/gcp_build_image.sh
+./scripts/rav-gcp.sh build
 ```
 
 Direct Cloud Build with explicit staging dir:
@@ -373,7 +377,7 @@ docker buildx build \
 ### Launch and Resume
 
 ```bash
-bash scripts/gcp_submit_primary.sh --dry-run
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001  # resume
+./scripts/rav-gcp.sh submit --dry-run
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001  # resume
 ```

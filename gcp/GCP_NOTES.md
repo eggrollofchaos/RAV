@@ -21,15 +21,15 @@ gcloud config list
 rg -n '^(PROJECT|REGION|SA|BUCKET|IMAGE|RUNNER_DIR|GPU_TIMEOUT_SEC|POLL_INTERVAL|PROGRESS_STALL_POLLS)=' gcp/rav_spot.env
 
 # build image
-bash scripts/gcp_build_image.sh
+./scripts/rav-gcp.sh build
 
 # submit
 RUN_ID="rav-chexpert-$(date -u +%Y%m%d-%H%M%S)"
-bash scripts/gcp_submit_primary.sh --run-id "$RUN_ID"
+./scripts/rav-gcp.sh submit --run-id "$RUN_ID"
 
 # monitor
-bash scripts/gcp_ops.sh status --run-id "$RUN_ID"
-bash scripts/gcp_ops.sh serial --run-id "$RUN_ID" 200
+./scripts/rav-gcp.sh status --run-id "$RUN_ID"
+./scripts/rav-gcp.sh serial --run-id "$RUN_ID" 200
 ```
 
 ## 2) Common Failure Patterns
@@ -56,7 +56,7 @@ Root cause:
 Fix applied in `RAV`:
 - `.gcloudignore` now includes:
   - `!gcp/state_transitions.json`
-- `gcp_build_image.sh` delegates to `spotctl build`, whose staged-source fallback uploads full source context from repo root.
+- `rav-gcp.sh build` delegates to `spotctl build`, whose staged-source fallback uploads full source context from repo root.
 
 Quick verification:
 ```bash
@@ -197,7 +197,7 @@ Useful labels in list output:
 
 ## 5) Stop/Restart Semantics
 
-- `bash scripts/gcp_ops.sh delete --run-id <RUN_ID>` writes `.stop` then deletes VM.
+- `./scripts/rav-gcp.sh delete --run-id <RUN_ID>` writes `.stop` then deletes VM.
 - Deleting VM directly without `.stop` can allow auto-restart.
 - `.stop` location:
   - `gs://<BUCKET>/runs/<RUN_ID>/.stop`
@@ -219,16 +219,16 @@ gcloud compute instances list --project=<expected-project>
 
 ```bash
 # run summary (manifest/config/heartbeat/instance history)
-bash scripts/gcp_ops.sh status --run-id <RUN_ID>
+./scripts/rav-gcp.sh status --run-id <RUN_ID>
 
 # cloud system events
-bash scripts/gcp_ops.sh events --run-id <RUN_ID> --since 24h
+./scripts/rav-gcp.sh events --run-id <RUN_ID> --since 24h
 
 # serial startup and container stdout/stderr
-bash scripts/gcp_ops.sh serial --run-id <RUN_ID> 250
+./scripts/rav-gcp.sh serial --run-id <RUN_ID> 250
 
 # list all runner VMs
-bash scripts/gcp_ops.sh list all
+./scripts/rav-gcp.sh list all
 ```
 
 ## 8) External Runner Fixes Applied
@@ -255,7 +255,8 @@ In `../gcp-spot-runner` (see its `CHANGELOG.md` for full details):
 
 In `RAV`:
 - `gcp/entrypoint.sh` decodes base64 job command metadata.
-- `scripts/gcp_build_image.sh` hardened build fallback behavior.
+- `scripts/rav-gcp.sh` is the canonical operator wrapper over `scripts/gcp_*.sh`.
+- `scripts/gcp_build_image.sh` remains a thin build wrapper.
 - `scripts/gcp_runner_common.sh` includes `GPU_TIMEOUT_SEC` default/propagation.
 
 ## 9) Operational Commands Quick Reference
@@ -264,42 +265,42 @@ In `RAV`:
 
 ```bash
 # Submit a new run (auto-generates RUN_ID)
-bash scripts/gcp_submit_primary.sh
+./scripts/rav-gcp.sh submit
 
 # Submit reusing existing image (skip Cloud Build)
-bash scripts/gcp_submit_primary.sh --skip-build
+./scripts/rav-gcp.sh submit --skip-build
 
 # Kill ALL runner VMs and submit fresh
-bash scripts/gcp_submit_primary.sh --skip-build --cleanup-all --yes
+./scripts/rav-gcp.sh submit --skip-build --cleanup-all --yes
 
 # Resume a previous run (same RUN_ID = downloads last.pt)
-bash scripts/gcp_submit_primary.sh --run-id <RUN_ID>
+./scripts/rav-gcp.sh submit --run-id <RUN_ID>
 ```
 
 ### Kill a stuck VM
 
 ```bash
-# Option A: ops.sh safe stop (writes .stop + deletes VM)
-bash scripts/gcp_ops.sh delete --yes
+# Option A: rav-gcp safe stop (writes .stop + deletes VM)
+./scripts/rav-gcp.sh delete --yes
 
 # Option B: direct gcloud (does NOT write .stop — may auto-restart)
 gcloud compute instances list --project=rav-ai-488706
 gcloud compute instances delete <VM_NAME> --zone=us-east1-c --project=rav-ai-488706 --quiet
 ```
 
-Note: `gcp_submit_primary.sh` Phase 0 only cleans up VMs matching the **same
+Note: `rav-gcp.sh submit` only cleans up VMs matching the **same
 RUN_ID label**. A new submit won't kill VMs from a prior run. Use `--cleanup-all`
-or `gcp_ops.sh delete` to kill VMs from other runs first.
+or `rav-gcp.sh delete` to kill VMs from other runs first.
 
 ### Monitor
 
 ```bash
-bash scripts/gcp_ops.sh status                    # manifest + heartbeat summary
-bash scripts/gcp_ops.sh serial 200                # last 200 lines of serial console
-bash scripts/gcp_ops.sh events --since 24h        # cloud system events
-bash scripts/gcp_ops.sh list all                   # all runner VMs
-bash scripts/gcp_ops.sh watch 60                   # auto-refresh every 60s
-bash scripts/gcp_monitor.sh --single --pin-run-id  # tmux monitor workspace
+./scripts/rav-gcp.sh status                       # manifest + heartbeat summary
+./scripts/rav-gcp.sh serial 200                   # last 200 lines of serial console
+./scripts/rav-gcp.sh events --since 24h           # cloud system events
+./scripts/rav-gcp.sh list all                     # all runner VMs
+./scripts/rav-gcp.sh watch 60                     # auto-refresh every 60s
+./scripts/rav-gcp.sh monitor --single --pin-run-id  # tmux monitor workspace
 ```
 
 ### Cloud Logging (for deeper serial output)
@@ -349,7 +350,7 @@ Run investigated:
   - `instances/1.json` created at `2026-02-28T09:17:03Z`
 
 Preemption verdict:
-- `bash scripts/gcp_ops.sh preempt --run-id rav-chexpert-20260228-073711 --since 72h`
+- `./scripts/rav-gcp.sh preempt --run-id rav-chexpert-20260228-073711 --since 72h`
   returned no preemption events.
 - This failure mode was app-level/container exit, not spot preemption.
 
@@ -386,7 +387,7 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.20-rav-disk-default-on` (`src/rav_chest/version.py`)
+- `RAV` app version: `v0.2.21-rav-unified-gcp-cli` (`src/rav_chest/version.py`)
 - `gcp-spot-runner` runner version: `v0.6.1-cos-disk-mount-default` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.

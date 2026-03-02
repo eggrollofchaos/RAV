@@ -17,11 +17,13 @@ Added:
   - `tests/bats/test_runner_adapter.bats` verifies `run_monitor_command` delegates to `spotctl monitor --profile rav --config ...` with passthrough args.
   - `tests/bats/test_runner_adapter.bats` verifies `gcp_build_image.sh` delegates primary build execution through shared `run_build_command`.
   - `tests/bats/test_runner_adapter.bats` verifies `gcp_monitor.sh` delegates through shared `run_monitor_command`.
+  - `tests/bats/test_runner_adapter.bats` verifies unified `scripts/rav-gcp.sh` command dispatch/aliases for submit/build/monitor/ops flows.
   - `tests/bats/test_state_helpers_wrapper.bats` verifies `gcp/state_helpers.sh` resolves and sources shared `gcp-spot-runner/state_helpers.sh`.
   - `tests/bats/test_state_transitions_parity.bats` verifies `gcp/state_transitions.json` hash matches `gcp-spot-runner/cloud_reconciler/state_transitions.json`.
   - `tests/bats/test_version_parity.bats` verifies app-version references stay aligned across `src/rav_chest/version.py`, `README.md`, `gcp/GCP_NOTES.md`, and unreleased changelog entries; also checks runner-lineage version parity across those docs.
   - `.github/workflows/gcp-adapter-tests.yml` runs RAV adapter BATS suites on push/PR.
   - `scripts/gcp_monitor.sh` thin wrapper for `spotctl monitor --profile rav`.
+  - `scripts/rav-gcp.sh` unified CLI wrapper for RAV GCP operations (`submit`/`poc`/`build`/`monitor`/`ops` + status/event/serial/list/watch/delete/preempt aliases).
 
 Updated:
 - `scripts/gcp_runner_common.sh` now defaults `DATA_DISK_MOUNT_PATH` to `/var/lib/spot-data` (COS writable path) to match runner profile/runtime defaults.
@@ -29,10 +31,16 @@ Updated:
 - `scripts/gcp_build_image.sh` now delegates build execution (including staged-source fallback) through `spotctl build --profile rav`.
 - `gcp/cloud_reconciler/deploy.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical install checks and `spotctl` execution wiring.
 - `tests/bats/test_runner_adapter.bats` now stages a fake shared adapter helper in reconciler-wrapper fixture setup to keep adapter contract coverage aligned with deploy wrapper behavior.
+- `Makefile` GCP targets now route through unified `scripts/rav-gcp.sh` command surface.
+- RAV operator docs now treat `./scripts/rav-gcp.sh` as canonical command entrypoint while preserving `scripts/gcp_*.sh` compatibility wrappers:
+  - `README.md`
+  - `gcp/GETTING_STARTED.md`
+  - `gcp/GCP_NOTES.md`
+  - `docs/CHEST_RUNBOOK.md`
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.1-cos-disk-mount-default` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.20-rav-disk-default-on`.
+- App version to `v0.2.21-rav-unified-gcp-cli`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:

@@ -18,12 +18,16 @@ _setup_temp_submit_wrappers() {
   cp "$REPO_ROOT/scripts/gcp_submit_primary.sh" "$TEMP_REPO/scripts/gcp_submit_primary.sh"
   cp "$REPO_ROOT/scripts/gcp_submit_poc.sh" "$TEMP_REPO/scripts/gcp_submit_poc.sh"
   cp "$REPO_ROOT/scripts/gcp_build_image.sh" "$TEMP_REPO/scripts/gcp_build_image.sh"
+  cp "$REPO_ROOT/scripts/gcp_ops.sh" "$TEMP_REPO/scripts/gcp_ops.sh"
   cp "$REPO_ROOT/scripts/gcp_monitor.sh" "$TEMP_REPO/scripts/gcp_monitor.sh"
+  cp "$REPO_ROOT/scripts/rav-gcp.sh" "$TEMP_REPO/scripts/rav-gcp.sh"
   chmod +x \
     "$TEMP_REPO/scripts/gcp_submit_primary.sh" \
     "$TEMP_REPO/scripts/gcp_submit_poc.sh" \
     "$TEMP_REPO/scripts/gcp_build_image.sh" \
-    "$TEMP_REPO/scripts/gcp_monitor.sh"
+    "$TEMP_REPO/scripts/gcp_ops.sh" \
+    "$TEMP_REPO/scripts/gcp_monitor.sh" \
+    "$TEMP_REPO/scripts/rav-gcp.sh"
 }
 
 _make_caffeinate_stub() {
@@ -72,8 +76,25 @@ run_monitor_command() {
   printf 'MONITOR\n' > "$log_path"
   printf '%s\n' "\$@" >> "$log_path"
 }
+run_ops_command() {
+  printf 'OPS\n' > "$log_path"
+  printf '%s\n' "\$@" >> "$log_path"
+}
 SCRIPT
   chmod +x "$TEMP_REPO/scripts/gcp_runner_common.sh"
+}
+
+_write_dispatch_stub() {
+  local target="$1"
+  local log_path="$2"
+  local label="$3"
+  cat > "$target" <<SCRIPT
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$label" > "$log_path"
+printf '%s\n' "\$@" >> "$log_path"
+SCRIPT
+  chmod +x "$target"
 }
 
 @test "run_submit_with_job delegates to spotctl submit with rav profile + job override" {
@@ -301,6 +322,112 @@ SCRIPT
   assert_line --index 0 "MONITOR"
   assert_line --index 1 "--single"
   assert_line --index 2 "--json"
+}
+
+@test "rav-gcp submit/primary dispatch to gcp_submit_primary wrapper" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/rav_gcp_submit.log"
+  _write_dispatch_stub "$TEMP_REPO/scripts/gcp_submit_primary.sh" "$call_log" "PRIMARY"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh submit --run-id rav-cli-1 --dry-run" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "PRIMARY"
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-cli-1"
+  assert_line --index 3 "--dry-run"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh primary --run-id rav-cli-2 --no-gpu" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "PRIMARY"
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-cli-2"
+  assert_line --index 3 "--no-gpu"
+}
+
+@test "rav-gcp poc/build/monitor aliases dispatch to corresponding wrappers" {
+  _setup_temp_submit_wrappers
+
+  local poc_log="$BATS_TEST_TMPDIR/rav_gcp_poc.log"
+  local build_log="$BATS_TEST_TMPDIR/rav_gcp_build.log"
+  local monitor_log="$BATS_TEST_TMPDIR/rav_gcp_monitor.log"
+  _write_dispatch_stub "$TEMP_REPO/scripts/gcp_submit_poc.sh" "$poc_log" "POC"
+  _write_dispatch_stub "$TEMP_REPO/scripts/gcp_build_image.sh" "$build_log" "BUILD"
+  _write_dispatch_stub "$TEMP_REPO/scripts/gcp_monitor.sh" "$monitor_log" "MONITOR"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh poc --run-id rav-poc-cli-1 --dry-run" 2>&1
+  assert_success
+  run cat "$poc_log"
+  assert_success
+  assert_line --index 0 "POC"
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-poc-cli-1"
+  assert_line --index 3 "--dry-run"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh build --dry-run" 2>&1
+  assert_success
+  run cat "$build_log"
+  assert_success
+  assert_line --index 0 "BUILD"
+  assert_line --index 1 "--dry-run"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh monitor --single --json" 2>&1
+  assert_success
+  run cat "$monitor_log"
+  assert_success
+  assert_line --index 0 "MONITOR"
+  assert_line --index 1 "--single"
+  assert_line --index 2 "--json"
+}
+
+@test "rav-gcp ops aliases dispatch through gcp_ops wrapper" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/rav_gcp_ops.log"
+  _write_dispatch_stub "$TEMP_REPO/scripts/gcp_ops.sh" "$call_log" "OPS"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh ops status --run-id rav-ops-1" 2>&1
+  assert_success
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "OPS"
+  assert_line --index 1 "status"
+  assert_line --index 2 "--run-id"
+  assert_line --index 3 "rav-ops-1"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh events --run-id rav-ops-2 --since 12h" 2>&1
+  assert_success
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "OPS"
+  assert_line --index 1 "events"
+  assert_line --index 2 "--run-id"
+  assert_line --index 3 "rav-ops-2"
+  assert_line --index 4 "--since"
+  assert_line --index 5 "12h"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh delete --run-id rav-ops-3 --yes" 2>&1
+  assert_success
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "OPS"
+  assert_line --index 1 "delete"
+  assert_line --index 2 "--run-id"
+  assert_line --index 3 "rav-ops-3"
+  assert_line --index 4 "--yes"
+}
+
+@test "rav-gcp unknown command exits non-zero with usage hint" {
+  _setup_temp_submit_wrappers
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh definitely-unknown" 2>&1
+  assert_failure
+  assert_output --partial "Unknown command: definitely-unknown"
+  assert_output --partial "Run './scripts/rav-gcp.sh help' for usage."
 }
 
 @test "gcp_submit_primary re-execs through caffeinate guard with _SPOT_CAFFEINATED" {

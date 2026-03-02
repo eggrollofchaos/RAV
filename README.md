@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.20-rav-disk-default-on`
+Current app version: `v0.2.21-rav-unified-gcp-cli`
 Spot runner lineage version: `gcp-spot-runner v0.6.1-cos-disk-mount-default`
 
 Changelog: `CHANGELOG.md`
@@ -385,7 +385,7 @@ Core files:
 15. `scripts/check_chest_data_sanity.py`
 16. `Makefile`
 17. `src/rav_chest/llm.py` + `scripts/llm_wrapper.py` (OpenAI API wrapper)
-18. `gcp/` + `scripts/gcp_*.sh` (GCP spot-runner adapter)
+18. `gcp/` + `scripts/rav-gcp.sh` + `scripts/gcp_*.sh` (GCP spot-runner adapter; unified CLI + thin wrappers)
 
 Track-specific requirements:
 1. Shared (both tracks):
@@ -499,34 +499,35 @@ cp gcp/rav_spot.env.example gcp/rav_spot.env
 # optional: set PROGRESS_STALL_POLLS so (POLL_INTERVAL * PROGRESS_STALL_POLLS) >= GPU_TIMEOUT_SEC
 
 # 2) build and push training image
-bash scripts/gcp_build_image.sh
+./scripts/rav-gcp.sh build
 
 # 3) submit spot jobs
-bash scripts/gcp_submit_primary.sh
-bash scripts/gcp_submit_poc.sh
+./scripts/rav-gcp.sh submit
+./scripts/rav-gcp.sh poc
 
 # resume a previous run by reusing the same run id
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
-bash scripts/gcp_submit_poc.sh --run-id rav-poc-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
+./scripts/rav-gcp.sh poc --run-id rav-poc-001
 
 # 4) check status/events
-bash scripts/gcp_ops.sh status
-bash scripts/gcp_ops.sh events --since 24h
+./scripts/rav-gcp.sh status
+./scripts/rav-gcp.sh events --since 24h
 
 # 5) tmux monitor workspace
-bash scripts/gcp_monitor.sh --single --pin-run-id
+./scripts/rav-gcp.sh monitor --single --pin-run-id
 ```
 
 Notes:
 1. Yes, Docker is required for this path (image build + VM container launch).
-2. `gcp_build_image.sh` now routes build execution via `spotctl build --profile rav`, including runner-owned staged-source fallback.
-3. Wrappers default to `--skip-build` on spot submit, so build image first with `gcp_build_image.sh`.
-4. `gcp_monitor.sh` is the thin monitor wrapper over `spotctl monitor --profile rav`.
-5. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC tracks.
-6. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
-7. On restart with the same `RUN_ID`, wrapper auto-downloads `last.pt` and resumes via `--resume-checkpoint`.
-8. Wrapper copies `outputs/...` into `/app/results/...` at run end for runner artifact upload.
-9. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then retry `bash scripts/gcp_build_image.sh`.
-10. If staged-source fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account named in the error.
-11. On COS with persistent disk enabled, use a writable host mount path:
+2. `scripts/rav-gcp.sh` is the canonical operator entrypoint; `scripts/gcp_*.sh` remain thin wrappers for compatibility and direct calls.
+3. `gcp_build_image.sh` routes build execution via `spotctl build --profile rav`, including runner-owned staged-source fallback.
+4. Wrapper submits default to `--skip-build`, so build image first with `./scripts/rav-gcp.sh build` (or explicit `scripts/gcp_build_image.sh`).
+5. `gcp_monitor.sh` is the thin monitor wrapper over `spotctl monitor --profile rav`.
+6. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC tracks.
+7. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
+8. On restart with the same `RUN_ID`, wrapper auto-downloads `last.pt` and resumes via `--resume-checkpoint`.
+9. Wrapper copies `outputs/...` into `/app/results/...` at run end for runner artifact upload.
+10. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then retry `./scripts/rav-gcp.sh build`.
+11. If staged-source fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account named in the error.
+12. On COS with persistent disk enabled, use a writable host mount path:
    `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).

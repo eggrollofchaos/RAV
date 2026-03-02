@@ -14,7 +14,7 @@ IMAGE ?=
 	sanity-primary sanity-poc \
 	eta-primary eta-poc \
 	eta-primary-watch eta-poc-watch \
-	gcp-build-image gcp-submit-primary gcp-submit-poc gcp-ops
+	gcp gcp-build-image gcp-submit-primary gcp-submit-poc gcp-ops
 
 help:
 	@echo "Targets:"
@@ -36,6 +36,7 @@ help:
 	@echo "  make gcp-submit-primary  # Submit primary (CheXpert) spot run via gcp-spot-runner"
 	@echo "  make gcp-submit-poc      # Submit POC spot run via gcp-spot-runner"
 	@echo "  make gcp-ops ARGS='...'  # Pass-through ops command (default: status)"
+	@echo "  make gcp CMD='status'    # Unified rav-gcp wrapper command"
 
 install:
 	$(PYTHON) -m pip install --upgrade pip
@@ -87,14 +88,21 @@ eta-primary-watch:
 eta-poc-watch:
 	$(PYTHON) scripts/monitor_training_eta.py --config $(POC_CONFIG) --watch --interval-seconds 10
 
+gcp:
+	@if [ -z "$(CMD)" ]; then \
+		echo "Usage: make gcp CMD='status|submit --run-id rav-...|events --since 24h'"; \
+		exit 1; \
+	fi
+	bash scripts/rav-gcp.sh $(CMD)
+
 gcp-build-image:
-	bash scripts/gcp_build_image.sh
+	bash scripts/rav-gcp.sh build
 
 gcp-submit-primary:
-	bash scripts/gcp_submit_primary.sh
+	bash scripts/rav-gcp.sh submit
 
 gcp-submit-poc:
-	bash scripts/gcp_submit_poc.sh
+	bash scripts/rav-gcp.sh poc
 
 gcp-ops:
-	bash scripts/gcp_ops.sh $(ARGS)
+	bash scripts/rav-gcp.sh ops $(ARGS)

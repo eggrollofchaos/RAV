@@ -265,35 +265,36 @@ cp gcp/rav_spot.env.example gcp/rav_spot.env
 
 Build image (required):
 ```bash
-bash scripts/gcp_build_image.sh
+./scripts/rav-gcp.sh build
 ```
 
 Submit spot jobs:
 ```bash
-bash scripts/gcp_submit_primary.sh
-bash scripts/gcp_submit_poc.sh
+./scripts/rav-gcp.sh submit
+./scripts/rav-gcp.sh poc
 ```
 
 Resume a previous run by reusing the same run ID:
 ```bash
-bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
-bash scripts/gcp_submit_poc.sh --run-id rav-poc-001
+./scripts/rav-gcp.sh submit --run-id rav-chexpert-001
+./scripts/rav-gcp.sh poc --run-id rav-poc-001
 ```
 
 Ops/status:
 ```bash
-bash scripts/gcp_ops.sh status
-bash scripts/gcp_ops.sh list
-bash scripts/gcp_ops.sh events --since 24h
+./scripts/rav-gcp.sh status
+./scripts/rav-gcp.sh list
+./scripts/rav-gcp.sh events --since 24h
 ```
 
 Notes:
 1. Docker is required for this integration (cloud build + containerized VM execution).
-2. Wrapper submit scripts force `--skip-build`; build/push image first.
-3. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC.
-4. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
-5. On restart with the same `RUN_ID`, wrapper downloads `last.pt` and resumes via `--resume-checkpoint`.
-6. Wrapper job commands copy relevant `outputs/...` into `/app/results/...` so runner upload picks them up.
-7. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then rerun `bash scripts/gcp_build_image.sh`.
-8. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account shown in the error.
-9. On COS with persistent disk enabled, use `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).
+2. `scripts/rav-gcp.sh` is the canonical operator entrypoint; `scripts/gcp_*.sh` remain thin compatibility wrappers.
+3. Wrapper submit scripts force `--skip-build`; build/push image first.
+4. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC.
+5. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
+6. On restart with the same `RUN_ID`, wrapper downloads `last.pt` and resumes via `--resume-checkpoint`.
+7. Wrapper job commands copy relevant `outputs/...` into `/app/results/...` so runner upload picks them up.
+8. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then rerun `./scripts/rav-gcp.sh build`.
+9. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account shown in the error.
+10. On COS with persistent disk enabled, use `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).
