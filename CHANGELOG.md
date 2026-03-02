@@ -15,6 +15,10 @@ Updated:
   - `gcp/GCP_NOTES.md`
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
+Changed:
+- Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
+- `tests/bats/test_caffeinate.bats` now validates only RAV wrapper scripts; shared runner contracts are now validated in `gcp-spot-runner/tests/bats/`.
+
 ## v0.2.13-profile-hook-runtime - 2026-03-02
 
 Updated:
