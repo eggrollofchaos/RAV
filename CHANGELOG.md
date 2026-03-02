@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+Added:
+- Adapter contract tests for shared runner delegation:
+  - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
+  - `tests/bats/test_runner_adapter.bats` verifies `gcp/cloud_reconciler/deploy.sh` delegates to `spotctl reconciler deploy` with expected profile/default args.
+
+Updated:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.5-monitor-convergence` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+
 ## v0.2.13-profile-hook-runtime - 2026-03-02
 
 Updated:
