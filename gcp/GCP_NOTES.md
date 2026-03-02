@@ -208,6 +208,9 @@ bash scripts/gcp_ops.sh list all
 ## 8) External Runner Fixes Applied
 
 In `../gcp-spot-runner` (see its `CHANGELOG.md` for full details):
+- `spotctl` (primary CLI)
+  - `submit`/`ops`/`monitor` command surface now fronted by `python3 -m spotctl`
+  - `submit.sh` and `ops.sh` are compatibility shims over `spotctl`
 - `startup.sh`
   - GPU driver install via `cos-extensions install gpu` (COS doesn't auto-install)
   - Volume-mount GPU passthrough (neither `--gpus all` nor `--runtime=nvidia` works on COS)
@@ -349,9 +352,11 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.9-reconciler-centralized-wrapper` (`src/rav_chest/version.py`)
+- `RAV` app version: `v0.2.10-spotctl-direct-wrapper` (`src/rav_chest/version.py`)
 - `gcp-spot-runner` runner version: `v0.5.0-spotctl-cli-shims` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
+- Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with `SPOT_CONFIG_PATH` (no temp symlinked runner script execution).
+- Reconciler deploy path: `RAV/gcp/cloud_reconciler/deploy.sh` now delegates through `python3 -m spotctl reconciler deploy`.
 
 Primary docs by repo:
 - `RAV`:

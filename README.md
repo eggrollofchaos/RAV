@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.9-reconciler-centralized-wrapper`
+Current app version: `v0.2.10-spotctl-direct-wrapper`
 Spot runner lineage version: `gcp-spot-runner v0.5.0-spotctl-cli-shims`
 
 Changelog: `CHANGELOG.md`

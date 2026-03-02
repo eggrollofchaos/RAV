@@ -4,8 +4,16 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v0.2.10-spotctl-direct-wrapper - 2026-03-02
+
 Updated:
-- Runner lineage docs to `gcp-spot-runner v0.5.0-spotctl-cli-shims` in:
+- `scripts/gcp_runner_common.sh` now delegates submit/ops directly to `python3 -m spotctl` with `SPOT_CONFIG_PATH`, instead of temp symlinked runner script execution.
+- `gcp/cloud_reconciler/deploy.sh` now delegates via shared runner interface:
+  - `python3 -m spotctl reconciler deploy`
+  instead of invoking runner deploy internals directly.
+- Runner install checks now validate `spotctl` + legacy backend files in `gcp-spot-runner`.
+- App version to `v0.2.10-spotctl-direct-wrapper`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.0-spotctl-cli-shims` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 

@@ -104,8 +104,9 @@ check_required_spot_vars() {
 
 check_runner_install() {
   local required=(
-    submit.sh
-    ops.sh
+    spotctl/__main__.py
+    submit_legacy.sh
+    ops_legacy.sh
     lib.sh
     startup.sh
   )
@@ -117,6 +118,23 @@ check_runner_install() {
       exit 1
     fi
   done
+}
+
+run_spotctl_with_config() {
+  local config_path="$1"
+  shift
+
+  set +e
+  (
+    cd "${RUNNER_DIR}"
+    env \
+      SPOT_CONFIG_PATH="${config_path}" \
+      PYTHONPATH="${RUNNER_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
+      python3 -m spotctl "$@"
+  )
+  local status=$?
+  set -e
+  return "$status"
 }
 
 _emit_var() {
@@ -182,15 +200,8 @@ run_submit_with_job() {
 
   local tmp_dir
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rav-spot-submit-XXXXXX")"
-
-  local file
-  for file in submit.sh lib.sh startup.sh cloudbuild.yaml entrypoint.sh Dockerfile; do
-    if [[ -f "${RUNNER_DIR}/${file}" ]]; then
-      ln -s "${RUNNER_DIR}/${file}" "${tmp_dir}/${file}"
-    fi
-  done
-
-  write_runner_config "${tmp_dir}/config.env" "$job_command"
+  local config_path="${tmp_dir}/config.env"
+  write_runner_config "${config_path}" "$job_command"
 
   local args=("$@")
   local has_skip_build=false
@@ -205,13 +216,8 @@ run_submit_with_job() {
     args=(--skip-build "${args[@]}")
   fi
 
-  set +e
-  (
-    cd "$tmp_dir"
-    ./submit.sh "${args[@]}"
-  )
+  run_spotctl_with_config "${config_path}" submit "${args[@]}"
   local status=$?
-  set -e
   rm -rf "$tmp_dir"
   return "$status"
 }
@@ -219,26 +225,16 @@ run_submit_with_job() {
 run_ops_command() {
   local tmp_dir
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rav-spot-ops-XXXXXX")"
-
-  local file
-  for file in ops.sh lib.sh; do
-    ln -s "${RUNNER_DIR}/${file}" "${tmp_dir}/${file}"
-  done
-
-  write_runner_config "${tmp_dir}/config.env" "${JOB_COMMAND:-echo noop}"
+  local config_path="${tmp_dir}/config.env"
+  write_runner_config "${config_path}" "${JOB_COMMAND:-echo noop}"
 
   local args=("$@")
   if [[ ${#args[@]} -eq 0 ]]; then
     args=(status)
   fi
 
-  set +e
-  (
-    cd "$tmp_dir"
-    ./ops.sh "${args[@]}"
-  )
+  run_spotctl_with_config "${config_path}" ops "${args[@]}"
   local status=$?
-  set -e
   rm -rf "$tmp_dir"
   return "$status"
 }
