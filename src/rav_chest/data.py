@@ -3,11 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Sequence
 
+import logging
 import pandas as pd
 import torch
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from torch.utils.data import Dataset
 from torchvision import transforms
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_LABELS: List[str] = [
@@ -39,6 +42,14 @@ def build_transform(image_size: int) -> transforms.Compose:
             ),
         ]
     )
+
+
+def skip_none_collate(batch):
+    """Filter out None samples (corrupt images) and collate the rest."""
+    batch = [item for item in batch if item is not None]
+    if not batch:
+        return None
+    return torch.utils.data.dataloader.default_collate(batch)
 
 
 class CheXpertDataset(Dataset):
@@ -87,7 +98,11 @@ class CheXpertDataset(Dataset):
     def __getitem__(self, idx: int):
         row = self.df.iloc[idx]
         image_path = self._resolve_path(str(row[self.path_column]))
-        image = Image.open(image_path).convert("RGB")
+        try:
+            image = Image.open(image_path).convert("RGB")
+        except (UnidentifiedImageError, OSError) as exc:
+            logger.warning("Skipping corrupt image %s: %s", image_path, exc)
+            return None
         image_tensor = self.transform(image)
 
         label_values = [self._normalize_label(row[col]) for col in self.label_columns]

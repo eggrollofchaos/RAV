@@ -19,7 +19,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from rav_chest.data import CheXpertDataset, DEFAULT_LABELS
+from rav_chest.data import CheXpertDataset, DEFAULT_LABELS, skip_none_collate
 from rav_chest.metrics import compute_metrics, per_class_thresholds, sigmoid
 from rav_chest.models import build_model
 from rav_chest.utils import ensure_dir, load_yaml, save_json, select_device, set_seed
@@ -69,6 +69,7 @@ def make_loaders(cfg: Dict[str, object], class_names: List[str], device: torch.d
         shuffle=True,
         num_workers=int(cfg["training"]["num_workers"]),
         pin_memory=pin,
+        collate_fn=skip_none_collate,
     )
     val_loader = DataLoader(
         val_ds,
@@ -76,6 +77,7 @@ def make_loaders(cfg: Dict[str, object], class_names: List[str], device: torch.d
         shuffle=False,
         num_workers=int(cfg["training"]["num_workers"]),
         pin_memory=pin,
+        collate_fn=skip_none_collate,
     )
     return train_loader, val_loader
 
@@ -92,7 +94,10 @@ def eval_loop(
     labels_all: List[np.ndarray] = []
 
     with torch.no_grad():
-        for images, labels, _ in loader:
+        for batch in loader:
+            if batch is None:
+                continue
+            images, labels, _ = batch
             images = images.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
             logits = model(images)
@@ -249,7 +254,10 @@ def main() -> None:
             train_losses: List[float] = []
 
             progress = tqdm(train_loader, desc=f"Epoch {epoch}/{epochs}", leave=False)
-            for images, labels, _ in progress:
+            for batch in progress:
+                if batch is None:
+                    continue
+                images, labels, _ = batch
                 images = images.to(device, non_blocking=True)
                 labels = labels.to(device, non_blocking=True)
 

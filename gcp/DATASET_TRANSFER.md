@@ -152,3 +152,48 @@ Ensure the VM was created with `--network-interface=network=default,stack-type=I
 
 **SAS URL expired:**
 Generate a fresh one from the Stanford AIMI download page. They typically expire after 30 days.
+
+**Zero-byte files after `gcloud storage rsync` upload:**
+Observed 2026-03-02: the initial local-to-GCS rsync of CheXpert Small silently
+uploaded many files as 0 bytes while the originals were valid (e.g. 57 KB).
+Sampled prevalence across the dataset:
+
+| Range        | Zero-byte | Total | Rate |
+|-------------|-----------|-------|------|
+| patient001* | 65        | 450   | 14%  |
+| patient030* | 22        | 448   | 4%   |
+| patient060* | 52        | 489   | 10%  |
+
+Estimated ~9% of all 223K files (~20,000 images) affected. Corruption is
+clustered by patient (all studies for a patient are bad, neighbors are fine),
+suggesting the parallel upload hit file descriptor limits or transient I/O
+failures during bursty concurrent writes.
+
+`gcloud storage rsync` does not retry or report these as errors by default.
+
+To detect:
+```bash
+# Count 0-byte objects in the bucket
+gsutil ls -rl gs://rav-ai-train-artifacts-488706/datasets/chexpert/raw/ \
+  | awk '$1 == 0 {n++} END {print n, "zero-byte files"}'
+```
+
+To fix — re-sync from local with checksum verification:
+```bash
+gcloud storage rsync -r -c data/raw/chexpert \
+  gs://rav-ai-train-artifacts-488706/datasets/chexpert/raw
+```
+The `-c` flag forces checksum comparison (instead of default size+mtime) so
+every 0-byte object will be detected as mismatched and re-uploaded. Only the
+~20K bad files need uploading, so this should be much faster than the original
+sync.
+
+After re-syncing the bucket, force a fresh pull on the VM:
+```bash
+# Submit with --force-sync (or delete the cache marker on the data disk)
+# The VM-side rsync will detect size mismatches and re-download the fixed files
+```
+
+The dataloader (`rav_chest/data.py`) now skips corrupt/empty images at runtime
+with a warning, so training won't crash on bad files. But re-uploading is the
+proper fix to avoid silently dropping ~9% of training data.
