@@ -21,11 +21,11 @@ Added:
   - `scripts/gcp_monitor.sh` thin wrapper for `spotctl monitor --profile rav`.
 
 Updated:
-- `scripts/gcp_build_image.sh` now routes primary build execution through `spotctl build --profile rav` (keeps staged/local fallback behavior).
-- Runner lineage docs synchronized to `gcp-spot-runner v0.5.8-adapter-common-lib` in:
+- `scripts/gcp_build_image.sh` now delegates build execution (including staged-source fallback) through `spotctl build --profile rav`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.9-build-staged-fallback` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.15-shared-adapter-lib`.
+- App version to `v0.2.16-build-fallback-centralized`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:

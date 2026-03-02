@@ -254,7 +254,9 @@ SCRIPT
   assert_line --index 4 "$TEMP_REPO/gcp/cloudbuild.rav.yaml"
   assert_line --index 5 "--image"
   assert_line --index 6 "us-east1-docker.pkg.dev/demo/rav/train:latest"
-  assert_line --index 7 "--dry-run"
+  assert_line --index 7 "--gcs-source-staging-dir"
+  assert_line --index 8 --partial "/cloudbuild/source"
+  assert_line --index 9 "--dry-run"
 }
 
 @test "gcp_monitor wrapper delegates to shared run_monitor_command" {

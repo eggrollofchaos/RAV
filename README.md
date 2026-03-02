@@ -4,8 +4,8 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.15-shared-adapter-lib`
-Spot runner lineage version: `gcp-spot-runner v0.5.8-adapter-common-lib`
+Current app version: `v0.2.16-build-fallback-centralized`
+Spot runner lineage version: `gcp-spot-runner v0.5.9-build-staged-fallback`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`
@@ -519,7 +519,7 @@ bash scripts/gcp_monitor.sh --single --pin-run-id
 
 Notes:
 1. Yes, Docker is required for this path (image build + VM container launch).
-2. `gcp_build_image.sh` now routes primary build execution via `spotctl build --profile rav` (retaining staged/local fallback behavior).
+2. `gcp_build_image.sh` now routes build execution via `spotctl build --profile rav`, including runner-owned staged-source fallback.
 3. Wrappers default to `--skip-build` on spot submit, so build image first with `gcp_build_image.sh`.
 4. `gcp_monitor.sh` is the thin monitor wrapper over `spotctl monitor --profile rav`.
 5. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC tracks.
@@ -527,6 +527,6 @@ Notes:
 7. On restart with the same `RUN_ID`, wrapper auto-downloads `last.pt` and resumes via `--resume-checkpoint`.
 8. Wrapper copies `outputs/...` into `/app/results/...` at run end for runner artifact upload.
 9. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then retry `bash scripts/gcp_build_image.sh`.
-10. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account named in the error.
+10. If staged-source fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account named in the error.
 11. On COS with persistent disk enabled, use a writable host mount path:
    `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).

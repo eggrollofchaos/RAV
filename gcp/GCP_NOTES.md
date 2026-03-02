@@ -41,10 +41,9 @@ Observed during `gcloud builds submit` source archiving.
 What helped:
 - Explicit `.gcloudignore` allowlist.
 - Explicit staging dir (`--gcs-source-staging-dir`).
-- Fallback path in `scripts/gcp_build_image.sh`:
+- Runner-owned fallback path via `spotctl build`:
   1) normal Cloud Build submit
-  2) staged tarball + Cloud Build submit
-  3) local `docker buildx --push` (when daemon is available)
+  2) staged-source upload + Cloud Build submit
 
 ### A1) Docker `COPY gcp/state_transitions.json` fails in Cloud Build
 
@@ -57,8 +56,7 @@ Root cause:
 Fix applied in `RAV`:
 - `.gcloudignore` now includes:
   - `!gcp/state_transitions.json`
-- `scripts/gcp_build_image.sh` staged tarball now includes:
-  - `gcp/state_transitions.json`
+- `gcp_build_image.sh` delegates to `spotctl build`, whose staged-source fallback uploads full source context from repo root.
 
 Quick verification:
 ```bash
@@ -388,8 +386,8 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.15-shared-adapter-lib` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.5.8-adapter-common-lib` (`version.py`)
+- `RAV` app version: `v0.2.16-build-fallback-centralized` (`src/rav_chest/version.py`)
+- `gcp-spot-runner` runner version: `v0.5.9-build-staged-fallback` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
 - Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:

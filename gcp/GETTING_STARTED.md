@@ -101,7 +101,7 @@ bash scripts/gcp_build_image.sh
 `gcp_build_image.sh` routes the primary build path through:
 - `python3 -m spotctl build --profile rav --config gcp/rav_spot.env ...`
 
-It uses `gcp/cloudbuild.rav.yaml` and `gcp/Dockerfile.train`, and retains staged/local fallback behavior if the primary build path fails.
+It uses `gcp/cloudbuild.rav.yaml` and `gcp/Dockerfile.train`; staged-source fallback is handled by `spotctl build` if the primary build path fails.
 
 ## 6) Submit training jobs
 
@@ -358,7 +358,7 @@ gcloud builds submit . \
   --gcs-source-staging-dir="gs://${BUCKET}/cloudbuild/source"
 ```
 
-Fallback if `gcloud builds submit` crashes locally:
+If `gcloud builds submit` crashes locally, `spotctl build` will first attempt staged-source fallback automatically. As a manual last resort:
 
 ```bash
 gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
