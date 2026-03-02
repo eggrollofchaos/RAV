@@ -18,6 +18,7 @@ Updated:
 Changed:
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
 - `tests/bats/test_caffeinate.bats` now validates only RAV wrapper scripts; shared runner contracts are now validated in `gcp-spot-runner/tests/bats/`.
+- Removed duplicate shared reconciler Python suites from RAV (`tests/test_reconciler.py`, `tests/test_state_machine.py`); canonical reconciler/state-machine Python tests now live in `gcp-spot-runner/tests/test_reconciler_runtime.py`.
 
 ## v0.2.13-profile-hook-runtime - 2026-03-02
 
