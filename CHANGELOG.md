@@ -4,8 +4,14 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v0.2.11-reconciler-profile-wrapper - 2026-03-02
+
 Updated:
-- Runner lineage refs updated to `gcp-spot-runner v0.5.1-spotctl-profile-runtime` in:
+- `gcp/cloud_reconciler/deploy.sh` now delegates reconciler deploy with explicit shared profile resolution:
+  - `python3 -m spotctl reconciler deploy --profile rav`
+  - optional `--config gcp/rav_spot.env` (or `SPOT_CONFIG_PATH`) for env overlay values.
+- App version to `v0.2.11-reconciler-profile-wrapper`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.2-reconciler-profile-runtime` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 
