@@ -32,7 +32,7 @@ _make_caffeinate_stub() {
   cat > "$bin_dir/caffeinate" <<'CAFFEINATE_STUB'
 #!/usr/bin/env bash
 set -euo pipefail
-printf 'CAFFEINATED=%s\n' "${_SPOT_CAFFEINATED:-${_IXQT_CAFFEINATED:-}}" > "${CAFFEINATE_LOG}"
+printf 'CAFFEINATED=%s\n' "${_SPOT_CAFFEINATED:-}" > "${CAFFEINATE_LOG}"
 printf '%s\n' "$@" >> "${CAFFEINATE_LOG}"
 if [[ "${1:-}" == "-i" ]]; then
   shift
@@ -290,7 +290,7 @@ SCRIPT
   assert_line --index 2 "--json"
 }
 
-@test "gcp_submit_primary re-execs through caffeinate guard with _SPOT_CAFFEINATED compatibility alias" {
+@test "gcp_submit_primary re-execs through caffeinate guard with _SPOT_CAFFEINATED" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_primary_caffeinate.log"
   _write_fake_runner_common "$call_log"
@@ -319,7 +319,7 @@ SCRIPT
   assert_line --index 3 "--dry-run"
 }
 
-@test "gcp_submit_poc re-execs through caffeinate guard with _SPOT_CAFFEINATED compatibility alias" {
+@test "gcp_submit_poc re-execs through caffeinate guard with _SPOT_CAFFEINATED" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_poc_caffeinate.log"
   _write_fake_runner_common "$call_log"

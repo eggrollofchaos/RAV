@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Prevent macOS idle sleep and survive terminal close
-if [[ -z "${_SPOT_CAFFEINATED:-}" && -z "${_IXQT_CAFFEINATED:-}" ]] && command -v caffeinate &>/dev/null; then
-  exec env _SPOT_CAFFEINATED=1 _IXQT_CAFFEINATED=1 caffeinate -i "$0" "$@"
+if [[ -z "${_SPOT_CAFFEINATED:-}" ]] && command -v caffeinate &>/dev/null; then
+  exec env _SPOT_CAFFEINATED=1 caffeinate -i "$0" "$@"
 fi
 trap '' HUP
 

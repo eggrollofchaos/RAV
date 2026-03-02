@@ -7,7 +7,7 @@ All notable changes to this project are documented in this file.
 Added:
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
-- `tests/bats/test_runner_adapter.bats` verifies `gcp_submit_primary.sh` / `gcp_submit_poc.sh` re-exec through `caffeinate` with `_SPOT_CAFFEINATED` guard (plus backward-compatible `_IXQT_CAFFEINATED` alias) in executable wrapper flow.
+- `tests/bats/test_runner_adapter.bats` verifies `gcp_submit_primary.sh` / `gcp_submit_poc.sh` re-exec through `caffeinate` with `_SPOT_CAFFEINATED` guard in executable wrapper flow.
   - `tests/bats/test_runner_adapter.bats` verifies `watch --json` passthrough reaches shared runner ops unchanged.
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_submit_primary.sh` and `scripts/gcp_submit_poc.sh` default job commands invoke `gcp_train_with_checkpoint_sync.sh` with expected config/eval split + sync interval, and that `SYNC_INTERVAL_SEC` overrides are reflected in submit payloads.
   - `tests/bats/test_runner_adapter.bats` verifies `JOB_COMMAND_PRIMARY` / `JOB_COMMAND_POC` override env vars are passed through verbatim to shared-runner submit payloads.
@@ -30,7 +30,7 @@ Updated:
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.1-cos-disk-mount-default` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.18-cos-disk-mount-default`.
+- App version to `v0.2.19-spot-caffeinate-guard`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:
