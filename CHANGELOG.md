@@ -13,6 +13,7 @@ Updated:
 - Runner lineage docs synchronized to `gcp-spot-runner v0.5.5-monitor-convergence` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
+- Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 ## v0.2.13-profile-hook-runtime - 2026-03-02
 
