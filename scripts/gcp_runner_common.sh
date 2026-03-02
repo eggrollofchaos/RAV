@@ -39,7 +39,7 @@ apply_runner_defaults() {
   : "${GPU_TYPE:=nvidia-tesla-t4}"
   : "${BOOT_DISK_SIZE:=100}"
   : "${BOOT_DISK_TYPE:=pd-ssd}"
-  : "${DATA_DISK_ENABLED:=false}"
+  : "${DATA_DISK_ENABLED:=true}"
   : "${DATA_DISK_NAME:=}"
   : "${DATA_DISK_SIZE_GB:=500}"
   : "${DATA_DISK_TYPE:=pd-ssd}"

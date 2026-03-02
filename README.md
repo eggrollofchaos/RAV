@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.19-spot-caffeinate-guard`
+Current app version: `v0.2.20-rav-disk-default-on`
 Spot runner lineage version: `gcp-spot-runner v0.6.1-cos-disk-mount-default`
 
 Changelog: `CHANGELOG.md`

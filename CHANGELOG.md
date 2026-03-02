@@ -8,6 +8,7 @@ Added:
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
 - `tests/bats/test_runner_adapter.bats` verifies `gcp_submit_primary.sh` / `gcp_submit_poc.sh` re-exec through `caffeinate` with `_SPOT_CAFFEINATED` guard in executable wrapper flow.
+  - `tests/bats/test_runner_adapter.bats` verifies `apply_runner_defaults` aligns data-disk defaults with runner profile contract (`DATA_DISK_ENABLED=true`, mount path/device/fs defaults).
   - `tests/bats/test_runner_adapter.bats` verifies `watch --json` passthrough reaches shared runner ops unchanged.
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_submit_primary.sh` and `scripts/gcp_submit_poc.sh` default job commands invoke `gcp_train_with_checkpoint_sync.sh` with expected config/eval split + sync interval, and that `SYNC_INTERVAL_SEC` overrides are reflected in submit payloads.
   - `tests/bats/test_runner_adapter.bats` verifies `JOB_COMMAND_PRIMARY` / `JOB_COMMAND_POC` override env vars are passed through verbatim to shared-runner submit payloads.
@@ -24,13 +25,14 @@ Added:
 
 Updated:
 - `scripts/gcp_runner_common.sh` now defaults `DATA_DISK_MOUNT_PATH` to `/var/lib/spot-data` (COS writable path) to match runner profile/runtime defaults.
+- `scripts/gcp_runner_common.sh` now defaults `DATA_DISK_ENABLED=true` to match RAV profile/runtime contract.
 - `scripts/gcp_build_image.sh` now delegates build execution (including staged-source fallback) through `spotctl build --profile rav`.
 - `gcp/cloud_reconciler/deploy.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical install checks and `spotctl` execution wiring.
 - `tests/bats/test_runner_adapter.bats` now stages a fake shared adapter helper in reconciler-wrapper fixture setup to keep adapter contract coverage aligned with deploy wrapper behavior.
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.1-cos-disk-mount-default` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.19-spot-caffeinate-guard`.
+- App version to `v0.2.20-rav-disk-default-on`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:

@@ -100,6 +100,19 @@ SCRIPT
   assert_line --index 11 "--no-gpu"
 }
 
+@test "apply_runner_defaults aligns data disk defaults with rav profile contract" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  RUNNER_DIR="$REPO_ROOT/../gcp-spot-runner"
+
+  unset DATA_DISK_ENABLED DATA_DISK_MOUNT_PATH DATA_DISK_DEVICE_NAME DATA_DISK_FS_TYPE DATA_DISK_TYPE DATA_DISK_SIZE_GB
+  apply_runner_defaults
+
+  [ "$DATA_DISK_ENABLED" = "true" ]
+  [ "$DATA_DISK_MOUNT_PATH" = "/var/lib/spot-data" ]
+  [ "$DATA_DISK_DEVICE_NAME" = "spot-data" ]
+  [ "$DATA_DISK_FS_TYPE" = "ext4" ]
+}
+
 @test "run_submit_with_job does not duplicate --skip-build when already provided" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/submit_skip_args.txt"
