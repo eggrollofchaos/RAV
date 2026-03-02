@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+Updated:
+- Runner lineage refs updated to `gcp-spot-runner v0.5.1-spotctl-profile-runtime` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+
 ## v0.2.10-spotctl-direct-wrapper - 2026-03-02
 
 Updated:
