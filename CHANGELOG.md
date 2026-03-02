@@ -19,6 +19,7 @@ Added:
   - `tests/bats/test_runner_adapter.bats` verifies `gcp_monitor.sh` delegates through shared `run_monitor_command`.
   - `tests/bats/test_runner_adapter.bats` verifies unified `scripts/rav-gcp.sh` command dispatch/aliases for submit/build/monitor/ops flows.
   - `tests/bats/test_runner_adapter.bats` verifies `rav-gcp --version` alias dispatch to shared runner version wrapper.
+  - `tests/bats/test_runner_adapter.bats` verifies `rav-gcp -V` short-flag alias dispatch to shared runner version wrapper.
   - `tests/bats/test_state_helpers_wrapper.bats` verifies `gcp/state_helpers.sh` resolves and sources shared `gcp-spot-runner/state_helpers.sh`.
   - `tests/bats/test_state_transitions_parity.bats` verifies `gcp/state_transitions.json` hash matches `gcp-spot-runner/cloud_reconciler/state_transitions.json`.
   - `tests/bats/test_version_parity.bats` verifies app-version references stay aligned across `src/rav_chest/version.py`, `README.md`, `gcp/GCP_NOTES.md`, and unreleased changelog entries; also checks runner-lineage version parity across those docs.

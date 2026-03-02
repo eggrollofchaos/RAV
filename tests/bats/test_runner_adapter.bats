@@ -434,6 +434,13 @@ SCRIPT
   assert_success
   assert_line --index 0 "VERSION"
   [ "${#lines[@]}" -eq 1 ]
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh -V" 2>&1
+  assert_success
+  run cat "$version_log"
+  assert_success
+  assert_line --index 0 "VERSION"
+  [ "${#lines[@]}" -eq 1 ]
 }
 
 @test "rav-gcp ops aliases dispatch through gcp_ops wrapper" {
