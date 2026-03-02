@@ -22,6 +22,7 @@ rg -n '^(PROJECT|REGION|SA|BUCKET|IMAGE|RUNNER_DIR|GPU_TIMEOUT_SEC|POLL_INTERVAL
 
 # build image
 ./scripts/rav-gcp.sh build
+./scripts/rav-gcp.sh version
 
 # submit
 RUN_ID="rav-chexpert-$(date -u +%Y%m%d-%H%M%S)"

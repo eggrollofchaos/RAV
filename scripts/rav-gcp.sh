@@ -23,6 +23,7 @@ Commands:
   poc [ARGS]             Submit POC run
   build [ARGS]           Build/push training image
   monitor [ARGS]         Open tmux monitor workspace (spotctl monitor wrapper)
+  version [ARGS]         Print shared runner CLI version (spotctl version wrapper)
   ops [ARGS]             Pass-through to ops wrapper (default: status)
   status [ARGS]          Alias for: ops status
   serial [ARGS]          Alias for: ops serial
@@ -40,6 +41,7 @@ Examples:
   ./scripts/rav-gcp.sh status --run-id rav-chexpert-001
   ./scripts/rav-gcp.sh events --run-id rav-chexpert-001 --since 24h
   ./scripts/rav-gcp.sh monitor --single --pin-run-id
+  ./scripts/rav-gcp.sh version
 USAGE
 }
 
@@ -59,6 +61,9 @@ main() {
       ;;
     monitor)
       _run_wrapper "gcp_monitor.sh" "$@"
+      ;;
+    version)
+      _run_wrapper "gcp_version.sh" "$@"
       ;;
     ops)
       _run_wrapper "gcp_ops.sh" "$@"

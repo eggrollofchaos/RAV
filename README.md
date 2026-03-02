@@ -512,6 +512,7 @@ cp gcp/rav_spot.env.example gcp/rav_spot.env
 # 4) check status/events
 ./scripts/rav-gcp.sh status
 ./scripts/rav-gcp.sh events --since 24h
+./scripts/rav-gcp.sh version
 
 # 5) tmux monitor workspace
 ./scripts/rav-gcp.sh monitor --single --pin-run-id

@@ -20,6 +20,7 @@ _setup_temp_submit_wrappers() {
   cp "$REPO_ROOT/scripts/gcp_build_image.sh" "$TEMP_REPO/scripts/gcp_build_image.sh"
   cp "$REPO_ROOT/scripts/gcp_ops.sh" "$TEMP_REPO/scripts/gcp_ops.sh"
   cp "$REPO_ROOT/scripts/gcp_monitor.sh" "$TEMP_REPO/scripts/gcp_monitor.sh"
+  cp "$REPO_ROOT/scripts/gcp_version.sh" "$TEMP_REPO/scripts/gcp_version.sh"
   cp "$REPO_ROOT/scripts/rav-gcp.sh" "$TEMP_REPO/scripts/rav-gcp.sh"
   chmod +x \
     "$TEMP_REPO/scripts/gcp_submit_primary.sh" \
@@ -27,6 +28,7 @@ _setup_temp_submit_wrappers() {
     "$TEMP_REPO/scripts/gcp_build_image.sh" \
     "$TEMP_REPO/scripts/gcp_ops.sh" \
     "$TEMP_REPO/scripts/gcp_monitor.sh" \
+    "$TEMP_REPO/scripts/gcp_version.sh" \
     "$TEMP_REPO/scripts/rav-gcp.sh"
 }
 
@@ -54,6 +56,7 @@ cat > "$TEMP_REPO/scripts/gcp_runner_common.sh" <<SCRIPT
 set -euo pipefail
 RAV_ROOT="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 load_rav_spot_env() { :; }
+load_rav_spot_env_optional() { :; }
 apply_runner_defaults() {
   : "\${RUNNER_DIR:=/tmp/fake-runner}"
   : "\${IMAGE:=us-east1-docker.pkg.dev/demo/rav/train:latest}"
@@ -74,6 +77,10 @@ run_build_command() {
 }
 run_monitor_command() {
   printf 'MONITOR\n' > "$log_path"
+  printf '%s\n' "\$@" >> "$log_path"
+}
+run_version_command() {
+  printf 'VERSION\n' > "$log_path"
   printf '%s\n' "\$@" >> "$log_path"
 }
 run_ops_command() {
@@ -240,6 +247,20 @@ SCRIPT
   assert_line --index 7 "--no-attach"
 }
 
+@test "run_version_command delegates to spotctl version" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/version_args.txt"
+  _capture_stub "$captured"
+
+  RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
+  run_version_command
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "/tmp/rav_spot.env"
+  assert_line --index 1 "version"
+}
+
 @test "gcp_submit_primary default job command uses checkpoint sync wrapper" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_primary_default.log"
@@ -324,6 +345,20 @@ SCRIPT
   assert_line --index 2 "--json"
 }
 
+@test "gcp_version wrapper delegates to shared run_version_command" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/version_wrapper.log"
+  _write_fake_runner_common "$call_log"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/gcp_version.sh --help" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "VERSION"
+  assert_line --index 1 "--help"
+}
+
 @test "rav-gcp submit/primary dispatch to gcp_submit_primary wrapper" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/rav_gcp_submit.log"
@@ -356,9 +391,11 @@ SCRIPT
   local poc_log="$BATS_TEST_TMPDIR/rav_gcp_poc.log"
   local build_log="$BATS_TEST_TMPDIR/rav_gcp_build.log"
   local monitor_log="$BATS_TEST_TMPDIR/rav_gcp_monitor.log"
+  local version_log="$BATS_TEST_TMPDIR/rav_gcp_version.log"
   _write_dispatch_stub "$TEMP_REPO/scripts/gcp_submit_poc.sh" "$poc_log" "POC"
   _write_dispatch_stub "$TEMP_REPO/scripts/gcp_build_image.sh" "$build_log" "BUILD"
   _write_dispatch_stub "$TEMP_REPO/scripts/gcp_monitor.sh" "$monitor_log" "MONITOR"
+  _write_dispatch_stub "$TEMP_REPO/scripts/gcp_version.sh" "$version_log" "VERSION"
 
   run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh poc --run-id rav-poc-cli-1 --dry-run" 2>&1
   assert_success
@@ -383,6 +420,13 @@ SCRIPT
   assert_line --index 0 "MONITOR"
   assert_line --index 1 "--single"
   assert_line --index 2 "--json"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh version --help" 2>&1
+  assert_success
+  run cat "$version_log"
+  assert_success
+  assert_line --index 0 "VERSION"
+  assert_line --index 1 "--help"
 }
 
 @test "rav-gcp ops aliases dispatch through gcp_ops wrapper" {

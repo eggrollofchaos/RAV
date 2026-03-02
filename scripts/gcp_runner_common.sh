@@ -9,20 +9,33 @@ RUNNER_DIR_DEFAULT="${RAV_ROOT}/../gcp-spot-runner"
 RAV_GCP_ENV_PATH=""
 RUNNER_ADAPTER_LIB_LOADED="0"
 
-load_rav_spot_env() {
+load_rav_spot_env_optional() {
   local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
   if [[ "${cfg}" != /* ]]; then
     cfg="${RAV_ROOT}/${cfg}"
   fi
   if [[ ! -f "$cfg" ]]; then
-    echo "Missing ${cfg}. Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it." >&2
-    exit 1
+    RAV_GCP_ENV_PATH=""
+    return 0
   fi
   RAV_GCP_ENV_PATH="$(cd "$(dirname "${cfg}")" && pwd)/$(basename "${cfg}")"
   set -a
   # shellcheck disable=SC1090
   source "${RAV_GCP_ENV_PATH}"
   set +a
+}
+
+load_rav_spot_env() {
+  load_rav_spot_env_optional
+  if [[ -n "${RAV_GCP_ENV_PATH}" ]]; then
+    return 0
+  fi
+  local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
+  if [[ "${cfg}" != /* ]]; then
+    cfg="${RAV_ROOT}/${cfg}"
+  fi
+  echo "Missing ${cfg}. Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it." >&2
+  exit 1
 }
 
 apply_runner_defaults() {
@@ -210,4 +223,9 @@ run_monitor_command() {
     --profile rav \
     --config "${config_path}" \
     "${args[@]}"
+}
+
+run_version_command() {
+  local config_path="${RAV_GCP_ENV_PATH:-}"
+  run_spotctl_with_config "${config_path}" version "$@"
 }
