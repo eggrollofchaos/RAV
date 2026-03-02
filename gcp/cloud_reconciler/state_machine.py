@@ -1,116 +1,46 @@
-"""State machine transition validation.
+"""Thin wrapper for shared reconciler state machine implementation.
 
-Loads state_transitions.json and provides can_transition() for Python callers.
-Both this module and gcp/state_helpers.sh load the same canonical file.
+Executes canonical source from:
+  gcp-spot-runner/cloud_reconciler/state_machine.py
 """
 
-import hashlib
-import json
+from __future__ import annotations
+
+import os
+import sys
 from pathlib import Path
 
 
-def _default_transitions_path() -> Path:
-    """Resolve transitions file for both source and flat deploy layouts.
-
-    Source layout:
-      gcp/cloud_reconciler/state_machine.py
-      gcp/state_transitions.json
-
-    Cloud Function staging layout:
-      state_machine.py
-      state_transitions.json
-    """
-    here = Path(__file__).resolve().parent
-    flat_layout = here / "state_transitions.json"
-    if flat_layout.exists():
-        return flat_layout
-    return here.parent / "state_transitions.json"
+def _runner_candidates() -> list[Path]:
+    explicit = os.environ.get("RUNNER_DIR") or os.environ.get("GCP_SPOT_RUNNER_DIR")
+    if explicit:
+        return [Path(explicit).expanduser()]
+    here = Path(__file__).resolve()
+    return [
+        here.parents[3] / "gcp-spot-runner",
+        here.parents[2] / "gcp-spot-runner",
+    ]
 
 
-_TRANSITIONS_PATH = _default_transitions_path()
+def _resolve_shared_state_machine() -> Path:
+    errors: list[str] = []
+    for runner_dir in _runner_candidates():
+        target = runner_dir / "cloud_reconciler" / "state_machine.py"
+        if target.is_file():
+            return target
+        errors.append(f"missing {target}")
 
-VALID_ACTORS = frozenset({"vm", "reconciler", "local", "operator"})
-
-TERMINAL_STATES = frozenset({"COMPLETE", "FAILED", "PARTIAL", "STOPPED"})
-
-# Status.txt compatibility mapping
-STATUS_COMPAT_MAP = {
-    "RUNNING": "RUNNING",
-    "COMPLETE": "COMPLETE",
-    "FAILED": "FAILED",
-    "PARTIAL": "PARTIAL",
-    "PREEMPTED": "PREEMPTED",
-    "ORPHANED": "PREEMPTED",      # Intentional: same semantics from poll loop's perspective
-    "RESTARTING": "RUNNING",       # Poll loop treats as active run
-    "STOPPED": "STOPPED",
-}
+    msg = "\n".join(errors)
+    raise RuntimeError(
+        "Unable to locate shared state machine module. "
+        "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout.\n"
+        f"Details:\n{msg}"
+    )
 
 
-def _load_transitions(path: Path | None = None) -> dict:
-    """Load and return the transitions definition."""
-    p = path or _TRANSITIONS_PATH
-    with open(p) as f:
-        return json.load(f)
+_SHARED_STATE = _resolve_shared_state_machine()
+sys.path.insert(0, str(_SHARED_STATE.parent))
 
-
-def transitions_hash(path: Path | None = None) -> str:
-    """SHA-256 hash of the transitions file for version logging."""
-    p = path or _TRANSITIONS_PATH
-    return hashlib.sha256(p.read_bytes()).hexdigest()
-
-
-def can_transition(
-    from_state: str | None,
-    to_state: str,
-    actor: str,
-    transitions: dict | None = None,
-) -> bool:
-    """Validate a state transition.
-
-    Args:
-        from_state: Current state (None for initial).
-        to_state: Target state.
-        actor: Must be one of VALID_ACTORS.
-        transitions: Pre-loaded transitions dict (optional, loads from file if None).
-
-    Returns:
-        True if transition is allowed.
-
-    Raises:
-        ValueError: If actor is unknown or transition is not allowed.
-    """
-    if actor not in VALID_ACTORS:
-        raise ValueError(f"Unknown actor '{actor}' (valid: {VALID_ACTORS})")
-
-    if transitions is None:
-        transitions = _load_transitions()
-
-    from_key = "null" if from_state is None else from_state
-    edges = transitions.get("edges", {})
-    allowed_targets = edges.get(from_key, [])
-
-    if to_state not in allowed_targets:
-        raise ValueError(f"Transition {from_key} → {to_state} not allowed")
-
-    # Check actor guards
-    guard_key = f"{from_key}:{to_state}"
-    actor_guards = transitions.get("actor_guards", {})
-    if guard_key in actor_guards:
-        allowed_actors = actor_guards[guard_key]
-        if actor not in allowed_actors:
-            raise ValueError(
-                f"Transition {from_key} → {to_state} guarded — "
-                f"actor '{actor}' not in allowed list {allowed_actors}"
-            )
-
-    return True
-
-
-def status_compat(state: str) -> str:
-    """Map state.json state to status.txt value."""
-    return STATUS_COMPAT_MAP.get(state, state)
-
-
-def is_terminal(state: str) -> bool:
-    """Check if a state is terminal (cannot be overwritten)."""
-    return state in TERMINAL_STATES
+with open(_SHARED_STATE, "r", encoding="utf-8") as _f:
+    _code = compile(_f.read(), str(_SHARED_STATE), "exec")
+    exec(_code, globals(), globals())

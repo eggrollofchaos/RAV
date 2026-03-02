@@ -287,7 +287,7 @@ After Feb 27 preemption incident (two VMs preempted without notification or auto
 - **State machine** (`state_transitions.json`): Canonical states with CAS transitions via `if_generation_match`. Terminal states (COMPLETE, FAILED, PARTIAL, STOPPED) cannot be overwritten.
 - **Preemption watcher**: Background process in container polls GCE metadata every 5s. On preempt → CAS PREEMPTED + Discord notification.
 - **Startup terminal guard**: Container reads `state.json` before owner-lock. If terminal → self-delete, no work executed.
-- **Cloud reconciler** (`cloud_reconciler/`): Cloud Function for stale detection + restart. Two-stage: heartbeat stale + VM gone → ORPHANED.
+- **Cloud reconciler** (`cloud_reconciler/`): Thin wrappers that delegate to shared implementation in `gcp-spot-runner/cloud_reconciler/` (stale detection + restart, two-stage heartbeat stale + VM gone → ORPHANED).
 - **Restart lock** (`restart.lock`): Shared GCS lock prevents dual restart from local orchestrator + reconciler.
 - **`caffeinate` + HUP trap**: Local submit scripts survive terminal close and macOS idle sleep.
 
@@ -349,8 +349,9 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.7-gcp-docs-version-sync` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.3.0-ixqt-rav-gcp-resilience` (`version.py`)
+- `RAV` app version: `v0.2.9-reconciler-centralized-wrapper` (`src/rav_chest/version.py`)
+- `gcp-spot-runner` runner version: `v0.4.0-reconciler-centralization` (`version.py`)
+- Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 
 Primary docs by repo:
 - `RAV`:

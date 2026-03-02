@@ -1,121 +1,30 @@
 #!/usr/bin/env bash
-# deploy.sh — Deploy the cloud reconciler as a Cloud Function (gen2) + Cloud Scheduler
+# Thin wrapper: delegate Cloud Reconciler deploy to shared gcp-spot-runner.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RAV_GCP_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+RUNNER_DIR="${RUNNER_DIR:-${REPO_ROOT}/../gcp-spot-runner}"
+RUNNER_DEPLOY="${RUNNER_DIR}/cloud_reconciler/deploy.sh"
 
-PROJECT="${PROJECT:-}"
-REGION="${REGION:-us-east1}"
-BUCKET="${BUCKET:-}"
-FUNCTION_NAME="${FUNCTION_NAME:-spot-reconciler}"
-SCHEDULER_NAME="${SCHEDULER_NAME:-spot-reconciler-trigger}"
-SA="${SA:-${PROJECT:+reconciler@${PROJECT}.iam.gserviceaccount.com}}"
-SCHEDULE="${SCHEDULE:-*/5 * * * *}"  # Every 5 minutes
-DRY_RUN="${DRY_RUN:-true}"
-
-if [[ -z "$PROJECT" ]]; then
-  echo "ERROR: PROJECT must be set."
-  exit 1
-fi
-if [[ -z "$BUCKET" ]]; then
-  echo "ERROR: BUCKET must be set."
-  exit 1
-fi
-if [[ -z "$SA" ]]; then
-  echo "ERROR: SA must be set."
+if [[ ! -x "$RUNNER_DEPLOY" ]]; then
+  echo "ERROR: Shared deploy script not found: $RUNNER_DEPLOY"
+  echo "Set RUNNER_DIR to your gcp-spot-runner checkout."
   exit 1
 fi
 
-echo "=== Deploying Cloud Reconciler ==="
-echo "Project:    $PROJECT"
-echo "Region:     $REGION"
-echo "Bucket:     $BUCKET"
-echo "Function:   $FUNCTION_NAME"
-echo "DRY_RUN:    $DRY_RUN"
-echo ""
-
-# Enable required APIs
-echo "Enabling APIs..."
-gcloud services enable \
-  cloudfunctions.googleapis.com \
-  cloudscheduler.googleapis.com \
-  secretmanager.googleapis.com \
-  compute.googleapis.com \
-  run.googleapis.com \
-  --project="$PROJECT"
-
-# Prepare deploy staging directory
-STAGING_DIR="$(mktemp -d)"
-trap "rm -rf $STAGING_DIR" EXIT
-
-# Copy source files
-cp "${SCRIPT_DIR}/main.py" "$STAGING_DIR/"
-cp "${SCRIPT_DIR}/state_machine.py" "$STAGING_DIR/"
-cp "${SCRIPT_DIR}/requirements.txt" "$STAGING_DIR/"
-cp "${RAV_GCP_DIR}/state_transitions.json" "$STAGING_DIR/"
-
-echo "Deploying Cloud Function..."
-gcloud functions deploy "$FUNCTION_NAME" \
-  --gen2 \
-  --project="$PROJECT" \
-  --region="$REGION" \
-  --runtime=python312 \
-  --source="$STAGING_DIR" \
-  --entry-point=reconcile_http \
-  --trigger-http \
-  --no-allow-unauthenticated \
-  --service-account="$SA" \
-  --set-env-vars="BUCKET=$BUCKET,PROJECT=$PROJECT,DRY_RUN=$DRY_RUN" \
-  --memory=256Mi \
-  --timeout=120s \
-  --max-instances=1
-
-# Get the function URL
-FUNCTION_URL="$(gcloud functions describe "$FUNCTION_NAME" \
-  --project="$PROJECT" --region="$REGION" --gen2 \
-  --format='value(serviceConfig.uri)' 2>/dev/null || true)"
-
-if [[ -z "$FUNCTION_URL" ]]; then
-  echo "WARNING: Could not retrieve function URL. Skipping scheduler setup."
-  exit 0
+# Load local project defaults if available.
+if [[ -f "${REPO_ROOT}/gcp/rav_spot.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "${REPO_ROOT}/gcp/rav_spot.env"
+  set +a
 fi
 
-echo "Function URL: $FUNCTION_URL"
+: "${FUNCTION_NAME:=rav-reconciler}"
+: "${SCHEDULER_NAME:=rav-reconciler-trigger}"
 
-# Create or update Cloud Scheduler job
-echo "Setting up Cloud Scheduler..."
-if gcloud scheduler jobs describe "$SCHEDULER_NAME" --project="$PROJECT" --location="$REGION" &>/dev/null; then
-  gcloud scheduler jobs update http "$SCHEDULER_NAME" \
-    --project="$PROJECT" \
-    --location="$REGION" \
-    --schedule="$SCHEDULE" \
-    --uri="$FUNCTION_URL" \
-    --http-method=POST \
-    --oidc-service-account-email="$SA" \
-    --oidc-token-audience="$FUNCTION_URL"
-  echo "Scheduler job updated."
-else
-  gcloud scheduler jobs create http "$SCHEDULER_NAME" \
-    --project="$PROJECT" \
-    --location="$REGION" \
-    --schedule="$SCHEDULE" \
-    --uri="$FUNCTION_URL" \
-    --http-method=POST \
-    --oidc-service-account-email="$SA" \
-    --oidc-token-audience="$FUNCTION_URL" \
-    --time-zone="UTC"
-  echo "Scheduler job created."
-fi
+export FUNCTION_NAME
+export SCHEDULER_NAME
 
-echo ""
-echo "=== Deploy Complete ==="
-echo "Reconciler: $FUNCTION_URL"
-echo "Schedule:   $SCHEDULE (UTC)"
-echo "DRY_RUN:    $DRY_RUN"
-echo ""
-echo "To switch from dry-run to live:"
-echo "  DRY_RUN=false $0"
-echo ""
-echo "To pause:"
-echo "  gcloud scheduler jobs pause $SCHEDULER_NAME --project=$PROJECT --location=$REGION"
+exec "$RUNNER_DEPLOY" "$@"

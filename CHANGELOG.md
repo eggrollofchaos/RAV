@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v0.2.9-reconciler-centralized-wrapper - 2026-03-02
+
+Updated:
+- `gcp/cloud_reconciler/main.py` and `state_machine.py` are now thin wrappers that execute shared source from `gcp-spot-runner/cloud_reconciler/`.
+- `gcp/cloud_reconciler/deploy.sh` now delegates deployment to shared runner deploy script.
+- `gcp/cloud_reconciler/requirements.txt` now points to shared runner requirements.
+- App version to `v0.2.9-reconciler-centralized-wrapper`.
+- Spot runner lineage version in README to `gcp-spot-runner v0.4.0-reconciler-centralization`.
+
 ## v0.2.8-reconciler-phase1-hardening - 2026-03-02
 
 Updated:

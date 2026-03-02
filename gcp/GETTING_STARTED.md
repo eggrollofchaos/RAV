@@ -3,6 +3,10 @@
 This guide gets you from zero to a running RAV training job on GCP Spot VMs with checkpoint-safe resume.
 For incident learnings and deeper troubleshooting patterns, see `GCP_NOTES.md` (in this directory).
 
+Reconciler ownership note:
+- `gcp/cloud_reconciler/` in this repo is a thin wrapper layer.
+- Canonical reconciler implementation lives in `../gcp-spot-runner/cloud_reconciler/`.
+
 ## 1) What this setup does
 
 - Builds a training image from this repo.
