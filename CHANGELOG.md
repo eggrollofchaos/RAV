@@ -8,6 +8,7 @@ Added:
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
   - `tests/bats/test_runner_adapter.bats` verifies `gcp/cloud_reconciler/deploy.sh` delegates to `spotctl reconciler deploy` with expected profile/default args.
+  - `tests/bats/test_state_helpers_wrapper.bats` verifies `gcp/state_helpers.sh` resolves and sources shared `gcp-spot-runner/state_helpers.sh`.
 
 Updated:
 - Runner lineage docs synchronized to `gcp-spot-runner v0.5.5-monitor-convergence` in:
@@ -18,7 +19,9 @@ Updated:
 Changed:
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
 - `tests/bats/test_caffeinate.bats` now validates only RAV wrapper scripts; shared runner contracts are now validated in `gcp-spot-runner/tests/bats/`.
+- Removed duplicate state-machine BATS behavior suite from RAV (`tests/bats/test_state_machine.bats`); shared transition behavior is now validated in `gcp-spot-runner/tests/bats/test_state_helpers.bats`.
 - Removed duplicate shared reconciler Python suites from RAV (`tests/test_reconciler.py`, `tests/test_state_machine.py`); canonical reconciler/state-machine Python tests now live in `gcp-spot-runner/tests/test_reconciler_runtime.py`.
+- `gcp/state_helpers.sh` is now a thin wrapper over shared runner helper implementation (`gcp-spot-runner/state_helpers.sh`).
 
 ## v0.2.13-profile-hook-runtime - 2026-03-02
 

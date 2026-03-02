@@ -288,6 +288,7 @@ gcloud logging read 'logName:"google_metadata_script_runner"' \
 After Feb 27 preemption incident (two VMs preempted without notification or auto-restart), the following was added:
 
 - **State machine** (`state_transitions.json`): Canonical states with CAS transitions via `if_generation_match`. Terminal states (COMPLETE, FAILED, PARTIAL, STOPPED) cannot be overwritten.
+- **State helper wrapper** (`gcp/state_helpers.sh`): Thin wrapper that sources shared `gcp-spot-runner/state_helpers.sh` for transition validation helpers.
 - **Preemption watcher**: Background process in container polls GCE metadata every 5s. On preempt → CAS PREEMPTED + Discord notification.
 - **Startup terminal guard**: Container reads `state.json` before owner-lock. If terminal → self-delete, no work executed.
 - **Cloud reconciler** (`cloud_reconciler/`): Thin wrappers that delegate to shared implementation in `gcp-spot-runner/cloud_reconciler/` (stale detection + restart, two-stage heartbeat stale + VM gone → ORPHANED).
@@ -355,6 +356,7 @@ Current version map:
 - `RAV` app version: `v0.2.13-profile-hook-runtime` (`src/rav_chest/version.py`)
 - `gcp-spot-runner` runner version: `v0.5.5-monitor-convergence` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
+- State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
 - Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:
   - `submit --profile rav --config gcp/rav_spot.env --job-command "<cmd>"`
   - `ops --profile rav --config gcp/rav_spot.env`
