@@ -296,7 +296,9 @@ or `rav-gcp.sh delete` to kill VMs from other runs first.
 ### Monitor
 
 ```bash
+./scripts/rav-gcp.sh id                           # resolve active run id / vm name
 ./scripts/rav-gcp.sh status                       # manifest + heartbeat summary
+./scripts/rav-gcp.sh health --json                # health snapshot as JSON
 ./scripts/rav-gcp.sh serial 200                   # last 200 lines of serial console
 ./scripts/rav-gcp.sh events --since 24h           # cloud system events
 ./scripts/rav-gcp.sh list all                     # all runner VMs

@@ -25,7 +25,9 @@ Commands:
   monitor [ARGS]         Open tmux monitor workspace (spotctl monitor wrapper)
   version [ARGS]         Print shared runner CLI version (spotctl version wrapper)
   ops [ARGS]             Pass-through to ops wrapper (default: status)
+  id [ARGS]              Alias for: ops id
   status [ARGS]          Alias for: ops status
+  health [ARGS]          Alias for: ops health
   serial [ARGS]          Alias for: ops serial
   events [ARGS]          Alias for: ops events
   preempt [ARGS]         Alias for: ops preempt
@@ -38,7 +40,9 @@ Examples:
   ./scripts/rav-gcp.sh build
   ./scripts/rav-gcp.sh submit --run-id rav-chexpert-001 --skip-build
   ./scripts/rav-gcp.sh poc --run-id rav-poc-001 --skip-build
+  ./scripts/rav-gcp.sh id --run-id rav-chexpert-001
   ./scripts/rav-gcp.sh status --run-id rav-chexpert-001
+  ./scripts/rav-gcp.sh health --run-id rav-chexpert-001
   ./scripts/rav-gcp.sh events --run-id rav-chexpert-001 --since 24h
   ./scripts/rav-gcp.sh monitor --single --pin-run-id
   ./scripts/rav-gcp.sh version
@@ -68,8 +72,14 @@ main() {
     ops)
       _run_wrapper "gcp_ops.sh" "$@"
       ;;
+    id)
+      _run_wrapper "gcp_ops.sh" id "$@"
+      ;;
     status)
       _run_wrapper "gcp_ops.sh" status "$@"
+      ;;
+    health)
+      _run_wrapper "gcp_ops.sh" health "$@"
       ;;
     serial)
       _run_wrapper "gcp_ops.sh" serial "$@"

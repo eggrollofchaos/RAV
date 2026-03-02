@@ -434,6 +434,15 @@ SCRIPT
   local call_log="$BATS_TEST_TMPDIR/rav_gcp_ops.log"
   _write_dispatch_stub "$TEMP_REPO/scripts/gcp_ops.sh" "$call_log" "OPS"
 
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh id --run-id rav-ops-0" 2>&1
+  assert_success
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "OPS"
+  assert_line --index 1 "id"
+  assert_line --index 2 "--run-id"
+  assert_line --index 3 "rav-ops-0"
+
   run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh ops status --run-id rav-ops-1" 2>&1
   assert_success
   run cat "$call_log"
@@ -453,6 +462,16 @@ SCRIPT
   assert_line --index 3 "rav-ops-2"
   assert_line --index 4 "--since"
   assert_line --index 5 "12h"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh health --run-id rav-ops-h --json" 2>&1
+  assert_success
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "OPS"
+  assert_line --index 1 "health"
+  assert_line --index 2 "--run-id"
+  assert_line --index 3 "rav-ops-h"
+  assert_line --index 4 "--json"
 
   run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/rav-gcp.sh delete --run-id rav-ops-3 --yes" 2>&1
   assert_success

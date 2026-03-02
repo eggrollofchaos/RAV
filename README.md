@@ -510,7 +510,9 @@ cp gcp/rav_spot.env.example gcp/rav_spot.env
 ./scripts/rav-gcp.sh poc --run-id rav-poc-001
 
 # 4) check status/events
+./scripts/rav-gcp.sh id
 ./scripts/rav-gcp.sh status
+./scripts/rav-gcp.sh health --json
 ./scripts/rav-gcp.sh events --since 24h
 ./scripts/rav-gcp.sh version
 
