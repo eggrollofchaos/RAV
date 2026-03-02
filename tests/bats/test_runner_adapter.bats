@@ -149,6 +149,21 @@ SCRIPT
   assert_line --index 0 --partial "--sync-interval-sec 90"
 }
 
+@test "gcp_submit_primary uses JOB_COMMAND_PRIMARY override verbatim" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_primary_override.log"
+  _write_fake_runner_common "$call_log"
+  local override_cmd="set -euo pipefail; python3 scripts/custom_primary.py --resume"
+
+  run env -u RAV_GCP_ENV JOB_COMMAND_PRIMARY="$override_cmd" bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_primary.sh --run-id rav-125" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "JOB_COMMAND=${override_cmd}"
+  refute_line --partial "gcp_train_with_checkpoint_sync.sh"
+}
+
 @test "gcp_submit_poc default job command uses checkpoint sync wrapper" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_poc_default.log"
@@ -166,6 +181,21 @@ SCRIPT
   assert_line --index 1 "--run-id"
   assert_line --index 2 "rav-poc-1"
   assert_line --index 3 "--dry-run"
+}
+
+@test "gcp_submit_poc uses JOB_COMMAND_POC override verbatim" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_poc_override.log"
+  _write_fake_runner_common "$call_log"
+  local override_cmd="set -euo pipefail; python3 scripts/custom_poc.py --epochs 1"
+
+  run env -u RAV_GCP_ENV JOB_COMMAND_POC="$override_cmd" bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_poc.sh --run-id rav-poc-2" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "JOB_COMMAND=${override_cmd}"
+  refute_line --partial "gcp_train_with_checkpoint_sync.sh"
 }
 
 @test "reconciler deploy wrapper calls spotctl with rav profile + config" {

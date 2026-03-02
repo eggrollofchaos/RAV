@@ -101,7 +101,7 @@ sync_prefix() {
 
   echo "[cache] syncing ${uri} -> ${target}"
   gcloud storage rsync -r "$uri" "$target"
-  _write_marker "$marker"
+  _write_marker "$marker" "$uri"
 }
 
 sync_prefix "$RAW_URI" "$RAW_DIR" "$RAW_MARKER"

@@ -136,6 +136,34 @@ Mitigations:
 - Increase `GPU_TIMEOUT_SEC`.
 - Keep no-heartbeat watchdog window >= GPU timeout window.
 
+### G) Dataset cache sync crashes after successful rsync (`$2: unbound variable`)
+
+**Observed**: 2026-03-02 across multiple runs. `gcloud storage rsync` completed
+successfully (223,652 files synced), but the job exited with code 1 immediately
+after.
+
+**Error**:
+```
+scripts/gcp_sync_chexpert_cache.sh: line 85: $2: unbound variable
+```
+
+**Root cause**:
+- `_write_marker()` expects two args (`$1`=marker path, `$2`=URI).
+- `sync_prefix()` line 104 called `_write_marker "$marker"` — missing the `"$uri"` argument.
+- With `set -euo pipefail` (`nounset`), accessing `$2` inside `_write_marker` is fatal.
+
+**Impact**:
+- Training never started on any run that needed to write the cache marker (i.e.,
+  first sync or any re-sync). Runs that hit an existing marker were unaffected.
+- On spot VMs, this wasted the full rsync duration (~1.5h for 11 GB raw CheXpert)
+  before failing.
+
+**Fix**: Pass URI to `_write_marker`:
+```diff
+-  _write_marker "$marker"
++  _write_marker "$marker" "$uri"
+```
+
 ## 3) Timeout Alignment Rule
 
 Given:
@@ -340,6 +368,12 @@ Likely failure stage:
   startup job command, before `train_chest_baseline.py` produced metrics/checkpoints.
 - Exact terminal error line was not retained in available Cloud Logging slices
   (copy-line volume dominated metadata-script output).
+
+**Root cause confirmed (2026-03-02):**
+- Same bug as Section 2 → G: `_write_marker "$marker"` missing `"$uri"` arg in
+  `gcp_sync_chexpert_cache.sh`. The rsync finished successfully, then `set -u`
+  killed the script at `_write_marker` line 85 (`$2: unbound variable`).
+- Fix applied: pass URI to `_write_marker` (see Section 2 → G for details).
 
 Related stale run note:
 - `RUN_ID=rav-chexpert-20260228-070057` has `.stop` and stale heartbeat but

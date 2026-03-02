@@ -8,6 +8,7 @@ Added:
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_submit_primary.sh` and `scripts/gcp_submit_poc.sh` default job commands invoke `gcp_train_with_checkpoint_sync.sh` with expected config/eval split + sync interval, and that `SYNC_INTERVAL_SEC` overrides are reflected in submit payloads.
+  - `tests/bats/test_runner_adapter.bats` verifies `JOB_COMMAND_PRIMARY` / `JOB_COMMAND_POC` override env vars are passed through verbatim to shared-runner submit payloads.
   - `tests/bats/test_runner_adapter.bats` verifies `gcp/cloud_reconciler/deploy.sh` delegates to `spotctl reconciler deploy` with expected profile/default args.
   - `tests/bats/test_state_helpers_wrapper.bats` verifies `gcp/state_helpers.sh` resolves and sources shared `gcp-spot-runner/state_helpers.sh`.
   - `tests/bats/test_state_transitions_parity.bats` verifies `gcp/state_transitions.json` hash matches `gcp-spot-runner/cloud_reconciler/state_transitions.json`.
