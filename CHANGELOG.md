@@ -14,7 +14,7 @@ Added:
   - `tests/bats/test_state_transitions_parity.bats` verifies `gcp/state_transitions.json` hash matches `gcp-spot-runner/cloud_reconciler/state_transitions.json`.
 
 Updated:
-- Runner lineage docs synchronized to `gcp-spot-runner v0.5.5-monitor-convergence` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.6-watch-monitor-json` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
