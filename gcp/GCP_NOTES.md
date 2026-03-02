@@ -352,10 +352,13 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.11-reconciler-profile-wrapper` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.5.2-reconciler-profile-runtime` (`version.py`)
+- `RAV` app version: `v0.2.12-profile-runtime-submit` (`src/rav_chest/version.py`)
+- `gcp-spot-runner` runner version: `v0.5.3-submit-job-command-override` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
-- Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with `SPOT_CONFIG_PATH` (no temp symlinked runner script execution).
+- Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:
+  - `submit --profile rav --config gcp/rav_spot.env --job-command "<cmd>"`
+  - `ops --profile rav --config gcp/rav_spot.env`
+  No temporary generated config file is required for submit/ops.
 - Reconciler deploy path: `RAV/gcp/cloud_reconciler/deploy.sh` now delegates through:
   - `python3 -m spotctl reconciler deploy --profile rav`
   - optional `--config gcp/rav_spot.env` when present (or `SPOT_CONFIG_PATH` override).

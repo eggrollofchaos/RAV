@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v0.2.12-profile-runtime-submit - 2026-03-02
+
+Updated:
+- `scripts/gcp_runner_common.sh` submit/ops path simplified to profile runtime invocation (no temporary generated config files):
+  - submit: `spotctl submit --profile rav --config gcp/rav_spot.env --job-command "<cmd>"`
+  - ops: `spotctl ops --profile rav --config gcp/rav_spot.env ...`
+- App version to `v0.2.12-profile-runtime-submit`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.3-submit-job-command-override` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+
 ## v0.2.11-reconciler-profile-wrapper - 2026-03-02
 
 Updated:

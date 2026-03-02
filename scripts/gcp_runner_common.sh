@@ -6,16 +6,21 @@ RAV_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 RAV_GCP_ENV_DEFAULT="${RAV_ROOT}/gcp/rav_spot.env"
 RUNNER_DIR_DEFAULT="${RAV_ROOT}/../gcp-spot-runner"
+RAV_GCP_ENV_PATH=""
 
 load_rav_spot_env() {
   local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
+  if [[ "${cfg}" != /* ]]; then
+    cfg="${RAV_ROOT}/${cfg}"
+  fi
   if [[ ! -f "$cfg" ]]; then
     echo "Missing ${cfg}. Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it." >&2
     exit 1
   fi
+  RAV_GCP_ENV_PATH="$(cd "$(dirname "${cfg}")" && pwd)/$(basename "${cfg}")"
   set -a
   # shellcheck disable=SC1090
-  source "$cfg"
+  source "${RAV_GCP_ENV_PATH}"
   set +a
 }
 
@@ -137,72 +142,11 @@ run_spotctl_with_config() {
   return "$status"
 }
 
-_emit_var() {
-  local cfg="$1"
-  local name="$2"
-  local value="${!name-}"
-  printf '%s=%q\n' "$name" "$value" >> "$cfg"
-}
-
-write_runner_config() {
-  local cfg="$1"
-  local job_command="$2"
-
-  : > "$cfg"
-  _emit_var "$cfg" PROJECT
-  _emit_var "$cfg" REGION
-  _emit_var "$cfg" SA
-  _emit_var "$cfg" IMAGE
-  _emit_var "$cfg" BUCKET
-  _emit_var "$cfg" ZONE
-  _emit_var "$cfg" MACHINE_TYPE
-  _emit_var "$cfg" GPU_TYPE
-  _emit_var "$cfg" BOOT_DISK_SIZE
-  _emit_var "$cfg" BOOT_DISK_TYPE
-  _emit_var "$cfg" DATA_DISK_ENABLED
-  _emit_var "$cfg" DATA_DISK_NAME
-  _emit_var "$cfg" DATA_DISK_SIZE_GB
-  _emit_var "$cfg" DATA_DISK_TYPE
-  _emit_var "$cfg" DATA_DISK_DEVICE_NAME
-  _emit_var "$cfg" DATA_DISK_MOUNT_PATH
-  _emit_var "$cfg" DATA_DISK_FS_TYPE
-  _emit_var "$cfg" CONTAINER_NAME
-  _emit_var "$cfg" CONDA_ENV
-  _emit_var "$cfg" GPU_TIMEOUT_SEC
-  _emit_var "$cfg" MAX_RUNTIME_SEC
-  _emit_var "$cfg" POLL_INTERVAL
-  _emit_var "$cfg" HEARTBEAT_STALE_SEC
-  _emit_var "$cfg" HEARTBEAT_STALE_MAX
-  _emit_var "$cfg" PROGRESS_STALL_POLLS
-  _emit_var "$cfg" MAX_RESTARTS
-  _emit_var "$cfg" RESTART_BACKOFF_SEC
-  _emit_var "$cfg" WALL_CLOCK_DEADLINE
-  _emit_var "$cfg" DEADLINE_TZ
-  _emit_var "$cfg" OWNER_LOCK_STALE_SEC
-  _emit_var "$cfg" METADATA_PREFIX
-  _emit_var "$cfg" RUNNER_LABEL
-  _emit_var "$cfg" LOG_LEVEL
-  _emit_var "$cfg" DISCORD_WEBHOOK_URL
-  _emit_var "$cfg" NOTIFY_SECRET
-
-  printf 'FALLBACK_ZONES=(' >> "$cfg"
-  local zone
-  for zone in "${FALLBACK_ZONES[@]}"; do
-    printf '%q ' "$zone" >> "$cfg"
-  done
-  printf ')\n' >> "$cfg"
-  printf 'JOB_COMMAND=%q\n' "$job_command" >> "$cfg"
-}
-
 run_submit_with_job() {
   local job_command="$1"
   shift
 
-  local tmp_dir
-  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rav-spot-submit-XXXXXX")"
-  local config_path="${tmp_dir}/config.env"
-  write_runner_config "${config_path}" "$job_command"
-
+  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
   local args=("$@")
   local has_skip_build=false
   local arg
@@ -216,25 +160,24 @@ run_submit_with_job() {
     args=(--skip-build "${args[@]}")
   fi
 
-  run_spotctl_with_config "${config_path}" submit "${args[@]}"
-  local status=$?
-  rm -rf "$tmp_dir"
-  return "$status"
+  run_spotctl_with_config "${config_path}" \
+    submit \
+    --profile rav \
+    --config "${config_path}" \
+    --job-command "${job_command}" \
+    "${args[@]}"
 }
 
 run_ops_command() {
-  local tmp_dir
-  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/rav-spot-ops-XXXXXX")"
-  local config_path="${tmp_dir}/config.env"
-  write_runner_config "${config_path}" "${JOB_COMMAND:-echo noop}"
-
+  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
   local args=("$@")
   if [[ ${#args[@]} -eq 0 ]]; then
     args=(status)
   fi
 
-  run_spotctl_with_config "${config_path}" ops "${args[@]}"
-  local status=$?
-  rm -rf "$tmp_dir"
-  return "$status"
+  run_spotctl_with_config "${config_path}" \
+    ops \
+    --profile rav \
+    --config "${config_path}" \
+    "${args[@]}"
 }

@@ -4,8 +4,8 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.11-reconciler-profile-wrapper`
-Spot runner lineage version: `gcp-spot-runner v0.5.2-reconciler-profile-runtime`
+Current app version: `v0.2.12-profile-runtime-submit`
+Spot runner lineage version: `gcp-spot-runner v0.5.3-submit-job-command-override`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`
