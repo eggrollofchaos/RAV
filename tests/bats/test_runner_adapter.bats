@@ -17,15 +17,22 @@ _setup_temp_submit_wrappers() {
   mkdir -p "$TEMP_REPO/scripts"
   cp "$REPO_ROOT/scripts/gcp_submit_primary.sh" "$TEMP_REPO/scripts/gcp_submit_primary.sh"
   cp "$REPO_ROOT/scripts/gcp_submit_poc.sh" "$TEMP_REPO/scripts/gcp_submit_poc.sh"
-  chmod +x "$TEMP_REPO/scripts/gcp_submit_primary.sh" "$TEMP_REPO/scripts/gcp_submit_poc.sh"
+  cp "$REPO_ROOT/scripts/gcp_build_image.sh" "$TEMP_REPO/scripts/gcp_build_image.sh"
+  cp "$REPO_ROOT/scripts/gcp_monitor.sh" "$TEMP_REPO/scripts/gcp_monitor.sh"
+  chmod +x \
+    "$TEMP_REPO/scripts/gcp_submit_primary.sh" \
+    "$TEMP_REPO/scripts/gcp_submit_poc.sh" \
+    "$TEMP_REPO/scripts/gcp_build_image.sh" \
+    "$TEMP_REPO/scripts/gcp_monitor.sh"
 }
 
 _write_fake_runner_common() {
   local log_path="$1"
   : > "$log_path"
-  cat > "$TEMP_REPO/scripts/gcp_runner_common.sh" <<SCRIPT
+cat > "$TEMP_REPO/scripts/gcp_runner_common.sh" <<SCRIPT
 #!/usr/bin/env bash
 set -euo pipefail
+RAV_ROOT="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
 load_rav_spot_env() { :; }
 apply_runner_defaults() {
   : "\${RUNNER_DIR:=/tmp/fake-runner}"
@@ -39,6 +46,14 @@ run_submit_with_job() {
   local job_command="\$1"
   shift
   printf 'JOB_COMMAND=%s\n' "\$job_command" > "$log_path"
+  printf '%s\n' "\$@" >> "$log_path"
+}
+run_build_command() {
+  printf 'BUILD\n' > "$log_path"
+  printf '%s\n' "\$@" >> "$log_path"
+}
+run_monitor_command() {
+  printf 'MONITOR\n' > "$log_path"
   printf '%s\n' "\$@" >> "$log_path"
 }
 SCRIPT
@@ -132,6 +147,49 @@ SCRIPT
   assert_line --index 8 "--json"
 }
 
+@test "run_build_command delegates to spotctl build with rav profile + config" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/build_args.txt"
+  _capture_stub "$captured"
+
+  RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
+  run_build_command --source /tmp/rav-src --cloudbuild-config /tmp/cloudbuild.yaml --dry-run
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "/tmp/rav_spot.env"
+  assert_line --index 1 "build"
+  assert_line --index 2 "--profile"
+  assert_line --index 3 "rav"
+  assert_line --index 4 "--config"
+  assert_line --index 5 "/tmp/rav_spot.env"
+  assert_line --index 6 "--source"
+  assert_line --index 7 "/tmp/rav-src"
+  assert_line --index 8 "--cloudbuild-config"
+  assert_line --index 9 "/tmp/cloudbuild.yaml"
+  assert_line --index 10 "--dry-run"
+}
+
+@test "run_monitor_command delegates to spotctl monitor with rav profile + config" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/monitor_args.txt"
+  _capture_stub "$captured"
+
+  RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
+  run_monitor_command --single --no-attach
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "/tmp/rav_spot.env"
+  assert_line --index 1 "monitor"
+  assert_line --index 2 "--profile"
+  assert_line --index 3 "rav"
+  assert_line --index 4 "--config"
+  assert_line --index 5 "/tmp/rav_spot.env"
+  assert_line --index 6 "--single"
+  assert_line --index 7 "--no-attach"
+}
+
 @test "gcp_submit_primary default job command uses checkpoint sync wrapper" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_primary_default.log"
@@ -177,6 +235,41 @@ SCRIPT
   assert_success
   assert_line --index 0 "JOB_COMMAND=${override_cmd}"
   refute_line --partial "gcp_train_with_checkpoint_sync.sh"
+}
+
+@test "gcp_build_image wrapper delegates to shared run_build_command" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/build_wrapper.log"
+  _write_fake_runner_common "$call_log"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/gcp_build_image.sh --dry-run" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "BUILD"
+  assert_line --index 1 "--source"
+  assert_line --index 2 "$TEMP_REPO"
+  assert_line --index 3 "--cloudbuild-config"
+  assert_line --index 4 "$TEMP_REPO/gcp/cloudbuild.rav.yaml"
+  assert_line --index 5 "--image"
+  assert_line --index 6 "us-east1-docker.pkg.dev/demo/rav/train:latest"
+  assert_line --index 7 "--dry-run"
+}
+
+@test "gcp_monitor wrapper delegates to shared run_monitor_command" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/monitor_wrapper.log"
+  _write_fake_runner_common "$call_log"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/gcp_monitor.sh --single --json" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 "MONITOR"
+  assert_line --index 1 "--single"
+  assert_line --index 2 "--json"
 }
 
 @test "gcp_submit_poc default job command uses checkpoint sync wrapper" {

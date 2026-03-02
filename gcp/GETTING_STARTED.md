@@ -98,7 +98,10 @@ From repo root:
 bash scripts/gcp_build_image.sh
 ```
 
-This uses `gcp/cloudbuild.rav.yaml` and `gcp/Dockerfile.train`.
+`gcp_build_image.sh` routes the primary build path through:
+- `python3 -m spotctl build --profile rav --config gcp/rav_spot.env ...`
+
+It uses `gcp/cloudbuild.rav.yaml` and `gcp/Dockerfile.train`, and retains staged/local fallback behavior if the primary build path fails.
 
 ## 6) Submit training jobs
 
@@ -148,6 +151,7 @@ bash scripts/gcp_ops.sh events --since 24h       # cloud system events
 bash scripts/gcp_ops.sh watch 60                 # auto-refresh every 60s
 bash scripts/gcp_ops.sh delete --yes             # safe stop (writes .stop + deletes VM)
 bash scripts/gcp_ops.sh delete --all --yes       # delete ALL runner VMs
+bash scripts/gcp_monitor.sh --single --pin-run-id  # tmux monitor workspace
 ```
 
 To kill a stuck VM and resubmit fresh:

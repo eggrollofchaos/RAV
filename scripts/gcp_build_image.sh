@@ -8,6 +8,7 @@ source "${SCRIPT_DIR}/gcp_runner_common.sh"
 load_rav_spot_env
 apply_runner_defaults
 check_required_spot_vars
+check_runner_install
 configure_gcloud_runtime
 
 echo "Building/pushing image: ${IMAGE}"
@@ -18,13 +19,12 @@ fi
 SOURCE_STAGING_DIR="${GCS_SOURCE_STAGING_DIR:-gs://${BUCKET}/cloudbuild/source}"
 echo "Source staging dir: ${SOURCE_STAGING_DIR}"
 
-cloud_build_submit() {
-  gcloud builds submit "${RAV_ROOT}" \
-    --project="${PROJECT}" \
-    --region="${REGION}" \
-    --config="${RAV_ROOT}/gcp/cloudbuild.rav.yaml" \
-    --substitutions="_IMAGE=${IMAGE}" \
-    --gcs-source-staging-dir="${SOURCE_STAGING_DIR}"
+spotctl_build_submit() {
+  run_build_command \
+    --source "${RAV_ROOT}" \
+    --cloudbuild-config "${RAV_ROOT}/gcp/cloudbuild.rav.yaml" \
+    --image "${IMAGE}" \
+    "$@"
 }
 
 staged_tarball_cloud_build_submit() {
@@ -83,8 +83,8 @@ local_docker_buildx_push() {
     "${RAV_ROOT}"
 }
 
-if ! cloud_build_submit; then
-  echo "Cloud Build submit failed."
+if ! spotctl_build_submit "$@"; then
+  echo "spotctl build failed."
   echo "Attempting fallback via staged source tarball + Cloud Build..."
   if ! staged_tarball_cloud_build_submit; then
     echo "Staged tarball fallback failed."

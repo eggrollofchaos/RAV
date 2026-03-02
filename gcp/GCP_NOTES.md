@@ -237,7 +237,7 @@ bash scripts/gcp_ops.sh list all
 
 In `../gcp-spot-runner` (see its `CHANGELOG.md` for full details):
 - `spotctl` (primary CLI)
-  - `submit`/`ops`/`monitor` command surface now fronted by `python3 -m spotctl`
+  - `build`/`submit`/`ops`/`monitor` command surface now fronted by `python3 -m spotctl`
   - `submit.sh` and `ops.sh` are compatibility shims over `spotctl`
 - `startup.sh`
   - GPU driver install via `cos-extensions install gpu` (COS doesn't auto-install)
@@ -301,6 +301,7 @@ bash scripts/gcp_ops.sh serial 200                # last 200 lines of serial con
 bash scripts/gcp_ops.sh events --since 24h        # cloud system events
 bash scripts/gcp_ops.sh list all                   # all runner VMs
 bash scripts/gcp_ops.sh watch 60                   # auto-refresh every 60s
+bash scripts/gcp_monitor.sh --single --pin-run-id  # tmux monitor workspace
 ```
 
 ### Cloud Logging (for deeper serial output)
@@ -387,8 +388,8 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.13-profile-hook-runtime` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.5.6-watch-monitor-json` (`version.py`)
+- `RAV` app version: `v0.2.14-build-monitor-wrapper` (`src/rav_chest/version.py`)
+- `gcp-spot-runner` runner version: `v0.5.7-build-runtime-profile` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
 - Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:

@@ -181,3 +181,25 @@ run_ops_command() {
     --config "${config_path}" \
     "${args[@]}"
 }
+
+run_build_command() {
+  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  local args=("$@")
+
+  run_spotctl_with_config "${config_path}" \
+    build \
+    --profile rav \
+    --config "${config_path}" \
+    "${args[@]}"
+}
+
+run_monitor_command() {
+  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  local args=("$@")
+
+  run_spotctl_with_config "${config_path}" \
+    monitor \
+    --profile rav \
+    --config "${config_path}" \
+    "${args[@]}"
+}

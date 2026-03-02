@@ -11,14 +11,21 @@ Added:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_submit_primary.sh` and `scripts/gcp_submit_poc.sh` default job commands invoke `gcp_train_with_checkpoint_sync.sh` with expected config/eval split + sync interval, and that `SYNC_INTERVAL_SEC` overrides are reflected in submit payloads.
   - `tests/bats/test_runner_adapter.bats` verifies `JOB_COMMAND_PRIMARY` / `JOB_COMMAND_POC` override env vars are passed through verbatim to shared-runner submit payloads.
   - `tests/bats/test_runner_adapter.bats` verifies `gcp/cloud_reconciler/deploy.sh` delegates to `spotctl reconciler deploy` with expected profile/default args.
+  - `tests/bats/test_runner_adapter.bats` verifies `run_build_command` delegates to `spotctl build --profile rav --config ...` with passthrough args.
+  - `tests/bats/test_runner_adapter.bats` verifies `run_monitor_command` delegates to `spotctl monitor --profile rav --config ...` with passthrough args.
+  - `tests/bats/test_runner_adapter.bats` verifies `gcp_build_image.sh` delegates primary build execution through shared `run_build_command`.
+  - `tests/bats/test_runner_adapter.bats` verifies `gcp_monitor.sh` delegates through shared `run_monitor_command`.
   - `tests/bats/test_state_helpers_wrapper.bats` verifies `gcp/state_helpers.sh` resolves and sources shared `gcp-spot-runner/state_helpers.sh`.
   - `tests/bats/test_state_transitions_parity.bats` verifies `gcp/state_transitions.json` hash matches `gcp-spot-runner/cloud_reconciler/state_transitions.json`.
   - `.github/workflows/gcp-adapter-tests.yml` runs RAV adapter BATS suites on push/PR.
+  - `scripts/gcp_monitor.sh` thin wrapper for `spotctl monitor --profile rav`.
 
 Updated:
-- Runner lineage docs synchronized to `gcp-spot-runner v0.5.6-watch-monitor-json` in:
+- `scripts/gcp_build_image.sh` now routes primary build execution through `spotctl build --profile rav` (keeps staged/local fallback behavior).
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.7-build-runtime-profile` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
+- App version to `v0.2.14-build-monitor-wrapper`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:
