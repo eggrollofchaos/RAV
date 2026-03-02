@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+
+Updated:
+- GCP persistent-disk docs and defaults now use a writable COS mount path:
+  - `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"`
+  - Avoids startup failure: `mkdir: cannot create directory '/mnt/spot-data': Read-only file system`
+- GCP troubleshooting docs now include explicit diagnosis/remediation for the COS read-only mount-path failure.
+- GCP docs now call out region selection flexibility (for example `us-central1`) when `us-east1` is shared/constrained.
+
 ## v0.2.7-gcp-docs-version-sync - 2026-03-01
 
 Added:

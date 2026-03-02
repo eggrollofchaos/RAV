@@ -492,8 +492,10 @@ Operational notes/troubleshooting: `gcp/GCP_NOTES.md`
 # 1) one-time setup
 cp gcp/rav_spot.env.example gcp/rav_spot.env
 # edit gcp/rav_spot.env: PROJECT/REGION/SA/BUCKET/IMAGE/RUNNER_DIR
+# if us-east1 is busy/shared, pick another T4 region/zone (for example us-central1)
 # optional: SYNC_INTERVAL_SEC controls periodic checkpoint sync cadence
 # optional: GPU_TIMEOUT_SEC controls GPU-driver wait before startup fails (default 600)
+# with persistent disk on COS, keep DATA_DISK_MOUNT_PATH="/var/lib/spot-data" (not /mnt/spot-data)
 # optional: set PROGRESS_STALL_POLLS so (POLL_INTERVAL * PROGRESS_STALL_POLLS) >= GPU_TIMEOUT_SEC
 
 # 2) build and push training image
@@ -521,3 +523,5 @@ Notes:
 6. Wrapper copies `outputs/...` into `/app/results/...` at run end for runner artifact upload.
 7. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then retry `bash scripts/gcp_build_image.sh`.
 8. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account named in the error.
+9. On COS with persistent disk enabled, use a writable host mount path:
+   `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).

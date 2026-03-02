@@ -258,6 +258,8 @@ Setup:
 ```bash
 cp gcp/rav_spot.env.example gcp/rav_spot.env
 # edit gcp/rav_spot.env with PROJECT/REGION/SA/BUCKET/IMAGE/RUNNER_DIR
+# if us-east1 is busy/shared, pick another T4 region/zone (for example us-central1)
+# with persistent disk on COS, keep DATA_DISK_MOUNT_PATH="/var/lib/spot-data" (not /mnt/spot-data)
 # optional: SYNC_INTERVAL_SEC controls periodic checkpoint sync cadence
 ```
 
@@ -294,3 +296,4 @@ Notes:
 6. Wrapper job commands copy relevant `outputs/...` into `/app/results/...` so runner upload picks them up.
 7. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then rerun `bash scripts/gcp_build_image.sh`.
 8. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account shown in the error.
+9. On COS with persistent disk enabled, use `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).

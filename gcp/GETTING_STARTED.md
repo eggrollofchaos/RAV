@@ -38,13 +38,13 @@ Create an Artifact Registry Docker repo (skip if it already exists):
 ```bash
 gcloud artifacts repositories create rav-train \
   --repository-format=docker \
-  --location=us-east1
+  --location=<REGION>
 ```
 
 Create a bucket (skip if it already exists):
 
 ```bash
-gcloud storage buckets create gs://<BUCKET_NAME> --location=us-east1
+gcloud storage buckets create gs://<BUCKET_NAME> --location=<REGION>
 ```
 
 ## 4) Configure this repo
@@ -66,11 +66,13 @@ Edit `gcp/rav_spot.env` and set at minimum:
 
 Recommended starting values:
 
-- `REGION="us-east1"`
-- `ZONE="us-east1-c"`
-- `FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")`
+- `REGION="us-central1"` (or another region with available T4 quota/capacity)
+- `ZONE="us-central1-c"`
+- `FALLBACK_ZONES=("us-central1-a" "us-central1-b" "us-central1-c" "us-central1-f")`
 - `GPU_TYPE="nvidia-tesla-t4"`
 - `GPU_TIMEOUT_SEC="1200"` (recommended if T4 driver init is slow in your zone)
+- `DATA_DISK_TYPE="pd-balanced"` (good default if `pd-ssd` quota is constrained)
+- `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (COS writable path)
 - `SYNC_INTERVAL_SEC="180"`
 
 Timeout alignment rule:
@@ -80,7 +82,7 @@ Timeout alignment rule:
 `IMAGE` should match your Artifact Registry path, for example:
 
 ```bash
-IMAGE="us-east1-docker.pkg.dev/<PROJECT_ID>/rav-train/rav-chest:latest"
+IMAGE="${REGION}-docker.pkg.dev/<PROJECT_ID>/rav-train/rav-chest:latest"
 ```
 
 ## 5) Build and push training image
@@ -209,6 +211,10 @@ bash scripts/gcp_submit_primary.sh --run-id rav-chexpert-001
 - Ensure no-heartbeat window is not shorter than GPU timeout:
   - `POLL_INTERVAL * PROGRESS_STALL_POLLS >= GPU_TIMEOUT_SEC`
 
+`startup-script failed` with `/mnt/spot-data` read-only:
+- Symptom: `mkdir: cannot create directory '/mnt/spot-data': Read-only file system`
+- Fix: set `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` in `gcp/rav_spot.env` and resubmit.
+
 Instances shown in console but missing from CLI (or vice versa):
 - Confirm active gcloud project/account with:
   - `gcloud auth list`
@@ -232,7 +238,7 @@ Use this section as the command reference for setup/verification/fixes.
 
 ```bash
 PROJECT="rav-ai-488706"
-REGION="us-east1"
+REGION="us-central1"
 REPO="rav-train"
 BUCKET="rav-ai-train-artifacts-488706"
 SA_NAME="rav-spot-trainer"

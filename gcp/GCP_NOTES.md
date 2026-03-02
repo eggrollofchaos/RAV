@@ -86,6 +86,21 @@ Key detail:
 Most common root cause in this project:
 - GPU driver not ready in COS startup window.
 
+### C1) Startup fails mounting data disk on COS (`/mnt/spot-data` read-only)
+
+Error looked like:
+- `mkdir: cannot create directory '/mnt/spot-data': Read-only file system`
+- `Script "startup-script" failed with error: exit status 1`
+
+Root cause:
+- On COS, `/mnt` can be read-only during startup in this runner path.
+- Startup script failed before container launch, so no `run_manifest.json` or heartbeat was written.
+
+Fix:
+- Set writable host mount path in `gcp/rav_spot.env`:
+  - `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"`
+- Re-submit the run.
+
 ### D) GPU driver never installs (COS)
 
 **Root cause (2026-02-27)**: The `install-nvidia-driver=true` VM metadata does
