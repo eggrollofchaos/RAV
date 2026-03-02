@@ -5,14 +5,27 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAV_GCP_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-PROJECT="${PROJECT:-ixqt-488109}"
+PROJECT="${PROJECT:-}"
 REGION="${REGION:-us-east1}"
-BUCKET="${BUCKET:-ixqt-training-488109}"
-FUNCTION_NAME="${FUNCTION_NAME:-ixqt-reconciler}"
-SCHEDULER_NAME="${SCHEDULER_NAME:-ixqt-reconciler-trigger}"
-SA="${SA:-ixqt-compute@${PROJECT}.iam.gserviceaccount.com}"
+BUCKET="${BUCKET:-}"
+FUNCTION_NAME="${FUNCTION_NAME:-spot-reconciler}"
+SCHEDULER_NAME="${SCHEDULER_NAME:-spot-reconciler-trigger}"
+SA="${SA:-${PROJECT:+reconciler@${PROJECT}.iam.gserviceaccount.com}}"
 SCHEDULE="${SCHEDULE:-*/5 * * * *}"  # Every 5 minutes
 DRY_RUN="${DRY_RUN:-true}"
+
+if [[ -z "$PROJECT" ]]; then
+  echo "ERROR: PROJECT must be set."
+  exit 1
+fi
+if [[ -z "$BUCKET" ]]; then
+  echo "ERROR: BUCKET must be set."
+  exit 1
+fi
+if [[ -z "$SA" ]]; then
+  echo "ERROR: SA must be set."
+  exit 1
+fi
 
 echo "=== Deploying Cloud Reconciler ==="
 echo "Project:    $PROJECT"

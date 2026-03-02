@@ -17,6 +17,7 @@ from state_machine import (
     TERMINAL_STATES,
     VALID_ACTORS,
     STATUS_COMPAT_MAP,
+    _default_transitions_path,
     can_transition,
     is_terminal,
     status_compat,
@@ -178,6 +179,12 @@ class TestTransitionsHash:
 
         expected = hashlib.sha256(TRANSITIONS_FILE.read_bytes()).hexdigest()
         assert transitions_hash() == expected
+
+
+class TestTransitionsPath:
+    def test_default_path_resolves_existing_file(self):
+        p = _default_transitions_path()
+        assert p.exists()
 
 
 # ── Python ↔ Bash parity ──

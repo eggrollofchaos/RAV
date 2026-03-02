@@ -8,7 +8,26 @@ import hashlib
 import json
 from pathlib import Path
 
-_TRANSITIONS_PATH = Path(__file__).resolve().parent.parent / "state_transitions.json"
+
+def _default_transitions_path() -> Path:
+    """Resolve transitions file for both source and flat deploy layouts.
+
+    Source layout:
+      gcp/cloud_reconciler/state_machine.py
+      gcp/state_transitions.json
+
+    Cloud Function staging layout:
+      state_machine.py
+      state_transitions.json
+    """
+    here = Path(__file__).resolve().parent
+    flat_layout = here / "state_transitions.json"
+    if flat_layout.exists():
+        return flat_layout
+    return here.parent / "state_transitions.json"
+
+
+_TRANSITIONS_PATH = _default_transitions_path()
 
 VALID_ACTORS = frozenset({"vm", "reconciler", "local", "operator"})
 

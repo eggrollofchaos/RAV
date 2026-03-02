@@ -491,6 +491,73 @@ class TestTryRestart:
 
         assert result is None
 
+    def test_restart_persists_incremented_attempt(self):
+        """Restart writes RESTARTING with incremented attempt."""
+        state = _make_state("ORPHANED", attempt=1)
+        config = {
+            "auto_restart_max": 3,
+            "zone": "us-east1-c",
+            "fallback_zones": ["us-east1-c"],
+            "startup_script": "#!/bin/bash\necho ok\n",
+        }
+        bucket = MockBucket()
+        lock_blob = MockBlob({})
+
+        with patch.object(reconciler, "_is_restart_enabled", return_value=True), \
+             patch.object(reconciler, "_acquire_restart_lock_cas", return_value=(lock_blob, lock_blob.generation)), \
+             patch.object(reconciler, "_clear_owner_lock_preconditioned", return_value=True), \
+             patch.object(reconciler, "_write_state_cas", return_value=True) as mock_write, \
+             patch.object(reconciler, "_create_vm_from_config", return_value="spot-runner-test-run-2"):
+            result = reconciler._try_restart(bucket, "test-run", state, config)
+
+        assert result == "restarted"
+        assert mock_write.call_count >= 1
+        first_call = mock_write.call_args_list[0]
+        assert first_call.args[1] == "test-run"
+        assert first_call.args[2] == "RESTARTING"
+        assert first_call.kwargs.get("attempt_override") == 2
+
+    def test_restart_pins_zone_when_data_disk_enabled(self):
+        """When data disk is enabled, restart uses configured primary zone only."""
+        state = _make_state("ORPHANED", attempt=0)
+        config = {
+            "auto_restart_max": 3,
+            "zone": "us-east1-c",
+            "fallback_zones": ["us-east1-b", "us-east1-c"],
+            "data_disk_enabled": True,
+            "data_disk_name": "test-disk",
+            "startup_script": "#!/bin/bash\necho ok\n",
+        }
+        bucket = MockBucket()
+        lock_blob = MockBlob({})
+
+        with patch.object(reconciler, "_is_restart_enabled", return_value=True), \
+             patch.object(reconciler, "_acquire_restart_lock_cas", return_value=(lock_blob, lock_blob.generation)), \
+             patch.object(reconciler, "_clear_owner_lock_preconditioned", return_value=True), \
+             patch.object(reconciler, "_write_state_cas", return_value=True), \
+             patch.object(reconciler, "_create_vm_from_config", return_value="spot-runner-test-run-1") as mock_create:
+            result = reconciler._try_restart(bucket, "test-run", state, config)
+
+        assert result == "restarted"
+        assert mock_create.call_count == 1
+        assert mock_create.call_args.args[3] == "us-east1-c"
+
+
+class TestCreateVmFromConfig:
+    def test_restart_requires_startup_script(self):
+        """Reconciler should fail closed if restart_config has no startup_script."""
+        config = {
+            "project": "test-project",
+            "machine_type": "n1-standard-4",
+            "image": "us-east1-docker.pkg.dev/test/repo/img:latest",
+            "service_account": "svc@test-project.iam.gserviceaccount.com",
+            "bucket": "test-bucket",
+            "job_command": "echo hi",
+            "metadata_prefix": "spot",
+        }
+        result = reconciler._create_vm_from_config("test-run", config, 1, "us-east1-c")
+        assert result is None
+
 
 class TestParseIso:
     """Timestamp parsing edge cases."""

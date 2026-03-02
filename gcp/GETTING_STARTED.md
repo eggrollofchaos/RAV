@@ -73,6 +73,7 @@ Recommended starting values:
 - `GPU_TIMEOUT_SEC="1200"` (recommended if T4 driver init is slow in your zone)
 - `DATA_DISK_TYPE="pd-balanced"` (good default if `pd-ssd` quota is constrained)
 - `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (COS writable path)
+- `DATA_DISK_NAME="rav-chexpert-cache-central1"` (set this to reuse one cache disk; if empty, each new `RUN_ID` creates a new disk name)
 - `SYNC_INTERVAL_SEC="180"`
 
 Timeout alignment rule:

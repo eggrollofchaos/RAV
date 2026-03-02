@@ -34,16 +34,18 @@ from state_machine import (
 logger = logging.getLogger("reconciler")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-BUCKET_NAME = os.environ.get("BUCKET", "ixqt-training-488109")
-PROJECT = os.environ.get("PROJECT", "ixqt-488109")
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 HEARTBEAT_STALE_SEC = int(os.environ.get("HEARTBEAT_STALE_SEC", "600"))
 RESTARTING_STUCK_SEC = int(os.environ.get("RESTARTING_STUCK_SEC", "600"))  # 10 min
 STALE_MARKER_MIN_AGE_SEC = 120  # 2 min between first and second observation
 MAX_DRIFT_REPAIR_CYCLES = 5
 
-# Pinned VM name filter pattern for aggregatedList
-VM_NAME_FILTER = 'name eq "ixqt-trainer-{run_id}-a.*"'
+BUCKET_NAME = os.environ.get("BUCKET", "")
+PROJECT = os.environ.get("PROJECT", "")
+
+# Optional aggregatedList VM pattern (must include {run_id} placeholder when set).
+# Example: name eq "spot-runner-{run_id}-.*"
+VM_NAME_FILTER_TEMPLATE = os.environ.get("VM_NAME_FILTER_TEMPLATE", 'name eq ".*{run_id}.*"')
 
 _storage_client = None
 _compute_client = None
@@ -114,6 +116,14 @@ def _blob_exists(bucket, path):
     return bucket.blob(path).exists()
 
 
+def _as_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
+
 def _vm_exists(instance_name, zone, project=None):
     """Check if a VM exists via Compute Engine API."""
     project = project or PROJECT
@@ -132,7 +142,13 @@ def _vm_exists(instance_name, zone, project=None):
 def _vm_search_by_pattern(run_id, project=None):
     """Search for VMs matching the naming pattern across all zones."""
     project = project or PROJECT
-    filter_str = VM_NAME_FILTER.format(run_id=run_id)
+    if not VM_NAME_FILTER_TEMPLATE:
+        return None
+    try:
+        filter_str = VM_NAME_FILTER_TEMPLATE.format(run_id=run_id.replace('"', ""))
+    except Exception as e:
+        logger.warning(f"VM_NAME_FILTER_TEMPLATE format error: {e}")
+        return None
     try:
         result = _get_compute_client().aggregated_list(
             project=project,
@@ -148,7 +164,16 @@ def _vm_search_by_pattern(run_id, project=None):
         return None
 
 
-def _write_state_cas(bucket, run_id, new_state, reason, actor="reconciler"):
+def _write_state_cas(
+    bucket,
+    run_id,
+    new_state,
+    reason,
+    actor="reconciler",
+    attempt_override=None,
+    instance_name_override=None,
+    zone_override=None,
+):
     """CAS write to state.json. Returns True on success."""
     if DRY_RUN:
         logger.info(f"[DRY-RUN] Would write state {new_state} for {run_id}")
@@ -191,9 +216,9 @@ def _write_state_cas(bucket, run_id, new_state, reason, actor="reconciler"):
             "prev_state": current_state,
             "state_version": state_version,
             "owner_id": current.get("owner_id", ""),
-            "instance_name": current.get("instance_name", ""),
-            "zone": current.get("zone", ""),
-            "attempt": current.get("attempt", 0),
+            "instance_name": instance_name_override if instance_name_override is not None else current.get("instance_name", ""),
+            "zone": zone_override if zone_override is not None else current.get("zone", ""),
+            "attempt": attempt_override if attempt_override is not None else current.get("attempt", 0),
             "updated_at": _now_iso(),
             "updated_by": actor,
             "reason": reason,
@@ -586,7 +611,7 @@ def _create_vm_from_config(run_id, restart_config, attempt, zone):
     bucket = restart_config.get("bucket", BUCKET_NAME)
     boot_disk_size = restart_config.get("boot_disk_size_gb", "50")
     boot_disk_type = restart_config.get("boot_disk_type", "pd-ssd")
-    gpu_enabled = restart_config.get("gpu_enabled", False)
+    gpu_enabled = _as_bool(restart_config.get("gpu_enabled", False))
     gpu_type = restart_config.get("gpu_type", "")
     metadata_prefix = restart_config.get("metadata_prefix", "spot")
     runner_label = restart_config.get("runner_label", "spot-runner")
@@ -595,6 +620,11 @@ def _create_vm_from_config(run_id, restart_config, attempt, zone):
     notify_secret = restart_config.get("notify_secret", "")
     container_name = restart_config.get("container_name", "spot-runner")
     region = restart_config.get("region", "us-east1")
+    data_disk_enabled = _as_bool(restart_config.get("data_disk_enabled", False))
+    data_disk_name = restart_config.get("data_disk_name", "")
+    data_disk_device_name = restart_config.get("data_disk_device_name", "spot-data")
+    data_disk_mount_path = restart_config.get("data_disk_mount_path", "/mnt/spot-data")
+    data_disk_fs_type = restart_config.get("data_disk_fs_type", "ext4")
 
     import base64
     job_b64 = base64.b64encode(job_command.encode()).decode()
@@ -621,12 +651,45 @@ def _create_vm_from_config(run_id, restart_config, attempt, zone):
     if gpu_enabled:
         metadata_items.append({"key": "install-nvidia-driver", "value": "true"})
 
-    # Read startup script
-    # For reconciler, we need the startup script content
-    # It should be available from the restart_config or from GCS
     startup_script = restart_config.get("startup_script", "")
-    if startup_script:
-        metadata_items.append({"key": "startup-script", "value": startup_script})
+    if not startup_script:
+        logger.error(f"[{run_id}] restart_config.json missing startup_script; cannot restart safely.")
+        return None
+    metadata_items.append({"key": "startup-script", "value": startup_script})
+
+    if data_disk_enabled:
+        if not data_disk_name:
+            logger.error(f"[{run_id}] data_disk_enabled=true but data_disk_name is empty")
+            return None
+        metadata_items.extend(
+            [
+                {"key": f"{metadata_prefix}-data-disk-device-name", "value": data_disk_device_name},
+                {"key": f"{metadata_prefix}-data-disk-mount-path", "value": data_disk_mount_path},
+                {"key": f"{metadata_prefix}-data-disk-fs-type", "value": data_disk_fs_type},
+            ]
+        )
+
+    disks = [
+        compute_v1.AttachedDisk(
+            auto_delete=True,
+            boot=True,
+            initialize_params=compute_v1.AttachedDiskInitializeParams(
+                source_image="projects/cos-cloud/global/images/family/cos-stable",
+                disk_size_gb=int(boot_disk_size),
+                disk_type=f"zones/{zone}/diskTypes/{boot_disk_type}",
+            ),
+        )
+    ]
+    if data_disk_enabled:
+        data_disk = compute_v1.AttachedDisk(
+            auto_delete=False,
+            boot=False,
+            source=f"projects/{project}/zones/{zone}/disks/{data_disk_name}",
+            mode="READ_WRITE",
+        )
+        if data_disk_device_name:
+            data_disk.device_name = data_disk_device_name
+        disks.append(data_disk)
 
     instance_resource = compute_v1.Instance(
         name=vm_name,
@@ -636,17 +699,7 @@ def _create_vm_from_config(run_id, restart_config, attempt, zone):
             instance_termination_action="DELETE",
             on_host_maintenance="TERMINATE",
         ),
-        disks=[
-            compute_v1.AttachedDisk(
-                auto_delete=True,
-                boot=True,
-                initialize_params=compute_v1.AttachedDiskInitializeParams(
-                    source_image="projects/cos-cloud/global/images/family/cos-stable",
-                    disk_size_gb=int(boot_disk_size),
-                    disk_type=f"zones/{zone}/diskTypes/{boot_disk_type}",
-                ),
-            )
-        ],
+        disks=disks,
         network_interfaces=[
             compute_v1.NetworkInterface(
                 access_configs=[compute_v1.AccessConfig(name="External NAT")]
@@ -731,13 +784,24 @@ def _try_restart(bucket, run_id, state_data, restart_config):
             raise RuntimeError("Owner lock clearance failed")
 
         # Step 3: CAS state → RESTARTING
-        if not _write_state_cas(bucket, run_id, "RESTARTING", "reconciler_restart"):
+        if not _write_state_cas(
+            bucket,
+            run_id,
+            "RESTARTING",
+            "reconciler_restart",
+            attempt_override=new_attempt,
+        ):
             raise RuntimeError("CAS RESTARTING failed")
 
         # Step 4: Create VM
         zones = restart_config.get("fallback_zones", [])
         if not zones:
             zones = [restart_config.get("zone", "us-east1-c")]
+        if _as_bool(restart_config.get("data_disk_enabled", False)):
+            pinned_zone = restart_config.get("zone", "")
+            if pinned_zone:
+                zones = [pinned_zone]
+                logger.info(f"[{run_id}] data_disk_enabled=true; restart pinned to zone {pinned_zone}")
 
         vm_name = None
         final_zone = None
@@ -770,7 +834,14 @@ def _try_restart(bucket, run_id, state_data, restart_config):
         # Rollback: state back to previous
         if state_data:
             prev = state_data.get("state", "ORPHANED")
-            _write_state_cas(bucket, run_id, prev, "restart_rollback")
+            rollback_state = prev if prev in {"ORPHANED", "RUNNING", "STOPPED"} else "ORPHANED"
+            _write_state_cas(
+                bucket,
+                run_id,
+                rollback_state,
+                "restart_rollback",
+                attempt_override=new_attempt,
+            )
 
         # Release lock
         try:
@@ -809,6 +880,9 @@ def _discover_active_runs(bucket):
 def reconcile_all():
     """Main reconciliation loop. Scans all active runs."""
     logger.info(f"Reconciler starting (DRY_RUN={DRY_RUN}, project={PROJECT}, bucket={BUCKET_NAME})")
+    if not PROJECT or not BUCKET_NAME:
+        logger.error("PROJECT and BUCKET must be set for reconciler execution.")
+        return {}
 
     # Log state_transitions.json hash
     try:

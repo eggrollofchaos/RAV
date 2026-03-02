@@ -4,12 +4,25 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v0.2.8-reconciler-phase1-hardening - 2026-03-02
+
 Updated:
 - GCP persistent-disk docs and defaults now use a writable COS mount path:
   - `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"`
   - Avoids startup failure: `mkdir: cannot create directory '/mnt/spot-data': Read-only file system`
 - GCP troubleshooting docs now include explicit diagnosis/remediation for the COS read-only mount-path failure.
 - GCP docs now call out region selection flexibility (for example `us-central1`) when `us-east1` is shared/constrained.
+- Cloud reconciler hardening (Phase 1 reliability):
+  - `gcp/cloud_reconciler/state_machine.py`: transition-file path resolution now works in both source and flat Cloud Function deploy layouts.
+  - `gcp/cloud_reconciler/main.py`: restart attempt persistence fixed via `attempt_override`; restart now fails closed when `startup_script` is missing.
+  - `gcp/cloud_reconciler/main.py`: persistent data disk now attaches on reconciler restarts, including startup metadata for mount behavior.
+  - `gcp/cloud_reconciler/main.py`: restart zone is pinned when `data_disk_enabled=true` to avoid cross-zone disk attach failures.
+  - `gcp/cloud_reconciler/main.py` + `deploy.sh`: removed IXQT-pinned defaults; runtime/deploy config is now env-driven.
+- Reconciler tests expanded:
+  - `tests/test_reconciler.py`: added behavior tests for incremented-attempt persistence, disk-zone pinning, and startup-script requirement.
+  - `tests/test_state_machine.py`: added transitions path resolution coverage.
+- App version to `v0.2.8-reconciler-phase1-hardening`.
+- Spot runner lineage version in README to `gcp-spot-runner v0.3.1-phase1-reliability-hardening`.
 
 ## v0.2.7-gcp-docs-version-sync - 2026-03-01
 

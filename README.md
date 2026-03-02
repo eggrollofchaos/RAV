@@ -4,8 +4,8 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.7-gcp-docs-version-sync`
-Spot runner lineage version: `gcp-spot-runner v0.3.0-ixqt-rav-gcp-resilience`
+Current app version: `v0.2.8-reconciler-phase1-hardening`
+Spot runner lineage version: `gcp-spot-runner v0.3.1-phase1-reliability-hardening`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`
