@@ -7,6 +7,7 @@ All notable changes to this project are documented in this file.
 Added:
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
+  - `tests/bats/test_runner_adapter.bats` verifies `gcp_submit_primary.sh` / `gcp_submit_poc.sh` re-exec through `caffeinate` with `_IXQT_CAFFEINATED` guard in executable wrapper flow.
   - `tests/bats/test_runner_adapter.bats` verifies `watch --json` passthrough reaches shared runner ops unchanged.
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_submit_primary.sh` and `scripts/gcp_submit_poc.sh` default job commands invoke `gcp_train_with_checkpoint_sync.sh` with expected config/eval split + sync interval, and that `SYNC_INTERVAL_SEC` overrides are reflected in submit payloads.
   - `tests/bats/test_runner_adapter.bats` verifies `JOB_COMMAND_PRIMARY` / `JOB_COMMAND_POC` override env vars are passed through verbatim to shared-runner submit payloads.
@@ -33,7 +34,7 @@ Updated:
 Changed:
 - `scripts/gcp_runner_common.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical runner install checks and `spotctl` invocation wiring.
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
-- `tests/bats/test_caffeinate.bats` now validates only RAV wrapper scripts; shared runner contracts are now validated in `gcp-spot-runner/tests/bats/`.
+- Replaced structural-only `tests/bats/test_caffeinate.bats` with behavior-first wrapper execution tests in `tests/bats/test_runner_adapter.bats`.
 - Removed duplicate state-machine BATS behavior suite from RAV (`tests/bats/test_state_machine.bats`); shared transition behavior is now validated in `gcp-spot-runner/tests/bats/test_state_helpers.bats`.
 - Removed duplicate shared reconciler Python suites from RAV (`tests/test_reconciler.py`, `tests/test_state_machine.py`); canonical reconciler/state-machine Python tests now live in `gcp-spot-runner/tests/test_reconciler_runtime.py`.
 - `gcp/state_helpers.sh` is now a thin wrapper over shared runner helper implementation (`gcp-spot-runner/state_helpers.sh`).

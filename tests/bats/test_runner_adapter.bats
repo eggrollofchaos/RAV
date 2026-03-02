@@ -26,6 +26,22 @@ _setup_temp_submit_wrappers() {
     "$TEMP_REPO/scripts/gcp_monitor.sh"
 }
 
+_make_caffeinate_stub() {
+  local bin_dir="$1"
+  mkdir -p "$bin_dir"
+  cat > "$bin_dir/caffeinate" <<'CAFFEINATE_STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'CAFFEINATED=%s\n' "${_IXQT_CAFFEINATED:-}" > "${CAFFEINATE_LOG}"
+printf '%s\n' "$@" >> "${CAFFEINATE_LOG}"
+if [[ "${1:-}" == "-i" ]]; then
+  shift
+fi
+exec "$@"
+CAFFEINATE_STUB
+  chmod +x "$bin_dir/caffeinate"
+}
+
 _write_fake_runner_common() {
   local log_path="$1"
   : > "$log_path"
@@ -272,6 +288,64 @@ SCRIPT
   assert_line --index 0 "MONITOR"
   assert_line --index 1 "--single"
   assert_line --index 2 "--json"
+}
+
+@test "gcp_submit_primary re-execs through caffeinate guard with _IXQT_CAFFEINATED" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_primary_caffeinate.log"
+  _write_fake_runner_common "$call_log"
+
+  local fake_bin="$BATS_TEST_TMPDIR/fake-bin-caffeinate-primary"
+  local caffeinate_log="$BATS_TEST_TMPDIR/caffeinate_primary.log"
+  export CAFFEINATE_LOG="$caffeinate_log"
+  _make_caffeinate_stub "$fake_bin"
+
+  run env -u RAV_GCP_ENV PATH="$fake_bin:$PATH" bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_primary.sh --run-id rav-caf-1 --dry-run" 2>&1
+  assert_success
+
+  run sed -n '1,8p' "$caffeinate_log"
+  assert_success
+  assert_line --index 0 "CAFFEINATED=1"
+  assert_line --index 1 "-i"
+  assert_line --index 2 "./scripts/gcp_submit_primary.sh"
+  assert_line --index 3 "--run-id"
+  assert_line --index 4 "rav-caf-1"
+  assert_line --index 5 "--dry-run"
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-caf-1"
+  assert_line --index 3 "--dry-run"
+}
+
+@test "gcp_submit_poc re-execs through caffeinate guard with _IXQT_CAFFEINATED" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_poc_caffeinate.log"
+  _write_fake_runner_common "$call_log"
+
+  local fake_bin="$BATS_TEST_TMPDIR/fake-bin-caffeinate-poc"
+  local caffeinate_log="$BATS_TEST_TMPDIR/caffeinate_poc.log"
+  export CAFFEINATE_LOG="$caffeinate_log"
+  _make_caffeinate_stub "$fake_bin"
+
+  run env -u RAV_GCP_ENV PATH="$fake_bin:$PATH" bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_poc.sh --run-id rav-caf-2 --dry-run" 2>&1
+  assert_success
+
+  run sed -n '1,8p' "$caffeinate_log"
+  assert_success
+  assert_line --index 0 "CAFFEINATED=1"
+  assert_line --index 1 "-i"
+  assert_line --index 2 "./scripts/gcp_submit_poc.sh"
+  assert_line --index 3 "--run-id"
+  assert_line --index 4 "rav-caf-2"
+  assert_line --index 5 "--dry-run"
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-caf-2"
+  assert_line --index 3 "--dry-run"
 }
 
 @test "gcp_submit_poc default job command uses checkpoint sync wrapper" {
