@@ -117,6 +117,21 @@ SCRIPT
   assert_line --index 9 "--yes"
 }
 
+@test "run_ops_command forwards watch json args unchanged" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/ops_watch_json_args.txt"
+  _capture_stub "$captured"
+
+  RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
+  run_ops_command watch 20 --json
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 6 "watch"
+  assert_line --index 7 "20"
+  assert_line --index 8 "--json"
+}
+
 @test "gcp_submit_primary default job command uses checkpoint sync wrapper" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_primary_default.log"
