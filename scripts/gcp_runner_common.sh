@@ -7,6 +7,7 @@ RAV_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RAV_GCP_ENV_DEFAULT="${RAV_ROOT}/gcp/rav_spot.env"
 RUNNER_DIR_DEFAULT="${RAV_ROOT}/../gcp-spot-runner"
 RAV_GCP_ENV_PATH=""
+RUNNER_ADAPTER_LIB_LOADED="0"
 
 load_rav_spot_env() {
   local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
@@ -65,6 +66,21 @@ apply_runner_defaults() {
   : "${NOTIFY_SECRET:=}"
 }
 
+_require_runner_adapter_lib() {
+  if [[ "${RUNNER_ADAPTER_LIB_LOADED}" == "1" ]]; then
+    return 0
+  fi
+  local lib_path="${RUNNER_DIR}/adapters/spot_runner_common.sh"
+  if [[ ! -f "${lib_path}" ]]; then
+    echo "Runner helper missing: ${lib_path}" >&2
+    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+    exit 1
+  fi
+  # shellcheck disable=SC1090
+  source "${lib_path}"
+  RUNNER_ADAPTER_LIB_LOADED="1"
+}
+
 configure_gcloud_runtime() {
   : "${CLOUDSDK_CORE_DISABLE_PROMPTS:=1}"
   export CLOUDSDK_CORE_DISABLE_PROMPTS
@@ -108,6 +124,7 @@ check_required_spot_vars() {
 }
 
 check_runner_install() {
+  _require_runner_adapter_lib
   local required=(
     spotctl/__main__.py
     submit_legacy.sh
@@ -115,28 +132,19 @@ check_runner_install() {
     lib.sh
     startup.sh
   )
-  local file
-  for file in "${required[@]}"; do
-    if [[ ! -f "${RUNNER_DIR}/${file}" ]]; then
-      echo "Runner file missing: ${RUNNER_DIR}/${file}" >&2
-      echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
-      exit 1
-    fi
-  done
+  if ! spot_runner_check_install "${RUNNER_DIR}" "${required[@]}"; then
+    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+    exit 1
+  fi
 }
 
 run_spotctl_with_config() {
+  _require_runner_adapter_lib
   local config_path="$1"
   shift
 
   set +e
-  (
-    cd "${RUNNER_DIR}"
-    env \
-      SPOT_CONFIG_PATH="${config_path}" \
-      PYTHONPATH="${RUNNER_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
-      python3 -m spotctl "$@"
-  )
+  spot_runner_run_spotctl "${RUNNER_DIR}" "${config_path}" "$@"
   local status=$?
   set -e
   return "$status"

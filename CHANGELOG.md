@@ -22,13 +22,14 @@ Added:
 
 Updated:
 - `scripts/gcp_build_image.sh` now routes primary build execution through `spotctl build --profile rav` (keeps staged/local fallback behavior).
-- Runner lineage docs synchronized to `gcp-spot-runner v0.5.7-build-runtime-profile` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.8-adapter-common-lib` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.14-build-monitor-wrapper`.
+- App version to `v0.2.15-shared-adapter-lib`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:
+- `scripts/gcp_runner_common.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical runner install checks and `spotctl` invocation wiring.
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
 - `tests/bats/test_caffeinate.bats` now validates only RAV wrapper scripts; shared runner contracts are now validated in `gcp-spot-runner/tests/bats/`.
 - Removed duplicate state-machine BATS behavior suite from RAV (`tests/bats/test_state_machine.bats`); shared transition behavior is now validated in `gcp-spot-runner/tests/bats/test_state_helpers.bats`.
