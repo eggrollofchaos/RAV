@@ -15,10 +15,15 @@ if [[ "${RUNNER_DIR}" != /* ]]; then
   RUNNER_DIR="${REPO_ROOT}/${RUNNER_DIR}"
 fi
 RUNNER_DIR="$(cd "${RUNNER_DIR}" && pwd)"
-SPOTCTL_MAIN="${RUNNER_DIR}/spotctl/__main__.py"
-
-if [[ ! -f "$SPOTCTL_MAIN" ]]; then
-  echo "ERROR: Shared spotctl entrypoint not found: $SPOTCTL_MAIN"
+ADAPTER_LIB="${RUNNER_DIR}/adapters/spot_runner_common.sh"
+if [[ ! -f "$ADAPTER_LIB" ]]; then
+  echo "ERROR: Shared adapter helper not found: $ADAPTER_LIB"
+  echo "Set RUNNER_DIR to your gcp-spot-runner checkout."
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$ADAPTER_LIB"
+if ! spot_runner_check_install "$RUNNER_DIR" "spotctl/__main__.py" "adapters/spot_runner_common.sh"; then
   echo "Set RUNNER_DIR to your gcp-spot-runner checkout."
   exit 1
 fi
@@ -30,5 +35,5 @@ if [[ -n "${CONFIG_PATH}" ]]; then
   DEFAULT_ARGS+=(--config "${CONFIG_PATH}")
 fi
 
-exec env PYTHONPATH="${RUNNER_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
-  python3 -m spotctl reconciler deploy "${DEFAULT_ARGS[@]}" "$@"
+spot_runner_run_spotctl "${RUNNER_DIR}" "${CONFIG_PATH}" \
+  reconciler deploy "${DEFAULT_ARGS[@]}" "$@"

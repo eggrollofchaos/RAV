@@ -22,10 +22,12 @@ Added:
 
 Updated:
 - `scripts/gcp_build_image.sh` now delegates build execution (including staged-source fallback) through `spotctl build --profile rav`.
+- `gcp/cloud_reconciler/deploy.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical install checks and `spotctl` execution wiring.
+- `tests/bats/test_runner_adapter.bats` now stages a fake shared adapter helper in reconciler-wrapper fixture setup to keep adapter contract coverage aligned with deploy wrapper behavior.
 - Runner lineage docs synchronized to `gcp-spot-runner v0.5.9-build-staged-fallback` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.16-build-fallback-centralized`.
+- App version to `v0.2.17-reconciler-adapter-wrapper`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:

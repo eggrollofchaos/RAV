@@ -310,8 +310,33 @@ SCRIPT
 
 @test "reconciler deploy wrapper calls spotctl with rav profile + config" {
   local fake_runner="$BATS_TEST_TMPDIR/fake-runner"
-  mkdir -p "$fake_runner/spotctl"
+  mkdir -p "$fake_runner/spotctl" "$fake_runner/adapters"
   touch "$fake_runner/spotctl/__main__.py"
+  cat > "$fake_runner/adapters/spot_runner_common.sh" <<'ADAPTER_STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+spot_runner_check_install() {
+  local runner_dir="$1"
+  shift
+  local file
+  for file in "$@"; do
+    [[ -f "${runner_dir}/${file}" ]] || return 1
+  done
+}
+spot_runner_run_spotctl() {
+  local runner_dir="$1"
+  local config_path="$2"
+  shift 2
+  local env_args=()
+  if [[ -n "${config_path}" ]]; then
+    env_args+=(SPOT_CONFIG_PATH="${config_path}")
+  fi
+  env "${env_args[@]}" \
+    PYTHONPATH="${runner_dir}${PYTHONPATH:+:${PYTHONPATH}}" \
+    python3 -m spotctl "$@"
+}
+ADAPTER_STUB
+  chmod +x "$fake_runner/adapters/spot_runner_common.sh"
 
   local fake_bin="$BATS_TEST_TMPDIR/fake-bin"
   mkdir -p "$fake_bin"
