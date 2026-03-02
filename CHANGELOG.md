@@ -9,6 +9,7 @@ Added:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
   - `tests/bats/test_runner_adapter.bats` verifies `gcp/cloud_reconciler/deploy.sh` delegates to `spotctl reconciler deploy` with expected profile/default args.
   - `tests/bats/test_state_helpers_wrapper.bats` verifies `gcp/state_helpers.sh` resolves and sources shared `gcp-spot-runner/state_helpers.sh`.
+  - `tests/bats/test_state_transitions_parity.bats` verifies `gcp/state_transitions.json` hash matches `gcp-spot-runner/cloud_reconciler/state_transitions.json`.
 
 Updated:
 - Runner lineage docs synchronized to `gcp-spot-runner v0.5.5-monitor-convergence` in:
