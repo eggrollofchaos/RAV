@@ -35,6 +35,15 @@ _runner_lineage_changelog() {
     | sed -E 's/.*`gcp-spot-runner ([^`]+)`.*/\1/'
 }
 
+_runner_version_py_if_present() {
+  local runner_version_py="$REPO_ROOT/../gcp-spot-runner/version.py"
+  if [[ ! -f "$runner_version_py" ]]; then
+    printf ''
+    return 0
+  fi
+  sed -nE 's/^APP_VERSION = "([^"]+)"/\1/p' "$runner_version_py" | head -n1
+}
+
 @test "README app version matches src/rav_chest/version.py APP_VERSION" {
   local v_py v_readme
   v_py="$(_rav_app_version_py)"
@@ -71,3 +80,17 @@ _runner_lineage_changelog() {
   [ "$v_readme" = "$v_changelog" ]
 }
 
+@test "runner lineage version matches shared runner version.py when sibling checkout is present" {
+  local runner_version_py="$REPO_ROOT/../gcp-spot-runner/version.py"
+  if [[ ! -f "$runner_version_py" ]]; then
+    skip "Skipping: sibling gcp-spot-runner checkout not present"
+  fi
+
+  local v_readme v_runner
+  v_readme="$(_runner_lineage_readme)"
+  v_runner="$(_runner_version_py_if_present)"
+
+  [ -n "$v_readme" ]
+  [ -n "$v_runner" ]
+  [ "$v_readme" = "$v_runner" ]
+}

@@ -37,7 +37,7 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.1-cos-disk-mount-default` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.2-spotctl-version-command` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - App version to `v0.2.21-rav-unified-gcp-cli`.

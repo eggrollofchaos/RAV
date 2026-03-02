@@ -391,7 +391,7 @@ Action item:
 
 Current version map:
 - `RAV` app version: `v0.2.21-rav-unified-gcp-cli` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.6.1-cos-disk-mount-default` (`version.py`)
+- `gcp-spot-runner` runner version: `v0.6.2-spotctl-version-command` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
 - Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:
