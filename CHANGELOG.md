@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v0.2.13-profile-hook-runtime - 2026-03-02
+
+Updated:
+- `scripts/gcp_submit_primary.sh` default job command now runs training only; dataset sync is expected via runner profile hook (`pre_job_sync`).
+- `gcp/rav_spot.env.example` updated to document hook-driven primary submit behavior.
+- App version to `v0.2.13-profile-hook-runtime`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.5.4-profile-hook-runtime` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+
 ## v0.2.12-profile-runtime-submit - 2026-03-02
 
 Updated:
