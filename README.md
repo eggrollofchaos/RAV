@@ -519,3 +519,5 @@ Notes:
 4. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
 5. On restart with the same `RUN_ID`, wrapper auto-downloads `last.pt` and resumes via `--resume-checkpoint`.
 6. Wrapper copies `outputs/...` into `/app/results/...` at run end for runner artifact upload.
+7. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then retry `bash scripts/gcp_build_image.sh`.
+8. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account named in the error.

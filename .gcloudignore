@@ -18,6 +18,7 @@
 !gcp/
 !gcp/Dockerfile.train
 !gcp/entrypoint.sh
+!gcp/state_transitions.json
 !gcp/cloudbuild.rav.yaml
 
 # Drop local/cache artifacts even inside allowed directories.

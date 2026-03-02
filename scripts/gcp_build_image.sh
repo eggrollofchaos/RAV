@@ -47,6 +47,7 @@ staged_tarball_cloud_build_submit() {
       app \
       gcp/Dockerfile.train \
       gcp/entrypoint.sh \
+      gcp/state_transitions.json \
       gcp/cloudbuild.rav.yaml
   )
 

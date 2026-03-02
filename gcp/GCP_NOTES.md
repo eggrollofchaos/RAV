@@ -46,6 +46,26 @@ What helped:
   2) staged tarball + Cloud Build submit
   3) local `docker buildx --push` (when daemon is available)
 
+### A1) Docker `COPY gcp/state_transitions.json` fails in Cloud Build
+
+Error looked like:
+- `COPY failed: file not found in build context or excluded by .dockerignore: stat gcp/state_transitions.json: file does not exist`
+
+Root cause:
+- `gcp/state_transitions.json` was not in the Cloud Build upload context allowlist.
+
+Fix applied in `RAV`:
+- `.gcloudignore` now includes:
+  - `!gcp/state_transitions.json`
+- `scripts/gcp_build_image.sh` staged tarball now includes:
+  - `gcp/state_transitions.json`
+
+Quick verification:
+```bash
+CLOUDSDK_CORE_DISABLE_PROMPTS=1 gcloud meta list-files-for-upload \
+  | rg 'gcp/state_transitions\.json'
+```
+
 ### B) Cloud Build 403 on source object (`storage.objects.get`)
 
 Error looked like:
