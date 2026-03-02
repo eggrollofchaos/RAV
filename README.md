@@ -4,7 +4,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.16-build-fallback-centralized`
+Current app version: `v0.2.17-reconciler-adapter-wrapper`
 Spot runner lineage version: `gcp-spot-runner v0.5.9-build-staged-fallback`
 
 Changelog: `CHANGELOG.md`

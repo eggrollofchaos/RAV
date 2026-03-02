@@ -386,7 +386,7 @@ Action item:
 ## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.16-build-fallback-centralized` (`src/rav_chest/version.py`)
+- `RAV` app version: `v0.2.17-reconciler-adapter-wrapper` (`src/rav_chest/version.py`)
 - `gcp-spot-runner` runner version: `v0.5.9-build-staged-fallback` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
