@@ -12,6 +12,39 @@ _capture_stub() {
   }
 }
 
+_setup_temp_submit_wrappers() {
+  export TEMP_REPO="$BATS_TEST_TMPDIR/repo"
+  mkdir -p "$TEMP_REPO/scripts"
+  cp "$REPO_ROOT/scripts/gcp_submit_primary.sh" "$TEMP_REPO/scripts/gcp_submit_primary.sh"
+  cp "$REPO_ROOT/scripts/gcp_submit_poc.sh" "$TEMP_REPO/scripts/gcp_submit_poc.sh"
+  chmod +x "$TEMP_REPO/scripts/gcp_submit_primary.sh" "$TEMP_REPO/scripts/gcp_submit_poc.sh"
+}
+
+_write_fake_runner_common() {
+  local log_path="$1"
+  : > "$log_path"
+  cat > "$TEMP_REPO/scripts/gcp_runner_common.sh" <<SCRIPT
+#!/usr/bin/env bash
+set -euo pipefail
+load_rav_spot_env() { :; }
+apply_runner_defaults() {
+  : "\${RUNNER_DIR:=/tmp/fake-runner}"
+  : "\${IMAGE:=us-east1-docker.pkg.dev/demo/rav/train:latest}"
+  : "\${BUCKET:=demo-bucket}"
+}
+check_required_spot_vars() { :; }
+check_runner_install() { :; }
+configure_gcloud_runtime() { :; }
+run_submit_with_job() {
+  local job_command="\$1"
+  shift
+  printf 'JOB_COMMAND=%s\n' "\$job_command" > "$log_path"
+  printf '%s\n' "\$@" >> "$log_path"
+}
+SCRIPT
+  chmod +x "$TEMP_REPO/scripts/gcp_runner_common.sh"
+}
+
 @test "run_submit_with_job delegates to spotctl submit with rav profile + job override" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/submit_args.txt"
@@ -82,6 +115,57 @@ _capture_stub() {
   assert_line --index 7 "--run-id"
   assert_line --index 8 "rav-999"
   assert_line --index 9 "--yes"
+}
+
+@test "gcp_submit_primary default job command uses checkpoint sync wrapper" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_primary_default.log"
+  _write_fake_runner_common "$call_log"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_primary.sh --run-id rav-123 --no-gpu" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 --partial "JOB_COMMAND=set -euo pipefail; bash scripts/gcp_train_with_checkpoint_sync.sh"
+  assert_line --index 0 --partial "--config configs/primary/chest_chexpert.yaml"
+  assert_line --index 0 --partial "--eval-split val"
+  assert_line --index 0 --partial "--sync-interval-sec 180"
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-123"
+  assert_line --index 3 "--no-gpu"
+}
+
+@test "gcp_submit_primary default job command respects SYNC_INTERVAL_SEC override" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_primary_sync_interval.log"
+  _write_fake_runner_common "$call_log"
+
+  run env -u RAV_GCP_ENV SYNC_INTERVAL_SEC=90 bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_primary.sh --run-id rav-124" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 --partial "--sync-interval-sec 90"
+}
+
+@test "gcp_submit_poc default job command uses checkpoint sync wrapper" {
+  _setup_temp_submit_wrappers
+  local call_log="$BATS_TEST_TMPDIR/submit_poc_default.log"
+  _write_fake_runner_common "$call_log"
+
+  run env -u RAV_GCP_ENV bash -c "cd '$TEMP_REPO' && ./scripts/gcp_submit_poc.sh --run-id rav-poc-1 --dry-run" 2>&1
+  assert_success
+
+  run cat "$call_log"
+  assert_success
+  assert_line --index 0 --partial "JOB_COMMAND=set -euo pipefail; bash scripts/gcp_train_with_checkpoint_sync.sh"
+  assert_line --index 0 --partial "--config configs/poc/chest_pneumonia_binary.yaml"
+  assert_line --index 0 --partial "--eval-split test"
+  assert_line --index 0 --partial "--sync-interval-sec 180"
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-poc-1"
+  assert_line --index 3 "--dry-run"
 }
 
 @test "reconciler deploy wrapper calls spotctl with rav profile + config" {
