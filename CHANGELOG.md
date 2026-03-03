@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 Added:
+- Corrupt image handling in `src/rav_chest/data.py`: `__getitem__` catches `UnidentifiedImageError`/`OSError` and returns `None`; new `skip_none_collate` filters corrupt samples from batches.
+- `scripts/train_chest_baseline.py` uses `skip_none_collate` and skips `None` batches in train/eval loops.
+- `gcp/DATASET_TRANSFER.md` troubleshooting entry for zero-byte files after `gcloud storage rsync` upload (~9% of CheXpert-Small affected), with detection commands and `-c` checksum re-sync fix.
+- `gcp/GCP_NOTES.md` Section 13: DataLoader shared memory exhaustion root cause and `--shm-size=2g` fix.
+- `gcp/GCP_NOTES.md` Section 14: Immediate preemption not retried (one-shot restart bug) root cause and while-loop fix.
+
+Updated:
+- `scripts/gcp_sync_chexpert_cache.sh` line 104: pass missing `"$uri"` arg to `_write_marker` (fixed `$2: unbound variable` crash after successful rsync).
+- `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
+- `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
+- `gcp/GCP_NOTES.md` Section 2→G documents the `_write_marker` unbound variable bug.
+- Runner lineage: `gcp-spot-runner v0.6.4-restart-loop-fix` (restart while-loop, `--shm-size=2g`, L4 default, `--accelerator` skip for g2/a2).
+
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
 - `tests/bats/test_runner_adapter.bats` verifies `gcp_submit_primary.sh` / `gcp_submit_poc.sh` re-exec through `caffeinate` with `_SPOT_CAFFEINATED` guard in executable wrapper flow.
@@ -40,7 +53,7 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.3-contract-curation` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.4-restart-loop-fix` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - App version to `v0.2.21-rav-unified-gcp-cli`.

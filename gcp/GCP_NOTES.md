@@ -388,11 +388,61 @@ Action item:
   (for example `gs://<BUCKET>/runs/<RUN_ID>/startup.log`) so next non-zero exit
   has a recoverable terminal error line.
 
-## 13) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
+## 13) DataLoader shared memory exhaustion (`--shm-size`)
+
+**Observed**: 2026-03-02. Training ran 3 epochs successfully, then crashed:
+```
+RuntimeError: DataLoader worker killed by signal: Bus error. Out of shared memory.
+```
+
+**Root cause**:
+- Docker defaults `/dev/shm` to 64 MB.
+- PyTorch DataLoader workers use shared memory for IPC (passing tensors from
+  worker processes back to the main training process via `multiprocessing`).
+- With `num_workers > 0`, memory-mapped tensor buffers in `/dev/shm` eventually
+  exceed 64 MB, triggering SIGBUS.
+
+**Fix**: Add `--shm-size=2g` to the `docker run` command in
+`gcp-spot-runner/startup.sh`:
+```bash
+docker run --name spot-runner --rm \
+  --shm-size=2g \
+  ...
+```
+
+**Note**: PyTorch does not detect or warn about insufficient shared memory
+ahead of time. The crash typically happens several epochs in (after enough
+workers have accumulated shared buffers), making it hard to diagnose.
+
+## 14) Immediate preemption not retried (one-shot restart bug)
+
+**Observed**: 2026-03-02 run `20260302-184203802-4ba0`. VM was preempted,
+auto-restart created a new VM, but the new VM was immediately preempted again.
+The script exited without further retries despite `MAX_RESTARTS=3`.
+
+**Root cause**:
+- The auto-restart block in `submit_legacy.sh` was structured as a one-shot
+  `if/elif/else`. After `_do_restart()` created a VM and the inner poll loop
+  detected the VM was gone (immediately preempted), `FINAL_STATUS` was set to
+  `PREEMPTED` and execution fell through to Phase 4 (final status) without
+  re-checking the restart condition.
+- `ATTEMPT` was incremented to 1 but never compared against `MAX_RESTARTS`
+  again.
+
+**Fix**: Converted the outer `if` to a `while...do` loop with `break` on every
+non-retryable branch (`.stop` found, exhausted, deadline, rollback failure).
+The retryable path (inner poll exits with PREEMPTED/FAILED/TIMEOUT) now loops
+back and re-evaluates the restart condition.
+
+Also bumped `MAX_RESTARTS` from 3 to 10 (matching IXQT) in both:
+- `gcp-spot-runner/profiles/rav.yaml` (`restart.max_restarts`)
+- `RAV/gcp/rav_spot.env` (`MAX_RESTARTS`)
+
+## 15) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
 - `RAV` app version: `v0.2.21-rav-unified-gcp-cli` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.6.3-contract-curation` (`version.py`)
+- `gcp-spot-runner` runner version: `v0.6.4-restart-loop-fix` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
 - Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:
