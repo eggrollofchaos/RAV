@@ -24,15 +24,19 @@ CONFIG_PATH="${RAV_GCP_ENV_PATH:-}"
 
 : "${FUNCTION_NAME:=rav-reconciler}"
 : "${SCHEDULER_NAME:=rav-reconciler-trigger}"
-args=(
-  reconciler
-  deploy
-  --profile rav
-  --function-name "${FUNCTION_NAME}"
-  --scheduler-name "${SCHEDULER_NAME}"
-)
+if declare -F spot_runner_run_reconciler_deploy_safe >/dev/null 2>&1; then
+  spot_runner_run_reconciler_deploy_safe \
+    "${RUNNER_DIR}" \
+    "${CONFIG_PATH}" \
+    "rav" \
+    "${FUNCTION_NAME}" \
+    "${SCHEDULER_NAME}" \
+    "$@"
+  exit "$?"
+fi
+
+args=(reconciler deploy --profile rav --function-name "${FUNCTION_NAME}" --scheduler-name "${SCHEDULER_NAME}")
 if [[ -n "${CONFIG_PATH}" ]]; then
   args+=(--config "${CONFIG_PATH}")
 fi
-
 run_spotctl_with_config "${CONFIG_PATH}" "${args[@]}" "$@"
