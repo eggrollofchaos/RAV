@@ -46,8 +46,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--test-fraction-from-valid",
         type=float,
-        default=0.5,
+        default=0.1,
         help="Fraction of valid.csv assigned to test set (rest stays val).",
+    )
+    parser.add_argument(
+        "--stratify-max-labels",
+        type=int,
+        default=4,
+        help="Max number of label columns used to build a safer stratification key.",
     )
     parser.add_argument(
         "--seed",
@@ -80,6 +86,48 @@ def _clean_split(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _binarize_label(series: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(series, errors="coerce").fillna(0.0)
+    numeric = numeric.replace(-1.0, 1.0)
+    return (numeric > 0.0).astype(int)
+
+
+def _build_stratify_series(df: pd.DataFrame, max_labels: int) -> tuple[pd.Series | None, list[str]]:
+    max_labels = max(1, int(max_labels))
+
+    usable_labels: list[tuple[str, float]] = []
+    for col in LABEL_COLUMNS:
+        bin_col = _binarize_label(df[col])
+        prevalence = float(bin_col.mean())
+        if 0.0 < prevalence < 1.0:
+            balance = min(prevalence, 1.0 - prevalence)
+            usable_labels.append((col, balance))
+
+    if not usable_labels:
+        return None, []
+
+    usable_labels.sort(key=lambda x: x[1], reverse=True)
+    ordered = [c for c, _ in usable_labels]
+    if "No Finding" in ordered:
+        ordered.remove("No Finding")
+        ordered = ["No Finding", *ordered]
+
+    ordered = ordered[:max_labels]
+    for k in range(len(ordered), 0, -1):
+        cols = ordered[:k]
+        key_df = pd.DataFrame({col: _binarize_label(df[col]) for col in cols})
+        keys = key_df.astype(str).agg("".join, axis=1)
+        counts = keys.value_counts(dropna=False)
+        if keys.nunique() > 1 and int(counts.min()) >= 2:
+            return keys, cols
+
+    fallback = _binarize_label(df["No Finding"]).astype(str)
+    counts = fallback.value_counts(dropna=False)
+    if fallback.nunique() > 1 and int(counts.min()) >= 2:
+        return fallback, ["No Finding"]
+    return None, []
+
+
 def main() -> None:
     args = parse_args()
     root = Path(args.chexpert_root)
@@ -102,17 +150,29 @@ def main() -> None:
     if not (0.0 < test_fraction < 1.0):
         raise ValueError("--test-fraction-from-valid must be between 0 and 1.")
 
-    strat = valid_df["No Finding"].fillna(0)
-    if strat.nunique() < 2:
-        strat = None
+    strat, strat_cols = _build_stratify_series(valid_df, int(args.stratify_max_labels))
+    if strat is not None:
+        print(f"Using stratified split on labels: {strat_cols}")
+    else:
+        print("Falling back to unstratified valid split (insufficient balanced strata).")
 
-    val_df, test_df = train_test_split(
-        valid_df,
-        test_size=test_fraction,
-        random_state=int(args.seed),
-        shuffle=True,
-        stratify=strat,
-    )
+    try:
+        val_df, test_df = train_test_split(
+            valid_df,
+            test_size=test_fraction,
+            random_state=int(args.seed),
+            shuffle=True,
+            stratify=strat,
+        )
+    except ValueError as exc:
+        print(f"Stratified split failed ({exc}); retrying without stratification.")
+        val_df, test_df = train_test_split(
+            valid_df,
+            test_size=test_fraction,
+            random_state=int(args.seed),
+            shuffle=True,
+            stratify=None,
+        )
     val_df = val_df.reset_index(drop=True)
     test_df = test_df.reset_index(drop=True)
 

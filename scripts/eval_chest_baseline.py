@@ -166,6 +166,7 @@ def main() -> None:
         path_column=cfg["data"].get("path_column", "Path"),
         image_size=int(cfg["training"]["image_size"]),
         uncertain_value=float(cfg["labels"]["uncertain_value"]),
+        uncertain_overrides=cfg["labels"].get("uncertain_overrides", {}),
     )
     num_workers = (
         int(cfg["training"]["num_workers"])

@@ -1,0 +1,64 @@
+project:
+  name: rav-chest-chexpert-5task-policy
+  seed: 42
+  output_dir: outputs/chest_baseline_5task_policy
+  train_script: scripts/train_chexpert_5task_policy.py
+  eval_script: scripts/eval_chexpert_5task_policy.py
+
+data:
+  image_root: data/raw/chexpert
+  train_csv: data/processed/chexpert_train.csv
+  val_csv: data/processed/chexpert_val.csv
+  test_csv: data/processed/chexpert_test.csv
+  path_column: Path
+
+labels:
+  columns:
+    - Atelectasis
+    - Cardiomegaly
+    - Consolidation
+    - Edema
+    - Pleural Effusion
+  policy:
+    u_ones:
+      - Atelectasis
+      - Edema
+    u_multiclass:
+      - Cardiomegaly
+      - Pleural Effusion
+    u_selftrained:
+      - Consolidation
+
+training:
+  device: auto
+  backbone: densenet121
+  pretrained: true
+  dropout: 0.35
+  image_size: 320
+  batch_size: 16
+  epochs_stage1: 3
+  epochs_stage2: 6
+  epochs: 9
+  lr: 0.0001
+  weight_decay: 0.0001
+  num_workers: 4
+  pin_memory: true
+  amp: true
+  selection_metric: f1
+  early_stopping_patience: 3
+  early_stopping_min_delta: 0.0005
+  augment:
+    enabled: true
+    hflip_prob: 0.5
+    rotation_degrees: 7.0
+    translate: 0.02
+    scale_min: 0.95
+    scale_max: 1.05
+    brightness: 0.05
+    contrast: 0.05
+
+evaluation:
+  default_threshold: 0.5
+  threshold_overrides:
+    Pleural Effusion: 0.45
+    Edema: 0.45

@@ -85,6 +85,8 @@ if ! [[ "$SYNC_INTERVAL_SEC" =~ ^[0-9]+$ ]] || [[ "$SYNC_INTERVAL_SEC" -le 0 ]];
 fi
 
 OUTPUT_DIR="$("$PYTHON_BIN" -c 'import sys,yaml; cfg=yaml.safe_load(open(sys.argv[1])); print(cfg["project"]["output_dir"])' "$CONFIG")"
+TRAIN_SCRIPT="$("$PYTHON_BIN" -c 'import sys,yaml; cfg=yaml.safe_load(open(sys.argv[1])); print(cfg.get("project",{}).get("train_script","scripts/train_chest_baseline.py"))' "$CONFIG")"
+EVAL_SCRIPT="$("$PYTHON_BIN" -c 'import sys,yaml; cfg=yaml.safe_load(open(sys.argv[1])); print(cfg.get("project",{}).get("eval_script","scripts/eval_chest_baseline.py"))' "$CONFIG")"
 CHECKPOINT_DIR="${OUTPUT_DIR}/checkpoints"
 METRICS_DIR="${OUTPUT_DIR}/metrics"
 REPORTS_DIR="${OUTPUT_DIR}/reports"
@@ -160,7 +162,7 @@ echo "[$(date -u)] Starting periodic sync loop (${SYNC_INTERVAL_SEC}s)"
 sync_loop &
 SYNC_PID=$!
 
-TRAIN_CMD=("$PYTHON_BIN" scripts/train_chest_baseline.py --config "$CONFIG")
+TRAIN_CMD=("$PYTHON_BIN" "$TRAIN_SCRIPT" --config "$CONFIG")
 if [[ -n "$RESUME_CKPT" ]]; then
   echo "[$(date -u)] Resuming from ${RESUME_CKPT}"
   TRAIN_CMD+=(--resume-checkpoint "$RESUME_CKPT")
@@ -173,7 +175,7 @@ echo
 
 if [[ "$SKIP_EVAL" != true ]] && [[ -n "$EVAL_SPLIT" ]]; then
   echo "[$(date -u)] Running eval on split=${EVAL_SPLIT}"
-  "$PYTHON_BIN" scripts/eval_chest_baseline.py --config "$CONFIG" --split "$EVAL_SPLIT" || true
+  "$PYTHON_BIN" "$EVAL_SCRIPT" --config "$CONFIG" --split "$EVAL_SPLIT" || true
 fi
 
 sync_once

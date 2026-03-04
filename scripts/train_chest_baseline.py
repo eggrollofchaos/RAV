@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
+import pandas as pd
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -42,8 +43,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def make_loaders(cfg: Dict[str, object], class_names: List[str], device: torch.device) -> Tuple[DataLoader, DataLoader]:
+def make_loaders(
+    cfg: Dict[str, object],
+    class_names: List[str],
+    device: torch.device,
+) -> Tuple[DataLoader, DataLoader]:
     data_cfg = cfg["data"]
+    train_cfg = cfg.get("training", {})
+    label_cfg = cfg.get("labels", {})
+    augment_cfg = train_cfg.get("augment", {})
+    if not isinstance(augment_cfg, dict):
+        augment_cfg = {}
+    uncertain_overrides = label_cfg.get("uncertain_overrides", {})
+    if not isinstance(uncertain_overrides, dict):
+        uncertain_overrides = {}
+
     train_ds = CheXpertDataset(
         csv_path=data_cfg["train_csv"],
         image_root=data_cfg["image_root"],
@@ -51,6 +65,9 @@ def make_loaders(cfg: Dict[str, object], class_names: List[str], device: torch.d
         path_column=data_cfg.get("path_column", "Path"),
         image_size=int(cfg["training"]["image_size"]),
         uncertain_value=float(cfg["labels"]["uncertain_value"]),
+        uncertain_overrides=uncertain_overrides,
+        train=True,
+        augment=augment_cfg,
     )
     val_ds = CheXpertDataset(
         csv_path=data_cfg["val_csv"],
@@ -59,6 +76,9 @@ def make_loaders(cfg: Dict[str, object], class_names: List[str], device: torch.d
         path_column=data_cfg.get("path_column", "Path"),
         image_size=int(cfg["training"]["image_size"]),
         uncertain_value=float(cfg["labels"]["uncertain_value"]),
+        uncertain_overrides=uncertain_overrides,
+        train=False,
+        augment={"enabled": False},
     )
 
     pin = bool(cfg["training"]["pin_memory"]) and device.type == "cuda"
@@ -80,6 +100,39 @@ def make_loaders(cfg: Dict[str, object], class_names: List[str], device: torch.d
         collate_fn=skip_none_collate,
     )
     return train_loader, val_loader
+
+
+def build_pos_weight_from_dataset(
+    train_ds: CheXpertDataset,
+    class_names: List[str],
+    cap: float | None = None,
+) -> torch.Tensor:
+    weights: List[float] = []
+    total = float(len(train_ds.df))
+    for col in class_names:
+        raw = pd.to_numeric(train_ds.df[col], errors="coerce").to_numpy(dtype=np.float32)
+        mapped = np.where(
+            np.isnan(raw),
+            0.0,
+            np.where(
+                raw == -1.0,
+                train_ds.uncertain_overrides.get(col, train_ds.uncertain_value),
+                np.where(raw > 0.0, 1.0, 0.0),
+            ),
+        )
+        pos = float(mapped.sum())
+        neg = max(0.0, total - pos)
+
+        # If positives (or negatives) are absent, keep neutral weighting.
+        if pos <= 0.0 or neg <= 0.0:
+            weight = 1.0
+        else:
+            weight = neg / pos
+
+        if cap is not None:
+            weight = min(weight, cap)
+        weights.append(float(weight))
+    return torch.tensor(weights, dtype=torch.float32)
 
 
 def eval_loop(
@@ -114,7 +167,16 @@ def eval_loop(
     return mean_loss, probs_np, labels_np
 
 
-def score_from_metrics(metric_payload: Dict[str, object] | None) -> float:
+def score_from_metrics(
+    metric_payload: Dict[str, object] | None,
+    *,
+    val_loss: float | None = None,
+    selection_metric: str = "auto",
+) -> float:
+    selection_metric = str(selection_metric).strip().lower()
+    if selection_metric == "val_loss":
+        return -float(val_loss) if val_loss is not None else -1.0
+
     if not metric_payload:
         return -1.0
 
@@ -123,10 +185,20 @@ def score_from_metrics(metric_payload: Dict[str, object] | None) -> float:
         return -1.0
 
     auroc = macro.get("auroc")
-    if auroc is not None:
+    if selection_metric == "auroc":
+        if auroc is None:
+            return -1.0
         return float(auroc)
 
     f1 = macro.get("f1")
+    if selection_metric == "f1":
+        if f1 is None:
+            return -1.0
+        return float(f1)
+
+    if auroc is not None:
+        return float(auroc)
+
     if f1 is not None:
         return float(f1)
     return -1.0
@@ -184,7 +256,27 @@ def main() -> None:
         dropout=float(cfg["training"]["dropout"]),
     ).to(device)
 
-    criterion = nn.BCEWithLogitsLoss()
+    pos_weight = None
+    if bool(cfg["training"].get("use_pos_weight", False)):
+        cap_raw = cfg["training"].get("pos_weight_cap")
+        cap = float(cap_raw) if cap_raw is not None else None
+        if isinstance(train_loader.dataset, CheXpertDataset):
+            pos_weight = build_pos_weight_from_dataset(
+                train_loader.dataset,
+                class_names,
+                cap=cap,
+            )
+            print(
+                "Using BCE pos_weight: "
+                f"min={float(pos_weight.min()):.3f} "
+                f"max={float(pos_weight.max()):.3f} "
+                f"mean={float(pos_weight.mean()):.3f}"
+            )
+        else:
+            print("WARN: use_pos_weight requested, but train dataset type is unexpected. Skipping.")
+    criterion = nn.BCEWithLogitsLoss(
+        pos_weight=pos_weight.to(device) if pos_weight is not None else None
+    )
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=float(cfg["training"]["lr"]),
@@ -197,6 +289,11 @@ def main() -> None:
 
     amp_enabled = device.type == "cuda" and bool(cfg["training"].get("amp", True))
     scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
+
+    selection_metric = str(cfg["training"].get("selection_metric", "auto")).strip().lower()
+    early_stopping_patience = int(cfg["training"].get("early_stopping_patience", 0))
+    early_stopping_min_delta = float(cfg["training"].get("early_stopping_min_delta", 0.0))
+    bad_epochs = 0
 
     thresholds = per_class_thresholds(
         class_names=class_names,
@@ -225,12 +322,21 @@ def main() -> None:
         start_epoch = resumed_epoch + 1
         history_mode = "a" if (metrics_dir / "history.jsonl").exists() else "w"
         elapsed_offset_seconds = load_previous_elapsed_seconds(metrics_dir / "history.jsonl")
-        best_score = score_from_metrics(state.get("val_metrics"))
+        best_score = score_from_metrics(
+            state.get("val_metrics"),
+            selection_metric=selection_metric,
+        )
 
         best_ckpt_path = ckpt_dir / "best.pt"
         if best_ckpt_path.exists():
             best_state = torch.load(best_ckpt_path, map_location="cpu")
-            best_score = max(best_score, score_from_metrics(best_state.get("val_metrics")))
+            best_score = max(
+                best_score,
+                score_from_metrics(
+                    best_state.get("val_metrics"),
+                    selection_metric=selection_metric,
+                ),
+            )
 
         print(
             f"Resuming from checkpoint: {resume_path} "
@@ -286,7 +392,11 @@ def main() -> None:
             )
             val_auroc = metric_payload["macro"]["auroc"]
             val_f1 = metric_payload["macro"]["f1"]
-            score = val_auroc if val_auroc is not None else val_f1
+            score = score_from_metrics(
+                metric_payload,
+                val_loss=val_loss,
+                selection_metric=selection_metric,
+            )
 
             epoch_seconds = time.time() - epoch_start
             elapsed_seconds = elapsed_offset_seconds + (time.time() - run_start)
@@ -299,6 +409,7 @@ def main() -> None:
                 "val_loss": val_loss,
                 "val_macro_auroc": val_auroc if val_auroc is not None else -1.0,
                 "val_macro_f1": val_f1,
+                "selection_score": score,
                 "lr": float(optimizer.param_groups[0]["lr"]),
                 "epoch_seconds": epoch_seconds,
                 "elapsed_seconds": elapsed_seconds,
@@ -313,6 +424,7 @@ def main() -> None:
                 f"val_loss={val_loss:.4f} "
                 f"val_macro_auroc={row['val_macro_auroc']:.4f} "
                 f"val_macro_f1={val_f1:.4f} "
+                f"{selection_metric}={score:.4f} "
                 f"epoch_seconds={epoch_seconds:.1f} "
                 f"eta_seconds={eta_seconds:.1f}"
             )
@@ -329,10 +441,22 @@ def main() -> None:
             }
             torch.save(last_payload, ckpt_dir / "last.pt")
 
-            if score > best_score:
+            improved = score > (best_score + early_stopping_min_delta)
+            if improved:
                 best_score = score
+                bad_epochs = 0
                 torch.save(last_payload, ckpt_dir / "best.pt")
                 save_json(metrics_dir / "best_val_metrics.json", metric_payload)
+            else:
+                bad_epochs += 1
+
+            if early_stopping_patience > 0 and bad_epochs >= early_stopping_patience:
+                print(
+                    "Early stopping triggered: "
+                    f"no {selection_metric} improvement for {bad_epochs} epochs "
+                    f"(patience={early_stopping_patience}, min_delta={early_stopping_min_delta})."
+                )
+                break
 
     print(f"Training complete. Best score={best_score:.4f}.")
 

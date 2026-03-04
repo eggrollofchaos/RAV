@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Sequence
+from typing import Any, Dict, List, Sequence
 
 import logging
 import pandas as pd
@@ -31,10 +31,51 @@ DEFAULT_LABELS: List[str] = [
 ]
 
 
-def build_transform(image_size: int) -> transforms.Compose:
-    return transforms.Compose(
+def build_transform(
+    image_size: int,
+    train: bool = False,
+    augment: Dict[str, Any] | None = None,
+) -> transforms.Compose:
+    ops: List[Any] = [transforms.Resize((image_size, image_size))]
+    augment = augment or {}
+    augment_enabled = bool(augment.get("enabled", False))
+
+    if train and augment_enabled:
+        hflip_prob = float(augment.get("hflip_prob", 0.5))
+        rotation_degrees = float(augment.get("rotation_degrees", 7.0))
+        translate = float(augment.get("translate", 0.02))
+        scale_min = float(augment.get("scale_min", 0.95))
+        scale_max = float(augment.get("scale_max", 1.05))
+        brightness = float(augment.get("brightness", 0.05))
+        contrast = float(augment.get("contrast", 0.05))
+
+        if hflip_prob > 0.0:
+            ops.append(
+                transforms.RandomHorizontalFlip(
+                    p=max(0.0, min(1.0, hflip_prob))
+                )
+            )
+
+        if rotation_degrees > 0.0 or translate > 0.0 or scale_min != 1.0 or scale_max != 1.0:
+            affine_translate = (translate, translate) if translate > 0.0 else None
+            ops.append(
+                transforms.RandomAffine(
+                    degrees=rotation_degrees,
+                    translate=affine_translate,
+                    scale=(scale_min, scale_max),
+                )
+            )
+
+        if brightness > 0.0 or contrast > 0.0:
+            ops.append(
+                transforms.ColorJitter(
+                    brightness=brightness,
+                    contrast=contrast,
+                )
+            )
+
+    ops.extend(
         [
-            transforms.Resize((image_size, image_size)),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
@@ -42,6 +83,7 @@ def build_transform(image_size: int) -> transforms.Compose:
             ),
         ]
     )
+    return transforms.Compose(ops)
 
 
 def skip_none_collate(batch):
@@ -61,13 +103,23 @@ class CheXpertDataset(Dataset):
         path_column: str = "Path",
         image_size: int = 320,
         uncertain_value: float = 1.0,
+        uncertain_overrides: Dict[str, float] | None = None,
+        train: bool = False,
+        augment: Dict[str, Any] | None = None,
     ) -> None:
         self.csv_path = Path(csv_path)
         self.image_root = Path(image_root)
         self.path_column = path_column
         self.label_columns = list(label_columns)
         self.uncertain_value = float(uncertain_value)
-        self.transform = build_transform(image_size)
+        self.uncertain_overrides = {
+            str(k): float(v) for k, v in (uncertain_overrides or {}).items()
+        }
+        self.transform = build_transform(
+            image_size=image_size,
+            train=train,
+            augment=augment,
+        )
 
         self.df = pd.read_csv(self.csv_path)
         required = [self.path_column, *self.label_columns]
@@ -88,11 +140,11 @@ class CheXpertDataset(Dataset):
             return p
         return (self.image_root / p).resolve()
 
-    def _normalize_label(self, value: float) -> float:
+    def _normalize_label(self, value: float, label_name: str) -> float:
         if pd.isna(value):
             return 0.0
         if float(value) == -1.0:
-            return self.uncertain_value
+            return self.uncertain_overrides.get(label_name, self.uncertain_value)
         return 1.0 if float(value) > 0 else 0.0
 
     def __getitem__(self, idx: int):
@@ -105,7 +157,6 @@ class CheXpertDataset(Dataset):
             return None
         image_tensor = self.transform(image)
 
-        label_values = [self._normalize_label(row[col]) for col in self.label_columns]
+        label_values = [self._normalize_label(row[col], col) for col in self.label_columns]
         labels = torch.tensor(label_values, dtype=torch.float32)
         return image_tensor, labels, str(image_path)
-

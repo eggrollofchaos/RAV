@@ -1,0 +1,62 @@
+project:
+  name: rav-chest-chexpert-u0-regularized
+  seed: 42
+  output_dir: outputs/chest_baseline_u0_regularized
+
+data:
+  image_root: data/raw/chexpert
+  train_csv: data/processed/chexpert_train.csv
+  val_csv: data/processed/chexpert_val.csv
+  test_csv: data/processed/chexpert_test.csv
+  path_column: Path
+
+labels:
+  uncertain_value: 0.0
+  columns:
+    - Atelectasis
+    - Cardiomegaly
+    - Consolidation
+    - Edema
+    - Enlarged Cardiomediastinum
+    - Fracture
+    - Lung Lesion
+    - Lung Opacity
+    - No Finding
+    - Pleural Effusion
+    - Pleural Other
+    - Pneumonia
+    - Pneumothorax
+    - Support Devices
+
+training:
+  device: auto
+  backbone: densenet121
+  pretrained: true
+  dropout: 0.35
+  image_size: 320
+  batch_size: 16
+  epochs: 16
+  lr: 0.0001
+  weight_decay: 0.0001
+  num_workers: 4
+  pin_memory: true
+  amp: true
+  selection_metric: f1
+  early_stopping_patience: 3
+  early_stopping_min_delta: 0.0005
+  augment:
+    enabled: true
+    hflip_prob: 0.5
+    rotation_degrees: 7.0
+    translate: 0.02
+    scale_min: 0.95
+    scale_max: 1.05
+    brightness: 0.05
+    contrast: 0.05
+
+evaluation:
+  default_threshold: 0.5
+  threshold_overrides:
+    Pneumothorax: 0.45
+    Pleural Effusion: 0.45
+    Edema: 0.45
