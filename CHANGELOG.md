@@ -16,7 +16,7 @@ Updated:
 - `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
 - `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
 - `gcp/GCP_NOTES.md` Section 2→G documents the `_write_marker` unbound variable bug.
-- Runner lineage: `gcp-spot-runner v0.6.4-restart-loop-fix` (restart while-loop, `--shm-size=2g`, L4 default, `--accelerator` skip for g2/a2).
+- Runner lineage: `gcp-spot-runner v0.6.5-reconciler-live-hardening` (live reconciler deploy hardening, no-heartbeat recovery, stop-marker convergence, stale-run noise suppression).
 
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
@@ -53,7 +53,7 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.4-restart-loop-fix` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.5-reconciler-live-hardening` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - App version to `v0.2.21-rav-unified-gcp-cli`.

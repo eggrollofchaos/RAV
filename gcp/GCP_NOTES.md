@@ -442,7 +442,7 @@ Also bumped `MAX_RESTARTS` from 3 to 10 (matching IXQT) in both:
 
 Current version map:
 - `RAV` app version: `v0.2.21-rav-unified-gcp-cli` (`src/rav_chest/version.py`)
-- `gcp-spot-runner` runner version: `v0.6.4-restart-loop-fix` (`version.py`)
+- `gcp-spot-runner` runner version: `v0.6.5-reconciler-live-hardening` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.
 - Runner invocation path: `RAV/scripts/gcp_runner_common.sh` now delegates directly to `python3 -m spotctl` with profile runtime flags:
