@@ -95,6 +95,15 @@ _require_runner_adapter_lib() {
   if [[ "${RUNNER_ADAPTER_LIB_LOADED}" == "1" ]]; then
     return 0
   fi
+
+  if declare -F spot_runner_require_adapter_lib >/dev/null 2>&1; then
+    if ! spot_runner_require_adapter_lib "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."; then
+      exit 1
+    fi
+    RUNNER_ADAPTER_LIB_LOADED="1"
+    return 0
+  fi
+
   local lib_path="${RUNNER_DIR}/adapters/spot_runner_common.sh"
   if [[ ! -f "${lib_path}" ]]; then
     echo "Runner helper missing: ${lib_path}" >&2
