@@ -129,14 +129,14 @@ bootstrap_resume_checkpoint() {
   local remote_last="${GCS_CHECKPOINT_DIR}/last.pt"
   local local_last="${CHECKPOINT_DIR}/last.pt"
   if gcloud storage ls "$remote_last" >/dev/null 2>&1; then
-    echo "[$(date -u)] Found remote checkpoint; downloading ${remote_last}"
+    echo "[$(date -u)] Found remote checkpoint; downloading ${remote_last}" >&2
     gcloud storage cp "$remote_last" "$local_last" >/dev/null 2>&1 || true
     if [[ -f "$local_last" ]]; then
-      echo "$local_last"
+      printf '%s\n' "$local_last"
       return 0
     fi
   fi
-  echo ""
+  return 0
 }
 
 SYNC_STOP=0
