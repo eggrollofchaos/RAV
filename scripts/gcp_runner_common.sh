@@ -181,12 +181,14 @@ run_submit_with_job() {
     args=(--skip-build "${args[@]}")
   fi
 
-  run_spotctl_with_config "${config_path}" \
-    submit \
-    --profile rav \
-    --config "${config_path}" \
+  _require_runner_adapter_lib
+  set +e
+  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "submit" \
     --job-command "${job_command}" \
     "${args[@]}"
+  local status=$?
+  set -e
+  return "$status"
 }
 
 run_ops_command() {
@@ -196,33 +198,36 @@ run_ops_command() {
     args=(status)
   fi
 
-  run_spotctl_with_config "${config_path}" \
-    ops \
-    --profile rav \
-    --config "${config_path}" \
-    "${args[@]}"
+  _require_runner_adapter_lib
+  set +e
+  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "ops" "${args[@]}"
+  local status=$?
+  set -e
+  return "$status"
 }
 
 run_build_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
   local args=("$@")
 
-  run_spotctl_with_config "${config_path}" \
-    build \
-    --profile rav \
-    --config "${config_path}" \
-    "${args[@]}"
+  _require_runner_adapter_lib
+  set +e
+  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "build" "${args[@]}"
+  local status=$?
+  set -e
+  return "$status"
 }
 
 run_monitor_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
   local args=("$@")
 
-  run_spotctl_with_config "${config_path}" \
-    monitor \
-    --profile rav \
-    --config "${config_path}" \
-    "${args[@]}"
+  _require_runner_adapter_lib
+  set +e
+  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "${args[@]}"
+  local status=$?
+  set -e
+  return "$status"
 }
 
 run_version_command() {

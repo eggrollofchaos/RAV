@@ -10,6 +10,22 @@ _capture_stub() {
   run_spotctl_with_config() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
+  _require_runner_adapter_lib() { :; }
+  spot_runner_run_profiled() {
+    local _runner_dir="$1"
+    local config_path="$2"
+    local profile_name="$3"
+    local command_name="$4"
+    shift 4
+    printf '%s\n' "$config_path" > "$CAPTURE_PATH"
+    printf '%s\n' "$command_name" >> "$CAPTURE_PATH"
+    printf '%s\n' "--profile" "$profile_name" >> "$CAPTURE_PATH"
+    if [[ -n "$config_path" ]]; then
+      printf '%s\n' "--config" "$config_path" >> "$CAPTURE_PATH"
+    fi
+    printf '%s\n' "$@" >> "$CAPTURE_PATH"
+  }
+  RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
 _setup_temp_submit_wrappers() {
