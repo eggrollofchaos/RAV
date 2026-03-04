@@ -46,6 +46,55 @@ ENV_FILE
   [ "$RAV_GCP_ENV_PATH" = "$env_file" ]
 }
 
+@test "run_spotctl_with_config falls back when safe helper is unavailable" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/spotctl_fallback_args.txt"
+
+  _require_runner_adapter_lib() { :; }
+  spot_runner_run_spotctl() {
+    printf '%s\n' "$@" > "$captured"
+  }
+  if declare -F spot_runner_run_spotctl_safe >/dev/null 2>&1; then
+    unset -f spot_runner_run_spotctl_safe
+  fi
+  RUNNER_DIR="/tmp/fake-runner"
+
+  run_spotctl_with_config "/tmp/rav_spot.env" version
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "/tmp/fake-runner"
+  assert_line --index 1 "/tmp/rav_spot.env"
+  assert_line --index 2 "version"
+}
+
+@test "run_ops_command falls back when profiled safe helper is unavailable" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/profiled_fallback_args.txt"
+
+  _require_runner_adapter_lib() { :; }
+  spot_runner_run_profiled() {
+    printf '%s\n' "$@" > "$captured"
+  }
+  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
+    unset -f spot_runner_run_profiled_safe
+  fi
+  RUNNER_DIR="/tmp/fake-runner"
+  RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
+
+  run_ops_command watch 20 --json
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "/tmp/fake-runner"
+  assert_line --index 1 "/tmp/rav_spot.env"
+  assert_line --index 2 "rav"
+  assert_line --index 3 "ops"
+  assert_line --index 4 "watch"
+  assert_line --index 5 "20"
+  assert_line --index 6 "--json"
+}
+
 _setup_temp_submit_wrappers() {
   export TEMP_REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$TEMP_REPO/scripts"

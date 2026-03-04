@@ -177,6 +177,11 @@ run_spotctl_with_config() {
   local config_path="$1"
   shift
 
+  if declare -F spot_runner_run_spotctl_safe >/dev/null 2>&1; then
+    spot_runner_run_spotctl_safe "${RUNNER_DIR}" "${config_path}" "$@"
+    return "$?"
+  fi
+
   set +e
   spot_runner_run_spotctl "${RUNNER_DIR}" "${config_path}" "$@"
   local status=$?
@@ -203,6 +208,13 @@ run_submit_with_job() {
   fi
 
   _require_runner_adapter_lib
+  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
+    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "submit" \
+      --job-command "${job_command}" \
+      "${args[@]}"
+    return "$?"
+  fi
+
   set +e
   spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "submit" \
     --job-command "${job_command}" \
@@ -220,6 +232,11 @@ run_ops_command() {
   fi
 
   _require_runner_adapter_lib
+  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
+    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "ops" "${args[@]}"
+    return "$?"
+  fi
+
   set +e
   spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "ops" "${args[@]}"
   local status=$?
@@ -232,6 +249,11 @@ run_build_command() {
   local args=("$@")
 
   _require_runner_adapter_lib
+  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
+    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "build" "${args[@]}"
+    return "$?"
+  fi
+
   set +e
   spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "build" "${args[@]}"
   local status=$?
@@ -244,6 +266,11 @@ run_monitor_command() {
   local args=("$@")
 
   _require_runner_adapter_lib
+  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
+    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "${args[@]}"
+    return "$?"
+  fi
+
   set +e
   spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "${args[@]}"
   local status=$?
