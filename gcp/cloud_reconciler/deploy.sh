@@ -15,8 +15,7 @@ fi
 load_rav_spot_env_optional
 apply_runner_defaults
 _require_runner_adapter_lib
-if ! spot_runner_check_install "${RUNNER_DIR}" "spotctl/__main__.py" "adapters/spot_runner_common.sh"; then
-  echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+if ! spot_runner_require_install "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "spotctl/__main__.py" "adapters/spot_runner_common.sh"; then
   exit 1
 fi
 

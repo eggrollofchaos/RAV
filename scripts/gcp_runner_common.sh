@@ -166,8 +166,7 @@ check_runner_install() {
     lib.sh
     startup.sh
   )
-  if ! spot_runner_check_install "${RUNNER_DIR}" "${required[@]}"; then
-    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+  if ! spot_runner_require_install "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"; then
     exit 1
   fi
 }
