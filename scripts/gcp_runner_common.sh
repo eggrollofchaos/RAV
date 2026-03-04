@@ -9,20 +9,28 @@ RUNNER_DIR_DEFAULT="${RAV_ROOT}/../gcp-spot-runner"
 RAV_GCP_ENV_PATH=""
 RUNNER_ADAPTER_LIB_LOADED="0"
 
-load_rav_spot_env_optional() {
-  local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
-  if [[ "${cfg}" != /* ]]; then
-    cfg="${RAV_ROOT}/${cfg}"
+_bootstrap_runner_adapter_lib() {
+  local bootstrap_lib="${RUNNER_DIR_DEFAULT}/adapters/spot_runner_common.sh"
+  if [[ -f "${bootstrap_lib}" ]]; then
+    # shellcheck disable=SC1090
+    source "${bootstrap_lib}"
   fi
-  if [[ ! -f "$cfg" ]]; then
+}
+
+_bootstrap_runner_adapter_lib
+
+load_rav_spot_env_optional() {
+  if ! declare -F spot_runner_load_env_optional >/dev/null 2>&1; then
     RAV_GCP_ENV_PATH=""
     return 0
   fi
-  RAV_GCP_ENV_PATH="$(cd "$(dirname "${cfg}")" && pwd)/$(basename "${cfg}")"
-  set -a
-  # shellcheck disable=SC1090
-  source "${RAV_GCP_ENV_PATH}"
-  set +a
+
+  local cfg_path=""
+  if ! cfg_path="$(spot_runner_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}")"; then
+    RAV_GCP_ENV_PATH=""
+    return 0
+  fi
+  RAV_GCP_ENV_PATH="${cfg_path}"
 }
 
 load_rav_spot_env() {
@@ -39,11 +47,15 @@ load_rav_spot_env() {
 }
 
 apply_runner_defaults() {
-  : "${RUNNER_DIR:=${RUNNER_DIR_DEFAULT}}"
-  if [[ "${RUNNER_DIR}" != /* ]]; then
-    RUNNER_DIR="${RAV_ROOT}/${RUNNER_DIR}"
+  if declare -F spot_runner_resolve_runner_dir >/dev/null 2>&1; then
+    RUNNER_DIR="$(spot_runner_resolve_runner_dir "${RAV_ROOT}" "${RUNNER_DIR_DEFAULT}" "RUNNER_DIR")"
+  else
+    : "${RUNNER_DIR:=${RUNNER_DIR_DEFAULT}}"
+    if [[ "${RUNNER_DIR}" != /* ]]; then
+      RUNNER_DIR="${RAV_ROOT}/${RUNNER_DIR}"
+    fi
+    RUNNER_DIR="$(cd "${RUNNER_DIR}" && pwd)"
   fi
-  RUNNER_DIR="$(cd "${RUNNER_DIR}" && pwd)"
   : "${ZONE:=us-east1-c}"
   if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
     FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")
