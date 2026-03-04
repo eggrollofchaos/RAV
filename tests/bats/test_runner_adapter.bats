@@ -159,6 +159,13 @@ spot_runner_maybe_reexec_caffeinate_compat() {
   fi
   exec env "\${guard_var}=1" caffeinate -i "\$0" "\$@"
 }
+spot_runner_prepare_submit_shell_compat() {
+  local guard_var="\${1:-_SPOT_CAFFEINATED}"
+  local guard_alias_csv="\${2:-}"
+  shift 2 || true
+  spot_runner_maybe_reexec_caffeinate_compat "\${guard_var}" "\${guard_alias_csv}" "\$@"
+  trap '' HUP
+}
 run_submit_with_job() {
   local job_command="\$1"
   shift

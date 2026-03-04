@@ -34,7 +34,7 @@ Updated:
 - `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
 - `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
 - `gcp/GCP_NOTES.md` Section 2→G documents the `_write_marker` unbound variable bug.
-- Runner lineage: `gcp-spot-runner v0.6.15-caffeinate-guard-helper` (IXQT/RAV wrapper ops/build/monitor and RAV submit now route through shared profiled dispatch helper to reduce adapter duplication).
+- Runner lineage: `gcp-spot-runner v0.6.16-submit-shell-preamble-helper` (IXQT/RAV wrapper ops/build/monitor and RAV submit now route through shared profiled dispatch helper to reduce adapter duplication).
 
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
@@ -71,14 +71,14 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.15-caffeinate-guard-helper` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.16-submit-shell-preamble-helper` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.23-caffeinate-guard-alignment`.
+- App version to `v0.2.24-submit-shell-preamble-helper`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:
-- `scripts/gcp_submit_primary.sh`, `scripts/gcp_submit_poc.sh`, `scripts/gcp_submit_chexpert_experiment.sh`, and `scripts/gcp_iterate_chexpert.sh` now route `caffeinate` re-exec through shared helper compatibility wiring (`spot_runner_maybe_reexec_caffeinate_compat`) in `scripts/gcp_runner_common.sh`, with canonical `_SPOT_CAFFEINATED` guard + legacy alias compatibility.
+- `scripts/gcp_submit_primary.sh`, `scripts/gcp_submit_poc.sh`, `scripts/gcp_submit_chexpert_experiment.sh`, and `scripts/gcp_iterate_chexpert.sh` now route submit preamble setup (`caffeinate` re-exec + ignore-HUP trap) through shared helper compatibility wiring (`spot_runner_prepare_submit_shell_compat`) in `scripts/gcp_runner_common.sh`, with canonical `_SPOT_CAFFEINATED` guard + legacy alias compatibility.
 - `scripts/gcp_runner_common.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical runner install checks and `spotctl` invocation wiring.
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
 - Replaced structural-only `tests/bats/test_caffeinate.bats` with behavior-first wrapper execution tests in `tests/bats/test_runner_adapter.bats`.

@@ -231,6 +231,20 @@ spot_runner_maybe_reexec_caffeinate_compat() {
   exec env "${guard_var}=1" caffeinate -i "$0" "$@"
 }
 
+spot_runner_prepare_submit_shell_compat() {
+  local guard_var="${1:-_SPOT_CAFFEINATED}"
+  local guard_alias_csv="${2:-}"
+  shift 2
+
+  if declare -F spot_runner_prepare_submit_shell >/dev/null 2>&1; then
+    spot_runner_prepare_submit_shell "${guard_var}" "${guard_alias_csv}" "$0" "$@"
+    return "$?"
+  fi
+
+  spot_runner_maybe_reexec_caffeinate_compat "${guard_var}" "${guard_alias_csv}" "$@"
+  trap '' HUP
+}
+
 _run_profiled_with_config() {
   local config_path="$1"
   local profile_name="$2"
