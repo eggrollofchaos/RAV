@@ -177,6 +177,11 @@ run_spotctl_with_config() {
   local config_path="$1"
   shift
 
+  if declare -F spot_runner_run_spotctl_compat >/dev/null 2>&1; then
+    spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+    return "$?"
+  fi
+
   if declare -F spot_runner_run_spotctl_safe >/dev/null 2>&1; then
     spot_runner_run_spotctl_safe "${RUNNER_DIR}" "${config_path}" "$@"
     return "$?"
@@ -184,6 +189,29 @@ run_spotctl_with_config() {
 
   set +e
   spot_runner_run_spotctl "${RUNNER_DIR}" "${config_path}" "$@"
+  local status=$?
+  set -e
+  return "$status"
+}
+
+_run_profiled_with_config() {
+  local config_path="$1"
+  local profile_name="$2"
+  local command_name="$3"
+  shift 3
+
+  _require_runner_adapter_lib
+  if declare -F spot_runner_run_profiled_compat >/dev/null 2>&1; then
+    spot_runner_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+    return "$?"
+  fi
+  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
+    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+    return "$?"
+  fi
+
+  set +e
+  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
   local status=$?
   set -e
   return "$status"
@@ -207,21 +235,9 @@ run_submit_with_job() {
     args=(--skip-build "${args[@]}")
   fi
 
-  _require_runner_adapter_lib
-  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
-    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "submit" \
-      --job-command "${job_command}" \
-      "${args[@]}"
-    return "$?"
-  fi
-
-  set +e
-  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "submit" \
+  _run_profiled_with_config "${config_path}" "rav" "submit" \
     --job-command "${job_command}" \
     "${args[@]}"
-  local status=$?
-  set -e
-  return "$status"
 }
 
 run_ops_command() {
@@ -231,51 +247,21 @@ run_ops_command() {
     args=(status)
   fi
 
-  _require_runner_adapter_lib
-  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
-    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "ops" "${args[@]}"
-    return "$?"
-  fi
-
-  set +e
-  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "ops" "${args[@]}"
-  local status=$?
-  set -e
-  return "$status"
+  _run_profiled_with_config "${config_path}" "rav" "ops" "${args[@]}"
 }
 
 run_build_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
   local args=("$@")
 
-  _require_runner_adapter_lib
-  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
-    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "build" "${args[@]}"
-    return "$?"
-  fi
-
-  set +e
-  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "build" "${args[@]}"
-  local status=$?
-  set -e
-  return "$status"
+  _run_profiled_with_config "${config_path}" "rav" "build" "${args[@]}"
 }
 
 run_monitor_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
   local args=("$@")
 
-  _require_runner_adapter_lib
-  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
-    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "${args[@]}"
-    return "$?"
-  fi
-
-  set +e
-  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "${args[@]}"
-  local status=$?
-  set -e
-  return "$status"
+  _run_profiled_with_config "${config_path}" "rav" "monitor" "${args[@]}"
 }
 
 run_version_command() {
