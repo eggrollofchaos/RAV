@@ -164,6 +164,30 @@ scripts/gcp_sync_chexpert_cache.sh: line 85: $2: unbound variable
 +  _write_marker "$marker" "$uri"
 ```
 
+### H) Immediate `job_exit_1` after introducing new config/script (stale image)
+
+**Observed**: 2026-03-04 on run `rav-chexpert-5task-20260304-030500`.
+
+**Error** (from `google_metadata_script_runner`):
+```text
+FileNotFoundError: [Errno 2] No such file or directory: 'configs/primary/chest_chexpert_5task_policy.yaml'
+```
+
+**Root cause**:
+- Submit wrappers (`rav-gcp.sh submit` / `gcp_submit_chexpert_experiment.sh`)
+  force `--skip-build` by default.
+- A new local config/script was committed but the image in Artifact Registry was
+  not rebuilt yet, so container startup could not find the new file.
+
+**Fix**:
+1. Rebuild image: `./scripts/rav-gcp.sh build`
+2. Resubmit run with new `RUN_ID`.
+3. Verify startup reaches heartbeat `phase=running` and reports `Using device: cuda`.
+
+**Operational rule**:
+- Any change under `configs/`, `scripts/`, `src/`, or `gcp/entrypoint.sh` that
+  affects runtime must be followed by a build before submit.
+
 ## 3) Timeout Alignment Rule
 
 Given:
@@ -441,7 +465,7 @@ Also bumped `MAX_RESTARTS` from 3 to 10 (matching IXQT) in both:
 ## 15) Documentation and Version Alignment (IXQT -> RAV -> gcp-spot-runner)
 
 Current version map:
-- `RAV` app version: `v0.2.21-rav-unified-gcp-cli` (`src/rav_chest/version.py`)
+- `RAV` app version: `v0.2.22-chexpert-5task-policy` (`src/rav_chest/version.py`)
 - `gcp-spot-runner` runner version: `v0.6.9-adapter-profile-dispatch` (`version.py`)
 - Reconciler ownership: `RAV/gcp/cloud_reconciler/` is wrapper-only; canonical logic is in `gcp-spot-runner/cloud_reconciler/`.
 - State-helper ownership: `RAV/gcp/state_helpers.sh` is wrapper-only; canonical helper implementation is in `gcp-spot-runner/state_helpers.sh`.

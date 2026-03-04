@@ -123,6 +123,13 @@ POC (Kaggle binary):
 
 Both wrappers run checkpoint-safe training with periodic sync.
 
+Important:
+- Submit wrappers pass `--skip-build` by default, so VM runs whatever image is
+  currently in Artifact Registry.
+- After adding or modifying configs/scripts used by training (for example
+  `configs/primary/chest_chexpert_5task_policy.yaml`), run
+  `./scripts/rav-gcp.sh build` before submit.
+
 ## 7) Resume behavior (important)
 
 To resume after preemption, submit again with the same `RUN_ID`:
@@ -227,6 +234,12 @@ cp gcp/rav_spot.env.example gcp/rav_spot.env
 `startup-script failed` with `/mnt/spot-data` read-only:
 - Symptom: `mkdir: cannot create directory '/mnt/spot-data': Read-only file system`
 - Fix: set `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` in `gcp/rav_spot.env` and resubmit.
+
+`FileNotFoundError` for config/script inside container:
+- Symptom: container exits quickly with messages like:
+  - `FileNotFoundError: ... configs/primary/chest_chexpert_5task_policy.yaml`
+- Root cause: stale image (submit used `--skip-build`, new file not in pushed image).
+- Fix: rebuild image (`./scripts/rav-gcp.sh build`) and submit again.
 
 Instances shown in console but missing from CLI (or vice versa):
 - Confirm active gcloud project/account with:

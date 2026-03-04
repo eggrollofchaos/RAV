@@ -7,11 +7,29 @@ All notable changes to this project are documented in this file.
 Added:
 - Corrupt image handling in `src/rav_chest/data.py`: `__getitem__` catches `UnidentifiedImageError`/`OSError` and returns `None`; new `skip_none_collate` filters corrupt samples from batches.
 - `scripts/train_chest_baseline.py` uses `skip_none_collate` and skips `None` batches in train/eval loops.
+- CheXpert 5-task mixed uncertainty training/eval path:
+  - `scripts/train_chexpert_5task_policy.py`
+  - `scripts/eval_chexpert_5task_policy.py`
+  - `configs/primary/chest_chexpert_5task_policy.yaml`
+- CheXpert experiment orchestration helpers:
+  - `scripts/gcp_submit_chexpert_experiment.sh`
+  - `scripts/gcp_iterate_chexpert.sh`
+  - `scripts/gcp_autotune_after_current_runs.sh`
+- New regularized experiment configs:
+  - `configs/primary/chest_chexpert_u0_regularized.yaml`
+  - `configs/primary/chest_chexpert_u1_regularized.yaml`
+  - `configs/primary/chest_chexpert_umixed_regularized.yaml`
+  - `configs/primary/chest_chexpert_umixed_regularized_posw.yaml`
+  - `configs/primary/chest_chexpert_effb0_umixed_posw.yaml`
 - `gcp/DATASET_TRANSFER.md` troubleshooting entry for zero-byte files after `gcloud storage rsync` upload (~9% of CheXpert-Small affected), with detection commands and `-c` checksum re-sync fix.
 - `gcp/GCP_NOTES.md` Section 13: DataLoader shared memory exhaustion root cause and `--shm-size=2g` fix.
 - `gcp/GCP_NOTES.md` Section 14: Immediate preemption not retried (one-shot restart bug) root cause and while-loop fix.
 
 Updated:
+- `scripts/gcp_train_with_checkpoint_sync.sh` supports config-selected train/eval scripts via:
+  - `project.train_script`
+  - `project.eval_script`
+- `gcp/GETTING_STARTED.md`, `gcp/GCP_NOTES.md`, and `docs/CHEST_RUNBOOK.md` now document the stale-image (`--skip-build`) failure mode and rebuild requirement after runtime file changes.
 - `scripts/gcp_sync_chexpert_cache.sh` line 104: pass missing `"$uri"` arg to `_write_marker` (fixed `$2: unbound variable` crash after successful rsync).
 - `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
 - `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
@@ -56,7 +74,7 @@ Updated:
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.9-adapter-profile-dispatch` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.21-rav-unified-gcp-cli`.
+- App version to `v0.2.22-chexpert-5task-policy`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:

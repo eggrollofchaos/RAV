@@ -9,7 +9,7 @@ Dataset status (2026-02-27):
 2. Full/regular CheXpert at scale: planned via GCP training workflow (WIP).
 3. CheXpert Plus: deferred for current class timeline due storage/ops footprint (~3.5 TB planning estimate).
 
-Current app version: `v0.2.4-agent-qa-chat`
+Current app version: `v0.2.22-chexpert-5task-policy`
 Changelog: `CHANGELOG.md`
 
 ## 1) Setup
@@ -291,10 +291,13 @@ Notes:
 1. Docker is required for this integration (cloud build + containerized VM execution).
 2. `scripts/rav-gcp.sh` is the canonical operator entrypoint; `scripts/gcp_*.sh` remain thin compatibility wrappers.
 3. Wrapper submit scripts force `--skip-build`; build/push image first.
-4. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC.
-5. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
-6. On restart with the same `RUN_ID`, wrapper downloads `last.pt` and resumes via `--resume-checkpoint`.
-7. Wrapper job commands copy relevant `outputs/...` into `/app/results/...` so runner upload picks them up.
-8. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then rerun `./scripts/rav-gcp.sh build`.
-9. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account shown in the error.
-10. On COS with persistent disk enabled, use `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).
+4. If a new config/script exists locally but not in the running container, you
+   are likely on a stale image; rebuild via `./scripts/rav-gcp.sh build` and
+   resubmit.
+5. Submit wrappers run `scripts/gcp_train_with_checkpoint_sync.sh` for both primary and POC.
+6. During training, wrapper syncs `checkpoints/last.pt`, `checkpoints/best.pt`, and metrics to GCS every `SYNC_INTERVAL_SEC`.
+7. On restart with the same `RUN_ID`, wrapper downloads `last.pt` and resumes via `--resume-checkpoint`.
+8. Wrapper job commands copy relevant `outputs/...` into `/app/results/...` so runner upload picks them up.
+9. If Cloud Build fails with `COPY ... gcp/state_transitions.json`, verify `gcloud meta list-files-for-upload` includes `gcp/state_transitions.json`, then rerun `./scripts/rav-gcp.sh build`.
+10. If staged-tarball fallback fails with `storage.objects.get` 403, grant bucket read (`roles/storage.objectViewer`) to the service account shown in the error.
+11. On COS with persistent disk enabled, use `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (not `/mnt/spot-data`, which can be read-only during startup).
