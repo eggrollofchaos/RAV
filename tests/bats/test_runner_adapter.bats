@@ -28,6 +28,24 @@ _capture_stub() {
   RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
+@test "load_rav_spot_env_optional sources env vars without subshell loss" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+
+  local env_file="$BATS_TEST_TMPDIR/rav_spot.env"
+  cat > "$env_file" <<'ENV_FILE'
+PROJECT="rav-env-loaded"
+ENV_FILE
+
+  export RAV_GCP_ENV="$env_file"
+  unset PROJECT
+  RAV_GCP_ENV_PATH=""
+
+  load_rav_spot_env_optional
+
+  [ "${PROJECT:-}" = "rav-env-loaded" ]
+  [ "$RAV_GCP_ENV_PATH" = "$env_file" ]
+}
+
 _setup_temp_submit_wrappers() {
   export TEMP_REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$TEMP_REPO/scripts"
