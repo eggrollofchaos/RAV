@@ -5,7 +5,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 Date: March 1, 2026
 
 Current app version: `v0.2.21-rav-unified-gcp-cli`
-Spot runner lineage version: `gcp-spot-runner v0.6.7-strict-shell-wrapper-fixes`
+Spot runner lineage version: `gcp-spot-runner v0.6.8-reconciler-live-defaults`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`

@@ -16,7 +16,7 @@ Updated:
 - `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
 - `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
 - `gcp/GCP_NOTES.md` Section 2→G documents the `_write_marker` unbound variable bug.
-- Runner lineage: `gcp-spot-runner v0.6.7-strict-shell-wrapper-fixes` (strict-shell wrapper/runtime fixes for no-config adapter invocation and logging under `set -u`).
+- Runner lineage: `gcp-spot-runner v0.6.8-reconciler-live-defaults` (reconciler deploy/run now supports explicit `--live`/boolean `--dry-run` and defaults to live mode for profiles that require cloud reconciler coverage).
 
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
@@ -53,7 +53,7 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.7-strict-shell-wrapper-fixes` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.8-reconciler-live-defaults` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - App version to `v0.2.21-rav-unified-gcp-cli`.
