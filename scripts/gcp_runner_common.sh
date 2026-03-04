@@ -25,12 +25,17 @@ load_rav_spot_env_optional() {
     return 0
   fi
 
-  local cfg_path=""
-  if ! cfg_path="$(spot_runner_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}")"; then
+  local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
+  if [[ "${cfg}" != /* ]]; then
+    cfg="${RAV_ROOT}/${cfg}"
+  fi
+
+  # Call directly (no command substitution) so exported vars from source persist.
+  if ! spot_runner_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" >/dev/null; then
     RAV_GCP_ENV_PATH=""
     return 0
   fi
-  RAV_GCP_ENV_PATH="${cfg_path}"
+  RAV_GCP_ENV_PATH="$(cd "$(dirname "${cfg}")" && pwd)/$(basename "${cfg}")"
 }
 
 load_rav_spot_env() {
