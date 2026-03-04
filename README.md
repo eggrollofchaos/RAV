@@ -4,8 +4,8 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.22-chexpert-5task-policy`
-Spot runner lineage version: `gcp-spot-runner v0.6.14-install-check-helper`
+Current app version: `v0.2.23-caffeinate-guard-alignment`
+Spot runner lineage version: `gcp-spot-runner v0.6.15-caffeinate-guard-helper`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`

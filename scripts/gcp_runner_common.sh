@@ -193,6 +193,44 @@ run_spotctl_with_config() {
   return "$status"
 }
 
+spot_runner_maybe_reexec_caffeinate_compat() {
+  local guard_var="${1:-_SPOT_CAFFEINATED}"
+  local guard_alias_csv="${2:-}"
+  shift 2
+
+  if declare -F spot_runner_maybe_reexec_caffeinate >/dev/null 2>&1; then
+    spot_runner_maybe_reexec_caffeinate "${guard_var}" "${guard_alias_csv}" "$0" "$@"
+    return "$?"
+  fi
+
+  if [[ -n "${!guard_var:-}" ]]; then
+    return 0
+  fi
+
+  local old_ifs="$IFS"
+  IFS=','
+  # shellcheck disable=SC2206
+  local guard_aliases=(${guard_alias_csv})
+  IFS="$old_ifs"
+
+  local alias_var=""
+  for alias_var in "${guard_aliases[@]}"; do
+    alias_var="${alias_var#"${alias_var%%[![:space:]]*}"}"
+    alias_var="${alias_var%"${alias_var##*[![:space:]]}"}"
+    if [[ -z "${alias_var}" ]]; then
+      continue
+    fi
+    if [[ -n "${!alias_var:-}" ]]; then
+      return 0
+    fi
+  done
+
+  if ! command -v caffeinate >/dev/null 2>&1; then
+    return 0
+  fi
+  exec env "${guard_var}=1" caffeinate -i "$0" "$@"
+}
+
 _run_profiled_with_config() {
   local config_path="$1"
   local profile_name="$2"

@@ -148,6 +148,17 @@ apply_runner_defaults() {
 check_required_spot_vars() { :; }
 check_runner_install() { :; }
 configure_gcloud_runtime() { :; }
+spot_runner_maybe_reexec_caffeinate_compat() {
+  local guard_var="\${1:-_SPOT_CAFFEINATED}"
+  shift 2 || true
+  if [[ -n "\${!guard_var:-}" ]]; then
+    return 0
+  fi
+  if ! command -v caffeinate >/dev/null 2>&1; then
+    return 0
+  fi
+  exec env "\${guard_var}=1" caffeinate -i "\$0" "\$@"
+}
 run_submit_with_job() {
   local job_command="\$1"
   shift

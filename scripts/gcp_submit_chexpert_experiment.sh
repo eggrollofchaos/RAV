@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 
-# Prevent macOS idle sleep and survive terminal close
-if [[ -z "${_IXQT_CAFFEINATED:-}" ]] && command -v caffeinate &>/dev/null; then
-  exec env _IXQT_CAFFEINATED=1 caffeinate -i "$0" "$@"
-fi
-trap '' HUP
-
-set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/gcp_runner_common.sh"
+
+# Prevent macOS idle sleep and survive terminal close.
+spot_runner_maybe_reexec_caffeinate_compat "_SPOT_CAFFEINATED" "_IXQT_CAFFEINATED" "$@"
+trap '' HUP
+
+set -euo pipefail
 
 usage() {
   cat <<'EOF'
