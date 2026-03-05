@@ -92,15 +92,7 @@ apply_runner_defaults() {
 }
 
 _require_runner_adapter_lib() {
-  if ! spot_runner_require_adapter_lib_cached_strict "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
-    exit 1
-  fi
-
-  if ! spot_runner_require_functions_or_hint "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." \
-    spot_runner_require_install \
-    spot_runner_run_spotctl_compat \
-    spot_runner_run_profiled_compat \
-    spot_runner_prepare_submit_shell_compat; then
+  if ! spot_runner_require_wrapper_runtime "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
     exit 1
   fi
 }
