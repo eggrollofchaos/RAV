@@ -34,7 +34,7 @@ Updated:
 - `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
 - `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
 - `gcp/GCP_NOTES.md` Section 2→G documents the `_write_marker` unbound variable bug.
-- Runner lineage: `gcp-spot-runner v0.6.26-reconciler-deploy-wrapper-helper` (IXQT/RAV wrapper ops/build/monitor, reconciler deploy dispatch, and RAV submit now route through shared helper paths to reduce adapter duplication).
+- Runner lineage: `gcp-spot-runner v0.6.27-wrapper-command-surface-helpers` (IXQT/RAV wrapper ops/build/monitor/reconciler dispatch and RAV submit now route through shared helper paths to reduce adapter duplication).
 
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
@@ -71,10 +71,10 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.26-reconciler-deploy-wrapper-helper` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.27-wrapper-command-surface-helpers` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.34-reconciler-deploy-wrapper-helper`.
+- App version to `v0.2.35-wrapper-command-surface-helpers`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:
@@ -88,6 +88,7 @@ Changed:
 - `scripts/gcp_runner_common.sh` now delegates adapter runtime init through shared helper `spot_runner_require_wrapper_runtime`, replacing duplicated wrapper init sequences.
 - `scripts/gcp_runner_common.sh` now resolves `RUNNER_DIR` in `apply_runner_defaults` via shared helper `spot_runner_resolve_runner_dir_compat`, removing wrapper-local compatibility resolution logic.
 - `scripts/gcp_runner_common.sh` command shim functions (`run_spotctl_with_config`, `_run_profiled_with_config`) now delegate through shared wrapper-dispatch helpers (`spot_runner_wrapper_run_spotctl_compat`, `spot_runner_wrapper_run_profiled_compat`).
+- `scripts/gcp_runner_common.sh` now routes `run_ops_command`, `run_build_command`, and `run_monitor_command` through shared wrapper command helpers (`spot_runner_wrapper_run_ops_compat`, `spot_runner_wrapper_run_profiled_command_compat`) before compatibility fallback paths.
 - `gcp/cloud_reconciler/deploy.sh` now dispatches through shared reconciler-deploy wrapper helper (`spot_runner_wrapper_run_reconciler_deploy_compat`) before compatibility fallbacks.
 - `gcp/state_helpers.sh` now delegates wrapper resolution/source behavior through shared adapter loader `gcp-spot-runner/adapters/state_helpers_wrapper.sh` (instead of carrying full local resolver/source logic).
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).

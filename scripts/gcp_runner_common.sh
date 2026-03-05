@@ -190,16 +190,29 @@ run_submit_with_job() {
 
 run_ops_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  _require_runner_adapter_lib
+
+  if declare -F spot_runner_wrapper_run_ops_compat >/dev/null 2>&1; then
+    spot_runner_wrapper_run_ops_compat "${RUNNER_DIR}" "${config_path}" "rav" "$@"
+    return "$?"
+  fi
+
   local args=("$@")
   if [[ ${#args[@]} -eq 0 ]]; then
     args=(status)
   fi
-
   _run_profiled_with_config "${config_path}" "rav" "ops" "${args[@]}"
 }
 
 run_build_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  _require_runner_adapter_lib
+
+  if declare -F spot_runner_wrapper_run_profiled_command_compat >/dev/null 2>&1; then
+    spot_runner_wrapper_run_profiled_command_compat "${RUNNER_DIR}" "${config_path}" "rav" "build" "$@"
+    return "$?"
+  fi
+
   local args=("$@")
 
   _run_profiled_with_config "${config_path}" "rav" "build" "${args[@]}"
@@ -207,6 +220,13 @@ run_build_command() {
 
 run_monitor_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  _require_runner_adapter_lib
+
+  if declare -F spot_runner_wrapper_run_profiled_command_compat >/dev/null 2>&1; then
+    spot_runner_wrapper_run_profiled_command_compat "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "$@"
+    return "$?"
+  fi
+
   local args=("$@")
 
   _run_profiled_with_config "${config_path}" "rav" "monitor" "${args[@]}"
