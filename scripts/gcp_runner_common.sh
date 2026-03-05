@@ -5,12 +5,53 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAV_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 RAV_GCP_ENV_DEFAULT="${RAV_ROOT}/gcp/rav_spot.env"
-RUNNER_DIR_DEFAULT="${RAV_ROOT}/../gcp-spot-runner"
+RUNNER_DIR_DEFAULT_PRIMARY="${RAV_ROOT}/../gcp-spot-runner"
+RUNNER_DIR_DEFAULT_WORKTREE="${RAV_ROOT}/../gcp-spot-runner-codex"
 RAV_GCP_ENV_PATH=""
 RUNNER_ADAPTER_LIB_LOADED="0"
 
+_resolve_runner_dir_default() {
+  local candidate=""
+  local raw_candidate=""
+  local candidates=()
+
+  if [[ -n "${RUNNER_DIR:-}" ]]; then
+    candidates+=("${RUNNER_DIR}")
+  fi
+  candidates+=("${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}")
+
+  for raw_candidate in "${candidates[@]}"; do
+    [[ -n "${raw_candidate}" ]] || continue
+    candidate="${raw_candidate}"
+    if [[ "${candidate}" != /* ]]; then
+      candidate="${RAV_ROOT}/${candidate}"
+    fi
+    if [[ -d "${candidate}" ]]; then
+      (cd "${candidate}" && pwd)
+      return 0
+    fi
+  done
+
+  printf '%s\n' "${RUNNER_DIR_DEFAULT_PRIMARY}"
+}
+
+_resolve_runner_dir_for_wrapper() {
+  local default_runner_dir="$(_resolve_runner_dir_default)"
+
+  if declare -F spot_runner_resolve_runner_dir_compat >/dev/null 2>&1; then
+    spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${default_runner_dir}" "RUNNER_DIR"
+    return "$?"
+  fi
+
+  local candidate="${RUNNER_DIR:-${default_runner_dir}}"
+  if [[ "${candidate}" != /* ]]; then
+    candidate="${RAV_ROOT}/${candidate}"
+  fi
+  (cd "${candidate}" && pwd)
+}
+
 _bootstrap_runner_adapter_lib() {
-  local bootstrap_lib="${RUNNER_DIR_DEFAULT}/adapters/spot_runner_common.sh"
+  local bootstrap_lib="$(_resolve_runner_dir_default)/adapters/spot_runner_common.sh"
   if [[ -f "${bootstrap_lib}" ]]; then
     # shellcheck disable=SC1090
     source "${bootstrap_lib}"
@@ -20,17 +61,36 @@ _bootstrap_runner_adapter_lib() {
 _bootstrap_runner_adapter_lib
 
 load_rav_spot_env_optional() {
-  if ! declare -F spot_runner_load_env_optional >/dev/null 2>&1; then
+  if declare -F spot_runner_wrapper_load_env_optional >/dev/null 2>&1; then
+    spot_runner_wrapper_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH
+    return 0
+  fi
+
+  if declare -F spot_runner_load_env_optional >/dev/null 2>&1; then
+    local cfg_path=""
+    if ! spot_runner_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" cfg_path; then
+      RAV_GCP_ENV_PATH=""
+      return 0
+    fi
+    RAV_GCP_ENV_PATH="${cfg_path}"
+    return 0
+  fi
+
+  local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
+  if [[ "${cfg}" != /* ]]; then
+    cfg="${RAV_ROOT}/${cfg}"
+  fi
+  if [[ ! -f "${cfg}" ]]; then
     RAV_GCP_ENV_PATH=""
     return 0
   fi
 
-  local cfg_path=""
-  if ! spot_runner_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" cfg_path; then
-    RAV_GCP_ENV_PATH=""
-    return 0
-  fi
-  RAV_GCP_ENV_PATH="${cfg_path}"
+  cfg="$(cd "$(dirname "${cfg}")" && pwd)/$(basename "${cfg}")"
+  set -a
+  # shellcheck disable=SC1090
+  source "${cfg}"
+  set +a
+  RAV_GCP_ENV_PATH="${cfg}"
 }
 
 load_rav_spot_env() {
@@ -47,7 +107,7 @@ load_rav_spot_env() {
 }
 
 apply_runner_defaults() {
-  RUNNER_DIR="$(spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${RUNNER_DIR_DEFAULT}" "RUNNER_DIR")"
+  RUNNER_DIR="$(_resolve_runner_dir_for_wrapper)"
   : "${ZONE:=us-east1-c}"
   if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
     FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")
@@ -84,6 +144,15 @@ apply_runner_defaults() {
 }
 
 _require_runner_adapter_lib() {
+  if declare -F spot_runner_require_wrapper_runtime_or_exit >/dev/null 2>&1; then
+    spot_runner_require_wrapper_runtime_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"
+    return 0
+  fi
+
+  if ! declare -F spot_runner_require_wrapper_runtime >/dev/null 2>&1; then
+    return 0
+  fi
+
   if ! spot_runner_require_wrapper_runtime "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
     exit 1
   fi
@@ -140,9 +209,29 @@ check_runner_install() {
     lib.sh
     startup.sh
   )
-  if ! spot_runner_require_install "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"; then
-    exit 1
+  if declare -F spot_runner_require_install_or_exit >/dev/null 2>&1; then
+    spot_runner_require_install_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"
+    return 0
   fi
+
+  if declare -F spot_runner_require_install >/dev/null 2>&1; then
+    if ! spot_runner_require_install "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"; then
+      exit 1
+    fi
+    return 0
+  fi
+
+  if declare -F spot_runner_check_install >/dev/null 2>&1; then
+    if ! spot_runner_check_install "${RUNNER_DIR}" "${required[@]}"; then
+      echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+      exit 1
+    fi
+    return 0
+  fi
+
+  echo "Runner helper missing required install validation function." >&2
+  echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+  exit 1
 }
 
 run_spotctl_with_config() {
@@ -150,7 +239,17 @@ run_spotctl_with_config() {
   local config_path="$1"
   shift
 
-  spot_runner_wrapper_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+  if declare -F spot_runner_wrapper_run_spotctl_compat >/dev/null 2>&1; then
+    spot_runner_wrapper_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+    return "$?"
+  fi
+
+  if declare -F spot_runner_run_spotctl_compat >/dev/null 2>&1; then
+    spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+    return "$?"
+  fi
+
+  spot_runner_run_spotctl "${RUNNER_DIR}" "${config_path}" "$@"
   return "$?"
 }
 
@@ -161,7 +260,17 @@ _run_profiled_with_config() {
   shift 3
 
   _require_runner_adapter_lib
-  spot_runner_wrapper_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+  if declare -F spot_runner_wrapper_run_profiled_compat >/dev/null 2>&1; then
+    spot_runner_wrapper_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+    return "$?"
+  fi
+
+  if declare -F spot_runner_run_profiled_compat >/dev/null 2>&1; then
+    spot_runner_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+    return "$?"
+  fi
+
+  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
   return "$?"
 }
 

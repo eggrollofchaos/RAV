@@ -16,7 +16,9 @@ _resolve_runner_dir() {
 
   for candidate in \
     "${REPO_ROOT}/../gcp-spot-runner" \
-    "${REPO_ROOT}/gcp-spot-runner"; do
+    "${REPO_ROOT}/../gcp-spot-runner-codex" \
+    "${REPO_ROOT}/gcp-spot-runner" \
+    "${REPO_ROOT}/gcp-spot-runner-codex"; do
     if [[ -d "$candidate" ]]; then
       cd "$candidate" && pwd
       return 0

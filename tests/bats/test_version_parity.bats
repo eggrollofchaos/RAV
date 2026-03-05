@@ -36,8 +36,17 @@ _runner_lineage_changelog() {
 }
 
 _runner_version_py_if_present() {
-  local runner_version_py="$REPO_ROOT/../gcp-spot-runner/version.py"
-  if [[ ! -f "$runner_version_py" ]]; then
+  local runner_version_py=""
+  local candidate=""
+  for candidate in \
+    "$REPO_ROOT/../gcp-spot-runner/version.py" \
+    "$REPO_ROOT/../gcp-spot-runner-codex/version.py"; do
+    if [[ -f "$candidate" ]]; then
+      runner_version_py="$candidate"
+      break
+    fi
+  done
+  if [[ -z "$runner_version_py" ]]; then
     printf ''
     return 0
   fi
@@ -81,8 +90,17 @@ _runner_version_py_if_present() {
 }
 
 @test "runner lineage version matches shared runner version.py when sibling checkout is present" {
-  local runner_version_py="$REPO_ROOT/../gcp-spot-runner/version.py"
-  if [[ ! -f "$runner_version_py" ]]; then
+  local runner_version_py=""
+  local candidate=""
+  for candidate in \
+    "$REPO_ROOT/../gcp-spot-runner/version.py" \
+    "$REPO_ROOT/../gcp-spot-runner-codex/version.py"; do
+    if [[ -f "$candidate" ]]; then
+      runner_version_py="$candidate"
+      break
+    fi
+  done
+  if [[ -z "$runner_version_py" ]]; then
     skip "Skipping: sibling gcp-spot-runner checkout not present"
   fi
 
