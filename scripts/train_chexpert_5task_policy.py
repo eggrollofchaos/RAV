@@ -372,7 +372,9 @@ def compute_batch_loss(
                     targets = torch.where(raw > 0, torch.ones_like(raw), torch.zeros_like(raw))
                 else:
                     pseudo_col = selftrained_pos[name]
-                    pseudo = pseudo_labels[indices, pseudo_col].to(raw.device)
+                    # `pseudo_labels` is typically CPU-resident; align index device before gather.
+                    gather_indices = indices.to(pseudo_labels.device, non_blocking=True)
+                    pseudo = pseudo_labels[gather_indices, pseudo_col].to(raw.device)
                     targets_known = torch.where(raw > 0, torch.ones_like(raw), torch.zeros_like(raw))
                     targets = torch.where(raw == -1, pseudo, targets_known)
                     valid = ~torch.isnan(raw)
