@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-APP_VERSION = "v0.2.33-wrapper-dispatch-helpers"
+APP_VERSION = "v0.2.34-reconciler-deploy-wrapper-helper"

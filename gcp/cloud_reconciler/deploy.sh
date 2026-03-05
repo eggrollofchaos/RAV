@@ -23,6 +23,17 @@ CONFIG_PATH="${RAV_GCP_ENV_PATH:-}"
 
 : "${FUNCTION_NAME:=rav-reconciler}"
 : "${SCHEDULER_NAME:=rav-reconciler-trigger}"
+if declare -F spot_runner_wrapper_run_reconciler_deploy_compat >/dev/null 2>&1; then
+  spot_runner_wrapper_run_reconciler_deploy_compat \
+    "${RUNNER_DIR}" \
+    "${CONFIG_PATH}" \
+    "rav" \
+    "${FUNCTION_NAME}" \
+    "${SCHEDULER_NAME}" \
+    "$@"
+  exit "$?"
+fi
+
 if declare -F spot_runner_run_reconciler_deploy_safe >/dev/null 2>&1; then
   spot_runner_run_reconciler_deploy_safe \
     "${RUNNER_DIR}" \
