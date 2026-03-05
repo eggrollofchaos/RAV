@@ -47,15 +47,7 @@ load_rav_spot_env() {
 }
 
 apply_runner_defaults() {
-  if declare -F spot_runner_resolve_runner_dir >/dev/null 2>&1; then
-    RUNNER_DIR="$(spot_runner_resolve_runner_dir "${RAV_ROOT}" "${RUNNER_DIR_DEFAULT}" "RUNNER_DIR")"
-  else
-    : "${RUNNER_DIR:=${RUNNER_DIR_DEFAULT}}"
-    if [[ "${RUNNER_DIR}" != /* ]]; then
-      RUNNER_DIR="${RAV_ROOT}/${RUNNER_DIR}"
-    fi
-    RUNNER_DIR="$(cd "${RUNNER_DIR}" && pwd)"
-  fi
+  RUNNER_DIR="$(spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${RUNNER_DIR_DEFAULT}" "RUNNER_DIR")"
   : "${ZONE:=us-east1-c}"
   if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
     FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")
