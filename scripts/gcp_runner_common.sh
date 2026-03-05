@@ -180,30 +180,34 @@ run_spotctl_with_config() {
   return "$?"
 }
 
-spot_runner_maybe_reexec_caffeinate_compat() {
-  local guard_var="${1:-_SPOT_CAFFEINATED}"
-  local guard_alias_csv="${2:-}"
-  shift 2
+if ! declare -F spot_runner_maybe_reexec_caffeinate_compat >/dev/null 2>&1; then
+  spot_runner_maybe_reexec_caffeinate_compat() {
+    local guard_var="${1:-_SPOT_CAFFEINATED}"
+    local guard_alias_csv="${2:-}"
+    shift 2 || true
 
-  if ! declare -F spot_runner_maybe_reexec_caffeinate >/dev/null 2>&1; then
-    return 0
-  fi
-  spot_runner_maybe_reexec_caffeinate "${guard_var}" "${guard_alias_csv}" "$0" "$@"
-  return "$?"
-}
+    if ! declare -F spot_runner_maybe_reexec_caffeinate >/dev/null 2>&1; then
+      return 0
+    fi
+    spot_runner_maybe_reexec_caffeinate "${guard_var}" "${guard_alias_csv}" "$0" "$@"
+    return "$?"
+  }
+fi
 
-spot_runner_prepare_submit_shell_compat() {
-  local guard_var="${1:-_SPOT_CAFFEINATED}"
-  local guard_alias_csv="${2:-}"
-  shift 2
+if ! declare -F spot_runner_prepare_submit_shell_compat >/dev/null 2>&1; then
+  spot_runner_prepare_submit_shell_compat() {
+    local guard_var="${1:-_SPOT_CAFFEINATED}"
+    local guard_alias_csv="${2:-}"
+    shift 2 || true
 
-  if ! declare -F spot_runner_prepare_submit_shell >/dev/null 2>&1; then
-    trap '' HUP
-    return 0
-  fi
-  spot_runner_prepare_submit_shell "${guard_var}" "${guard_alias_csv}" "$0" "$@"
-  return "$?"
-}
+    if ! declare -F spot_runner_prepare_submit_shell >/dev/null 2>&1; then
+      trap '' HUP
+      return 0
+    fi
+    spot_runner_prepare_submit_shell "${guard_var}" "${guard_alias_csv}" "$0" "$@"
+    return "$?"
+  }
+fi
 
 _run_profiled_with_config() {
   local config_path="$1"
