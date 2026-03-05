@@ -34,7 +34,7 @@ Updated:
 - `gcp/rav_spot.env`: `MAX_RESTARTS` bumped from 3 to 10 (matching IXQT).
 - `gcp/rav_spot.env`: GPU upgraded from T4 to L4 (`MACHINE_TYPE=g2-standard-8`, `GPU_TYPE=nvidia-l4`).
 - `gcp/GCP_NOTES.md` Section 2→G documents the `_write_marker` unbound variable bug.
-- Runner lineage: `gcp-spot-runner v0.6.19-shared-submit-compat-helpers` (IXQT/RAV wrapper ops/build/monitor and RAV submit now route through shared profiled dispatch helper to reduce adapter duplication).
+- Runner lineage: `gcp-spot-runner v0.6.20-cached-adapter-loader` (IXQT/RAV wrapper ops/build/monitor and RAV submit now route through shared profiled dispatch helper to reduce adapter duplication).
 
 - Adapter contract tests for shared runner delegation:
   - `tests/bats/test_runner_adapter.bats` verifies `scripts/gcp_runner_common.sh` maps submit/ops calls to `spotctl` with `--profile rav` + `--config` + `--job-command` semantics.
@@ -71,10 +71,10 @@ Updated:
   - `gcp/GETTING_STARTED.md`
   - `gcp/GCP_NOTES.md`
   - `docs/CHEST_RUNBOOK.md`
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.19-shared-submit-compat-helpers` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.20-cached-adapter-loader` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
-- App version to `v0.2.27-shared-submit-compat-helpers`.
+- App version to `v0.2.28-cached-adapter-loader`.
 - Added `AGENTS.md` routing file that points shared GCP orchestration behavior to `../gcp-spot-runner/docs/INDEX.md`.
 
 Changed:
@@ -82,6 +82,7 @@ Changed:
 - `scripts/gcp_runner_common.sh` now sources shared adapter helper library `gcp-spot-runner/adapters/spot_runner_common.sh` for canonical runner install checks and `spotctl` invocation wiring.
 - `scripts/gcp_runner_common.sh` now dispatches directly to shared compat helpers (`spot_runner_run_spotctl_compat`, `spot_runner_run_profiled_compat`) rather than carrying local safe-helper fallback branches.
 - `scripts/gcp_runner_common.sh` now uses shared submit-preamble compat helpers (`spot_runner_maybe_reexec_caffeinate_compat`, `spot_runner_prepare_submit_shell_compat`) from `gcp-spot-runner` when available, with local compatibility fallback definitions only for missing-helper checkouts.
+- `scripts/gcp_runner_common.sh` now uses shared cached helper loading (`spot_runner_require_adapter_lib_cached`) for adapter library sourcing instead of wrapper-local loaded-flag/source logic.
 - `gcp/state_helpers.sh` now delegates wrapper resolution/source behavior through shared adapter loader `gcp-spot-runner/adapters/state_helpers_wrapper.sh` (instead of carrying full local resolver/source logic).
 - Removed runner-internal BATS checks from RAV adapter test suite (`tests/bats/test_submit_stopped.bats`, `tests/bats/test_lib_restart.bats`, `tests/bats/test_entrypoint.bats`).
 - Replaced structural-only `tests/bats/test_caffeinate.bats` with behavior-first wrapper execution tests in `tests/bats/test_runner_adapter.bats`.
