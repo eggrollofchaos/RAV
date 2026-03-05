@@ -92,13 +92,7 @@ apply_runner_defaults() {
 }
 
 _require_runner_adapter_lib() {
-  if ! declare -F spot_runner_require_adapter_lib_cached >/dev/null 2>&1; then
-    echo "Runner helper missing required function: spot_runner_require_adapter_lib_cached" >&2
-    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
-    exit 1
-  fi
-
-  if ! spot_runner_require_adapter_lib_cached "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
+  if ! spot_runner_require_adapter_lib_cached_strict "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
     exit 1
   fi
 }
