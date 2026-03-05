@@ -4,8 +4,8 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.24-submit-shell-preamble-helper`
-Spot runner lineage version: `gcp-spot-runner v0.6.16-submit-shell-preamble-helper`
+Current app version: `v0.2.25-state-helpers-wrapper-thin`
+Spot runner lineage version: `gcp-spot-runner v0.6.17-state-helpers-wrapper-adapter`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`

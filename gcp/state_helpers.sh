@@ -4,44 +4,36 @@
 #   gcp-spot-runner/state_helpers.sh
 
 _STATE_HELPERS_WRAPPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_STATE_HELPERS_PROJECT_ROOT="$(cd "${_STATE_HELPERS_WRAPPER_DIR}/.." && pwd)"
 
 _state_helpers_fail() {
   echo "ERROR: $*" >&2
   return 1 2>/dev/null || exit 1
 }
 
-_resolve_runner_dir() {
-  local repo_root explicit candidate
-  repo_root="$(cd "${_STATE_HELPERS_WRAPPER_DIR}/.." && pwd)"
-  explicit="${RUNNER_DIR:-${GCP_SPOT_RUNNER_DIR:-}}"
-
-  if [[ -n "$explicit" ]]; then
-    if [[ "$explicit" != /* ]]; then
-      explicit="${repo_root}/${explicit}"
-    fi
-    if [[ -d "$explicit" ]]; then
-      cd "$explicit" && pwd
-      return 0
-    fi
-    return 1
+_RESOLVER_CANDIDATES=()
+if [[ -n "${RUNNER_DIR:-${GCP_SPOT_RUNNER_DIR:-}}" ]]; then
+  _EXPLICIT_RUNNER="${RUNNER_DIR:-${GCP_SPOT_RUNNER_DIR:-}}"
+  if [[ "${_EXPLICIT_RUNNER}" != /* ]]; then
+    _EXPLICIT_RUNNER="${_STATE_HELPERS_PROJECT_ROOT}/${_EXPLICIT_RUNNER}"
   fi
+  _RESOLVER_CANDIDATES+=("${_EXPLICIT_RUNNER}/adapters/state_helpers_wrapper.sh")
+fi
+_RESOLVER_CANDIDATES+=(
+  "${_STATE_HELPERS_PROJECT_ROOT}/../gcp-spot-runner/adapters/state_helpers_wrapper.sh"
+  "${_STATE_HELPERS_PROJECT_ROOT}/gcp-spot-runner/adapters/state_helpers_wrapper.sh"
+)
 
-  for candidate in \
-    "${repo_root}/../gcp-spot-runner" \
-    "${repo_root}/gcp-spot-runner"; do
-    if [[ -d "$candidate" ]]; then
-      cd "$candidate" && pwd
-      return 0
-    fi
-  done
-  return 1
-}
-
-_STATE_HELPERS_RUNNER_DIR="$(_resolve_runner_dir)" || _state_helpers_fail \
+_STATE_HELPERS_RESOLVER=""
+for _candidate in "${_RESOLVER_CANDIDATES[@]}"; do
+  if [[ -f "${_candidate}" ]]; then
+    _STATE_HELPERS_RESOLVER="${_candidate}"
+    break
+  fi
+done
+[[ -n "${_STATE_HELPERS_RESOLVER}" ]] || _state_helpers_fail \
   "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR."
-_STATE_HELPERS_SHARED="${_STATE_HELPERS_RUNNER_DIR}/state_helpers.sh"
-[[ -f "${_STATE_HELPERS_SHARED}" ]] || _state_helpers_fail \
-  "Missing shared state helper file: ${_STATE_HELPERS_SHARED}"
 
 # shellcheck disable=SC1090
-source "${_STATE_HELPERS_SHARED}"
+source "${_STATE_HELPERS_RESOLVER}"
+spot_runner_source_state_helpers_wrapper "${_STATE_HELPERS_PROJECT_ROOT}"
