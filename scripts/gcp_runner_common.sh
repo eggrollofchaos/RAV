@@ -95,6 +95,14 @@ _require_runner_adapter_lib() {
   if ! spot_runner_require_adapter_lib_cached_strict "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
     exit 1
   fi
+
+  if ! spot_runner_require_functions_or_hint "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." \
+    spot_runner_require_install \
+    spot_runner_run_spotctl_compat \
+    spot_runner_run_profiled_compat \
+    spot_runner_prepare_submit_shell_compat; then
+    exit 1
+  fi
 }
 
 configure_gcloud_runtime() {
@@ -161,35 +169,6 @@ run_spotctl_with_config() {
   spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
   return "$?"
 }
-
-if ! declare -F spot_runner_maybe_reexec_caffeinate_compat >/dev/null 2>&1; then
-  spot_runner_maybe_reexec_caffeinate_compat() {
-    local guard_var="${1:-_SPOT_CAFFEINATED}"
-    local guard_alias_csv="${2:-}"
-    shift 2 || true
-
-    if ! declare -F spot_runner_maybe_reexec_caffeinate >/dev/null 2>&1; then
-      return 0
-    fi
-    spot_runner_maybe_reexec_caffeinate "${guard_var}" "${guard_alias_csv}" "$0" "$@"
-    return "$?"
-  }
-fi
-
-if ! declare -F spot_runner_prepare_submit_shell_compat >/dev/null 2>&1; then
-  spot_runner_prepare_submit_shell_compat() {
-    local guard_var="${1:-_SPOT_CAFFEINATED}"
-    local guard_alias_csv="${2:-}"
-    shift 2 || true
-
-    if ! declare -F spot_runner_prepare_submit_shell >/dev/null 2>&1; then
-      trap '' HUP
-      return 0
-    fi
-    spot_runner_prepare_submit_shell "${guard_var}" "${guard_alias_csv}" "$0" "$@"
-    return "$?"
-  }
-fi
 
 _run_profiled_with_config() {
   local config_path="$1"
