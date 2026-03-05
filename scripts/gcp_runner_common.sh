@@ -176,21 +176,8 @@ run_spotctl_with_config() {
   local config_path="$1"
   shift
 
-  if declare -F spot_runner_run_spotctl_compat >/dev/null 2>&1; then
-    spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
-    return "$?"
-  fi
-
-  if declare -F spot_runner_run_spotctl_safe >/dev/null 2>&1; then
-    spot_runner_run_spotctl_safe "${RUNNER_DIR}" "${config_path}" "$@"
-    return "$?"
-  fi
-
-  set +e
-  spot_runner_run_spotctl "${RUNNER_DIR}" "${config_path}" "$@"
-  local status=$?
-  set -e
-  return "$status"
+  spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+  return "$?"
 }
 
 spot_runner_maybe_reexec_caffeinate_compat() {
@@ -198,37 +185,11 @@ spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_alias_csv="${2:-}"
   shift 2
 
-  if declare -F spot_runner_maybe_reexec_caffeinate >/dev/null 2>&1; then
-    spot_runner_maybe_reexec_caffeinate "${guard_var}" "${guard_alias_csv}" "$0" "$@"
-    return "$?"
-  fi
-
-  if [[ -n "${!guard_var:-}" ]]; then
+  if ! declare -F spot_runner_maybe_reexec_caffeinate >/dev/null 2>&1; then
     return 0
   fi
-
-  local old_ifs="$IFS"
-  IFS=','
-  # shellcheck disable=SC2206
-  local guard_aliases=(${guard_alias_csv})
-  IFS="$old_ifs"
-
-  local alias_var=""
-  for alias_var in "${guard_aliases[@]}"; do
-    alias_var="${alias_var#"${alias_var%%[![:space:]]*}"}"
-    alias_var="${alias_var%"${alias_var##*[![:space:]]}"}"
-    if [[ -z "${alias_var}" ]]; then
-      continue
-    fi
-    if [[ -n "${!alias_var:-}" ]]; then
-      return 0
-    fi
-  done
-
-  if ! command -v caffeinate >/dev/null 2>&1; then
-    return 0
-  fi
-  exec env "${guard_var}=1" caffeinate -i "$0" "$@"
+  spot_runner_maybe_reexec_caffeinate "${guard_var}" "${guard_alias_csv}" "$0" "$@"
+  return "$?"
 }
 
 spot_runner_prepare_submit_shell_compat() {
@@ -236,13 +197,12 @@ spot_runner_prepare_submit_shell_compat() {
   local guard_alias_csv="${2:-}"
   shift 2
 
-  if declare -F spot_runner_prepare_submit_shell >/dev/null 2>&1; then
-    spot_runner_prepare_submit_shell "${guard_var}" "${guard_alias_csv}" "$0" "$@"
-    return "$?"
+  if ! declare -F spot_runner_prepare_submit_shell >/dev/null 2>&1; then
+    trap '' HUP
+    return 0
   fi
-
-  spot_runner_maybe_reexec_caffeinate_compat "${guard_var}" "${guard_alias_csv}" "$@"
-  trap '' HUP
+  spot_runner_prepare_submit_shell "${guard_var}" "${guard_alias_csv}" "$0" "$@"
+  return "$?"
 }
 
 _run_profiled_with_config() {
@@ -252,20 +212,8 @@ _run_profiled_with_config() {
   shift 3
 
   _require_runner_adapter_lib
-  if declare -F spot_runner_run_profiled_compat >/dev/null 2>&1; then
-    spot_runner_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
-    return "$?"
-  fi
-  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
-    spot_runner_run_profiled_safe "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
-    return "$?"
-  fi
-
-  set +e
-  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
-  local status=$?
-  set -e
-  return "$status"
+  spot_runner_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+  return "$?"
 }
 
 run_submit_with_job() {

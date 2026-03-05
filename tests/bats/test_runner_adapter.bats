@@ -11,7 +11,7 @@ _capture_stub() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
   _require_runner_adapter_lib() { :; }
-  spot_runner_run_profiled() {
+  spot_runner_run_profiled_compat() {
     local _runner_dir="$1"
     local config_path="$2"
     local profile_name="$3"
@@ -25,6 +25,7 @@ _capture_stub() {
     fi
     printf '%s\n' "$@" >> "$CAPTURE_PATH"
   }
+  spot_runner_run_profiled() { spot_runner_run_profiled_compat "$@"; }
   RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
@@ -46,17 +47,14 @@ ENV_FILE
   [ "$RAV_GCP_ENV_PATH" = "$env_file" ]
 }
 
-@test "run_spotctl_with_config falls back when safe helper is unavailable" {
+@test "run_spotctl_with_config delegates to shared compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
-  local captured="$BATS_TEST_TMPDIR/spotctl_fallback_args.txt"
+  local captured="$BATS_TEST_TMPDIR/spotctl_compat_args.txt"
 
   _require_runner_adapter_lib() { :; }
-  spot_runner_run_spotctl() {
+  spot_runner_run_spotctl_compat() {
     printf '%s\n' "$@" > "$captured"
   }
-  if declare -F spot_runner_run_spotctl_safe >/dev/null 2>&1; then
-    unset -f spot_runner_run_spotctl_safe
-  fi
   RUNNER_DIR="/tmp/fake-runner"
 
   run_spotctl_with_config "/tmp/rav_spot.env" version
@@ -68,17 +66,14 @@ ENV_FILE
   assert_line --index 2 "version"
 }
 
-@test "run_ops_command falls back when profiled safe helper is unavailable" {
+@test "run_ops_command delegates to shared profiled compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
-  local captured="$BATS_TEST_TMPDIR/profiled_fallback_args.txt"
+  local captured="$BATS_TEST_TMPDIR/profiled_compat_args.txt"
 
   _require_runner_adapter_lib() { :; }
-  spot_runner_run_profiled() {
+  spot_runner_run_profiled_compat() {
     printf '%s\n' "$@" > "$captured"
   }
-  if declare -F spot_runner_run_profiled_safe >/dev/null 2>&1; then
-    unset -f spot_runner_run_profiled_safe
-  fi
   RUNNER_DIR="/tmp/fake-runner"
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
 
