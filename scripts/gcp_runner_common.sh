@@ -150,7 +150,7 @@ run_spotctl_with_config() {
   local config_path="$1"
   shift
 
-  spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+  spot_runner_wrapper_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
   return "$?"
 }
 
@@ -161,7 +161,7 @@ _run_profiled_with_config() {
   shift 3
 
   _require_runner_adapter_lib
-  spot_runner_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+  spot_runner_wrapper_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
   return "$?"
 }
 
