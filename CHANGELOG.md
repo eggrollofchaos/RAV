@@ -10,10 +10,11 @@ Changed:- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir 
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
 - `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
+- `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
 
 Updated:
-- App version to `v0.2.38-wrapper-command-runtime-contract`.
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.30-wrapper-command-runtime-contract` in:
+- App version to `v0.2.39-wrapper-dispatch-runtime-contract`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.31-wrapper-dispatch-runtime-contract` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 Added:
