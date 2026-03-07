@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 from typing import Dict, List, Sequence, Tuple
@@ -22,7 +23,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from rav_chest.metrics import compute_confusion_matrices, compute_metrics, per_class_thresholds
+from rav_chest.metrics import (
+    compute_confusion_matrices,
+    compute_metrics,
+    optimize_thresholds,
+    per_class_thresholds,
+)
 from rav_chest.utils import ensure_dir, load_yaml, save_json, select_device
 
 
@@ -48,7 +54,76 @@ def parse_args() -> argparse.Namespace:
         default=-1,
         help="Override DataLoader workers. Use -1 to read from config.",
     )
+    parser.add_argument(
+        "--tune-thresholds",
+        action="store_true",
+        help="Tune per-class thresholds on the evaluated split before computing metrics.",
+    )
+    parser.add_argument(
+        "--threshold-objective",
+        type=str,
+        default="f1",
+        choices=["f1"],
+        help="Objective used when tuning thresholds.",
+    )
+    parser.add_argument(
+        "--threshold-grid-start",
+        type=float,
+        default=0.05,
+        help="Lower bound for threshold search grid.",
+    )
+    parser.add_argument(
+        "--threshold-grid-stop",
+        type=float,
+        default=0.95,
+        help="Upper bound for threshold search grid.",
+    )
+    parser.add_argument(
+        "--threshold-grid-step",
+        type=float,
+        default=0.05,
+        help="Step size for threshold search grid.",
+    )
+    parser.add_argument(
+        "--thresholds-file",
+        type=str,
+        default="",
+        help="Optional JSON file containing saved per-class thresholds to use for evaluation.",
+    )
+    parser.add_argument(
+        "--save-thresholds-file",
+        type=str,
+        default="",
+        help="Optional JSON output path for tuned thresholds.",
+    )
     return parser.parse_args()
+
+
+def threshold_grid(start: float, stop: float, step: float) -> np.ndarray:
+    if step <= 0.0:
+        raise ValueError("--threshold-grid-step must be positive.")
+    if stop < start:
+        raise ValueError("--threshold-grid-stop must be >= --threshold-grid-start.")
+
+    count = int(round((stop - start) / step)) + 1
+    values = start + (np.arange(count, dtype=np.float32) * np.float32(step))
+    values = np.clip(values, 0.0, 1.0)
+    return np.unique(values.astype(np.float32))
+
+
+def load_saved_thresholds(path: Path, class_names: Sequence[str]) -> np.ndarray:
+    with path.open("r", encoding="utf-8") as f:
+        payload = json.load(f)
+
+    saved = payload.get("thresholds")
+    if not isinstance(saved, dict):
+        raise ValueError(f"Saved thresholds file must contain an object 'thresholds': {path}")
+
+    missing = [name for name in class_names if name not in saved]
+    if missing:
+        raise ValueError(f"Saved thresholds file missing classes {missing}: {path}")
+
+    return np.asarray([float(saved[name]) for name in class_names], dtype=np.float32)
 
 
 def build_transform(image_size: int) -> transforms.Compose:
@@ -464,6 +539,42 @@ def main() -> None:
         u_ones=u_ones,
     )
 
+    threshold_source = "config"
+    threshold_tuning = None
+    if args.thresholds_file:
+        thresholds = load_saved_thresholds(Path(args.thresholds_file), class_names)
+        threshold_source = f"file:{args.thresholds_file}"
+    elif args.tune_thresholds:
+        grid = threshold_grid(
+            start=float(args.threshold_grid_start),
+            stop=float(args.threshold_grid_stop),
+            step=float(args.threshold_grid_step),
+        )
+        thresholds, threshold_tuning = optimize_thresholds(
+            y_true=true,
+            y_prob=probs,
+            class_names=class_names,
+            objective=args.threshold_objective,
+            threshold_candidates=grid,
+            default_threshold=float(cfg["evaluation"].get("default_threshold", 0.5)),
+        )
+        threshold_source = f"tuned:{args.split}:{args.threshold_objective}"
+
+        if args.save_thresholds_file:
+            save_path = Path(args.save_thresholds_file)
+            ensure_dir(save_path.parent)
+            payload = {
+                "split": args.split,
+                "objective": args.threshold_objective,
+                "grid_start": float(args.threshold_grid_start),
+                "grid_stop": float(args.threshold_grid_stop),
+                "grid_step": float(args.threshold_grid_step),
+                "thresholds": {name: float(thresholds[i]) for i, name in enumerate(class_names)},
+                "per_class": threshold_tuning,
+            }
+            save_json(save_path, payload)
+            print(f"Saved tuned thresholds to {args.save_thresholds_file}")
+
     metrics = compute_metrics(
         y_true=true,
         y_prob=probs,
@@ -481,6 +592,9 @@ def main() -> None:
     metrics["loss"] = loss
     metrics["checkpoint"] = str(ckpt_path)
     metrics["confusion_matrices"] = confusion
+    metrics["threshold_source"] = threshold_source
+    if threshold_tuning is not None:
+        metrics["threshold_tuning"] = threshold_tuning
 
     save_json(eval_dir / f"{args.split}_metrics.json", metrics)
     write_per_class_csv(eval_dir / f"{args.split}_per_class.csv", metrics)
@@ -492,6 +606,10 @@ def main() -> None:
         f"{args.split} {primary_class} confusion: "
         f"TP={primary_conf['tp']} TN={primary_conf['tn']} "
         f"FP={primary_conf['fp']} FN={primary_conf['fn']}"
+    )
+    print(
+        "thresholds="
+        + ", ".join(f"{name}={float(thresholds[i]):.2f}" for i, name in enumerate(class_names))
     )
     print(f"{args.split} loss={loss:.4f}, macro={metrics['macro']}")
 
