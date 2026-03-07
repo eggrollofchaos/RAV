@@ -144,18 +144,13 @@ apply_runner_defaults() {
 }
 
 _require_runner_adapter_lib() {
-  if declare -F spot_runner_require_wrapper_runtime_or_exit >/dev/null 2>&1; then
-    spot_runner_require_wrapper_runtime_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"
-    return 0
-  fi
-
-  if ! declare -F spot_runner_require_wrapper_runtime >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if ! spot_runner_require_wrapper_runtime "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"; then
+  if ! declare -F spot_runner_require_wrapper_runtime_or_exit >/dev/null 2>&1; then
+    echo "Runner helper missing required function: spot_runner_require_wrapper_runtime_or_exit" >&2
+    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
     exit 1
   fi
+
+  spot_runner_require_wrapper_runtime_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"
 }
 
 configure_gcloud_runtime() {
@@ -209,29 +204,7 @@ check_runner_install() {
     lib.sh
     startup.sh
   )
-  if declare -F spot_runner_require_install_or_exit >/dev/null 2>&1; then
-    spot_runner_require_install_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"
-    return 0
-  fi
-
-  if declare -F spot_runner_require_install >/dev/null 2>&1; then
-    if ! spot_runner_require_install "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"; then
-      exit 1
-    fi
-    return 0
-  fi
-
-  if declare -F spot_runner_check_install >/dev/null 2>&1; then
-    if ! spot_runner_check_install "${RUNNER_DIR}" "${required[@]}"; then
-      echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
-      exit 1
-    fi
-    return 0
-  fi
-
-  echo "Runner helper missing required install validation function." >&2
-  echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
-  exit 1
+  spot_runner_require_install_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"
 }
 
 run_spotctl_with_config() {
