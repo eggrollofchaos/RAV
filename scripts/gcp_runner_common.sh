@@ -35,21 +35,6 @@ _resolve_runner_dir_default() {
   printf '%s\n' "${RUNNER_DIR_DEFAULT_PRIMARY}"
 }
 
-_resolve_runner_dir_for_wrapper() {
-  local default_runner_dir="$(_resolve_runner_dir_default)"
-
-  if declare -F spot_runner_resolve_runner_dir_compat >/dev/null 2>&1; then
-    spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${default_runner_dir}" "RUNNER_DIR"
-    return "$?"
-  fi
-
-  local candidate="${RUNNER_DIR:-${default_runner_dir}}"
-  if [[ "${candidate}" != /* ]]; then
-    candidate="${RAV_ROOT}/${candidate}"
-  fi
-  (cd "${candidate}" && pwd)
-}
-
 _bootstrap_runner_adapter_lib() {
   local bootstrap_lib="$(_resolve_runner_dir_default)/adapters/spot_runner_common.sh"
   if [[ -f "${bootstrap_lib}" ]]; then
@@ -61,36 +46,13 @@ _bootstrap_runner_adapter_lib() {
 _bootstrap_runner_adapter_lib
 
 load_rav_spot_env_optional() {
-  if declare -F spot_runner_wrapper_load_env_optional >/dev/null 2>&1; then
-    spot_runner_wrapper_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH
-    return 0
+  if ! declare -F spot_runner_wrapper_load_env_optional >/dev/null 2>&1; then
+    echo "Runner helper missing required function: spot_runner_wrapper_load_env_optional" >&2
+    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+    return 1
   fi
 
-  if declare -F spot_runner_load_env_optional >/dev/null 2>&1; then
-    local cfg_path=""
-    if ! spot_runner_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" cfg_path; then
-      RAV_GCP_ENV_PATH=""
-      return 0
-    fi
-    RAV_GCP_ENV_PATH="${cfg_path}"
-    return 0
-  fi
-
-  local cfg="${RAV_GCP_ENV:-${RAV_GCP_ENV_DEFAULT}}"
-  if [[ "${cfg}" != /* ]]; then
-    cfg="${RAV_ROOT}/${cfg}"
-  fi
-  if [[ ! -f "${cfg}" ]]; then
-    RAV_GCP_ENV_PATH=""
-    return 0
-  fi
-
-  cfg="$(cd "$(dirname "${cfg}")" && pwd)/$(basename "${cfg}")"
-  set -a
-  # shellcheck disable=SC1090
-  source "${cfg}"
-  set +a
-  RAV_GCP_ENV_PATH="${cfg}"
+  spot_runner_wrapper_load_env_optional "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH
 }
 
 load_rav_spot_env() {
@@ -107,7 +69,14 @@ load_rav_spot_env() {
 }
 
 apply_runner_defaults() {
-  RUNNER_DIR="$(_resolve_runner_dir_for_wrapper)"
+  local default_runner_dir="$(_resolve_runner_dir_default)"
+  if ! declare -F spot_runner_resolve_runner_dir_compat >/dev/null 2>&1; then
+    echo "Runner helper missing required function: spot_runner_resolve_runner_dir_compat" >&2
+    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
+    exit 1
+  fi
+
+  RUNNER_DIR="$(spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${default_runner_dir}" "RUNNER_DIR")"
   : "${ZONE:=us-east1-c}"
   if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
     FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")

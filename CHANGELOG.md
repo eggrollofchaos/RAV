@@ -12,10 +12,11 @@ Changed:- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir 
 - `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
 - `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
 - `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_require_install_or_exit`), removing local compatibility fallback branches.
+- `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared helper contracts (`spot_runner_wrapper_load_env_optional`, `spot_runner_resolve_runner_dir_compat`) after bootstrap, removing local compatibility fallback branches for those paths.
 
 Updated:
-- App version to `v0.2.40-runtime-install-guard-contract`.
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.32-runtime-install-guard-contract` in:
+- App version to `v0.2.41-bootstrap-env-helper-contract`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.33-bootstrap-env-helper-contract` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 Added:
