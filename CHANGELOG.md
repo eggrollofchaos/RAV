@@ -8,10 +8,11 @@ Changed:
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
+- `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
 
 Updated:
-- App version to `v0.2.37-state-helper-runtime-loader`.
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.29-state-helper-runtime-loader` in:
+- App version to `v0.2.38-wrapper-command-runtime-contract`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.30-wrapper-command-runtime-contract` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 
