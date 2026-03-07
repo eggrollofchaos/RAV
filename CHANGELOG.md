@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+Changed:
+- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir file redirect and
+  `com.apple.fileprovider.ignore#P` xattr to prevent iCloud renaming. Added `.git.nosync/`
+  to `.gitignore`, `.dockerignore`, `.gcloudignore`.
+
 Added:
 - Corrupt image handling in `src/rav_chest/data.py`: `__getitem__` catches `UnidentifiedImageError`/`OSError` and returns `None`; new `skip_none_collate` filters corrupt samples from batches.
 - `scripts/train_chest_baseline.py` uses `skip_none_collate` and skips `None` batches in train/eval loops.

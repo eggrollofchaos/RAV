@@ -45,3 +45,6 @@ data/poc/chest_xray_pneumonia/source_archives/
 # Editor/project files
 *.sublime-project
 *.sublime-workspace
+
+# iCloud: actual git dir (gitdir file points here)
+.git.nosync/

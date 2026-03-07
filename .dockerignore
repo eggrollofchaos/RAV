@@ -19,3 +19,6 @@ screens
 .DS_Store
 *.sublime-project
 *.sublime-workspace
+
+# iCloud: actual git dir (gitdir file points here)
+.git.nosync/

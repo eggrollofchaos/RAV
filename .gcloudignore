@@ -26,3 +26,6 @@
 **/__pycache__/
 **/__pycache__/**
 *.pyc
+
+# iCloud: actual git dir (gitdir file points here)
+.git.nosync/
