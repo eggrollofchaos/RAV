@@ -238,19 +238,7 @@ run_spotctl_with_config() {
   _require_runner_adapter_lib
   local config_path="$1"
   shift
-
-  if declare -F spot_runner_wrapper_run_spotctl_compat >/dev/null 2>&1; then
-    spot_runner_wrapper_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
-    return "$?"
-  fi
-
-  if declare -F spot_runner_run_spotctl_compat >/dev/null 2>&1; then
-    spot_runner_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
-    return "$?"
-  fi
-
-  spot_runner_run_spotctl "${RUNNER_DIR}" "${config_path}" "$@"
-  return "$?"
+  spot_runner_wrapper_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
 }
 
 _run_profiled_with_config() {
@@ -260,18 +248,7 @@ _run_profiled_with_config() {
   shift 3
 
   _require_runner_adapter_lib
-  if declare -F spot_runner_wrapper_run_profiled_compat >/dev/null 2>&1; then
-    spot_runner_wrapper_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
-    return "$?"
-  fi
-
-  if declare -F spot_runner_run_profiled_compat >/dev/null 2>&1; then
-    spot_runner_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
-    return "$?"
-  fi
-
-  spot_runner_run_profiled "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
-  return "$?"
+  spot_runner_wrapper_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
 }
 
 run_submit_with_job() {
