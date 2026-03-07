@@ -12,10 +12,11 @@ Changed:
 - `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
 - `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_require_install_or_exit`), removing local compatibility fallback branches.
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared helper contracts (`spot_runner_wrapper_load_env_optional`, `spot_runner_resolve_runner_dir_compat`) after bootstrap, removing local compatibility fallback branches for those paths.
+- `scripts/gcp_runner_common.sh` bootstrap runner-checkout discovery now routes through shared helper `adapters/spot_runner_bootstrap.sh`, replacing the duplicated local candidate-resolution preamble while keeping direct fallback to `adapters/spot_runner_common.sh`.
 
 Updated:
-- App version to `v0.2.41-bootstrap-env-helper-contract`.
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.33-bootstrap-env-helper-contract` in:
+- App version to `v0.2.42-runner-bootstrap-discovery`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.34-runner-bootstrap-discovery` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 

@@ -9,10 +9,13 @@ RUNNER_DIR_DEFAULT_PRIMARY="${RAV_ROOT}/../gcp-spot-runner"
 RUNNER_DIR_DEFAULT_WORKTREE="${RAV_ROOT}/../gcp-spot-runner-codex"
 RAV_GCP_ENV_PATH=""
 RUNNER_ADAPTER_LIB_LOADED="0"
+RUNNER_BOOTSTRAP_DIR_DEFAULT="${RUNNER_DIR_DEFAULT_PRIMARY}"
 
-_resolve_runner_dir_default() {
+_bootstrap_runner_adapter_lib() {
   local candidate=""
   local raw_candidate=""
+  local bootstrap_lib=""
+  local common_lib=""
   local candidates=()
 
   if [[ -n "${RUNNER_DIR:-}" ]]; then
@@ -26,21 +29,24 @@ _resolve_runner_dir_default() {
     if [[ "${candidate}" != /* ]]; then
       candidate="${RAV_ROOT}/${candidate}"
     fi
-    if [[ -d "${candidate}" ]]; then
-      (cd "${candidate}" && pwd)
+
+    bootstrap_lib="${candidate}/adapters/spot_runner_bootstrap.sh"
+    if [[ -f "${bootstrap_lib}" ]]; then
+      # shellcheck disable=SC1090
+      source "${bootstrap_lib}"
+      if spot_runner_bootstrap_source_adapter_lib "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; then
+        return 0
+      fi
+    fi
+
+    common_lib="${candidate}/adapters/spot_runner_common.sh"
+    if [[ -f "${common_lib}" ]]; then
+      # shellcheck disable=SC1090
+      source "${common_lib}"
+      RUNNER_BOOTSTRAP_DIR_DEFAULT="${candidate}"
       return 0
     fi
   done
-
-  printf '%s\n' "${RUNNER_DIR_DEFAULT_PRIMARY}"
-}
-
-_bootstrap_runner_adapter_lib() {
-  local bootstrap_lib="$(_resolve_runner_dir_default)/adapters/spot_runner_common.sh"
-  if [[ -f "${bootstrap_lib}" ]]; then
-    # shellcheck disable=SC1090
-    source "${bootstrap_lib}"
-  fi
 }
 
 _bootstrap_runner_adapter_lib
@@ -69,14 +75,13 @@ load_rav_spot_env() {
 }
 
 apply_runner_defaults() {
-  local default_runner_dir="$(_resolve_runner_dir_default)"
   if ! declare -F spot_runner_resolve_runner_dir_compat >/dev/null 2>&1; then
     echo "Runner helper missing required function: spot_runner_resolve_runner_dir_compat" >&2
     echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
     exit 1
   fi
 
-  RUNNER_DIR="$(spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${default_runner_dir}" "RUNNER_DIR")"
+  RUNNER_DIR="$(spot_runner_resolve_runner_dir_compat "${RAV_ROOT}" "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" "RUNNER_DIR")"
   : "${ZONE:=us-east1-c}"
   if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
     FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")
@@ -167,6 +172,7 @@ check_required_spot_vars() {
 check_runner_install() {
   _require_runner_adapter_lib
   local required=(
+    adapters/spot_runner_bootstrap.sh
     spotctl/__main__.py
     submit_legacy.sh
     ops_legacy.sh
