@@ -11,6 +11,17 @@ _capture_stub() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
   _require_runner_adapter_lib() { :; }
+  spot_runner_wrapper_run_spotctl_compat() {
+    local _runner_dir="$1"
+    shift
+    run_spotctl_with_config "$@"
+  }
+  spot_runner_wrapper_run_version_compat() {
+    local _runner_dir="$1"
+    local config_path="${2:-}"
+    shift 2 || true
+    run_spotctl_with_config "${config_path}" version "$@"
+  }
   spot_runner_run_profiled_compat() {
     local _runner_dir="$1"
     local config_path="$2"
@@ -699,9 +710,30 @@ SCRIPT
   local fake_runner="$BATS_TEST_TMPDIR/fake-runner"
   mkdir -p "$fake_runner/spotctl" "$fake_runner/adapters"
   touch "$fake_runner/spotctl/__main__.py"
-  cat > "$fake_runner/adapters/spot_runner_common.sh" <<'ADAPTER_STUB'
+cat > "$fake_runner/adapters/spot_runner_common.sh" <<'ADAPTER_STUB'
 #!/usr/bin/env bash
 set -euo pipefail
+spot_runner_wrapper_load_env_optional() {
+  local root_dir="$1"
+  local env_var_name="$2"
+  local default_path="$3"
+  local output_var_name="${4:-}"
+  local cfg="${!env_var_name:-${default_path}}"
+  if [[ "${cfg}" != /* ]]; then
+    cfg="${root_dir}/${cfg}"
+  fi
+  if [[ -n "${output_var_name}" ]]; then
+    printf -v "${output_var_name}" '%s' "${cfg}"
+  fi
+}
+spot_runner_resolve_runner_dir_compat() {
+  local _project_root="$1"
+  local bootstrap_dir="$2"
+  local env_var_name="$3"
+  printf '%s\n' "${!env_var_name:-${bootstrap_dir}}"
+}
+spot_runner_require_wrapper_runtime_or_exit() { :; }
+spot_runner_require_install() { return 0; }
 spot_runner_check_install() {
   local runner_dir="$1"
   shift
@@ -709,6 +741,34 @@ spot_runner_check_install() {
   for file in "$@"; do
     [[ -f "${runner_dir}/${file}" ]] || return 1
   done
+}
+spot_runner_run_spotctl_safe() {
+  spot_runner_run_spotctl "$@"
+}
+spot_runner_run_spotctl_compat() {
+  spot_runner_run_spotctl_safe "$@"
+}
+spot_runner_wrapper_run_spotctl_compat() {
+  spot_runner_run_spotctl_compat "$@"
+}
+spot_runner_wrapper_run_reconciler_deploy_compat() {
+  local runner_dir="$1"
+  local config_path="$2"
+  local profile_name="$3"
+  local function_name="$4"
+  local scheduler_name="$5"
+  shift 5
+  local args=(
+    reconciler
+    deploy
+    --profile "$profile_name"
+    --function-name "$function_name"
+    --scheduler-name "$scheduler_name"
+  )
+  if [[ -n "${config_path}" ]]; then
+    args+=(--config "$config_path")
+  fi
+  spot_runner_wrapper_run_spotctl_compat "${runner_dir}" "${config_path}" "${args[@]}" "$@"
 }
 spot_runner_run_spotctl() {
   local runner_dir="$1"

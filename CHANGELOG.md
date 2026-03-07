@@ -4,9 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
-Changed:- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir file redirect and
+Changed:
+- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir file redirect and
   `com.apple.fileprovider.ignore#P` xattr to prevent iCloud renaming. Added `.git.nosync/`
-  to `.gitignore`, `.dockerignore`, `.gcloudignore`.- `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
+  to `.gitignore`, `.dockerignore`, `.gcloudignore`.
+- `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
 - `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
@@ -14,12 +16,14 @@ Changed:- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir 
 - `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_require_install_or_exit`), removing local compatibility fallback branches.
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared helper contracts (`spot_runner_wrapper_load_env_optional`, `spot_runner_resolve_runner_dir_compat`) after bootstrap, removing local compatibility fallback branches for those paths.
 - `scripts/gcp_runner_common.sh` bootstrap runner-checkout discovery now routes through shared helper `adapters/spot_runner_bootstrap.sh`, replacing the duplicated local candidate-resolution preamble while keeping direct fallback to `adapters/spot_runner_common.sh`.
+- `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.
 
 Updated:
 - App version to `v0.2.42-runner-bootstrap-discovery`.
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.34-runner-bootstrap-discovery` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
+
 Added:
 - Corrupt image handling in `src/rav_chest/data.py`: `__getitem__` catches `UnidentifiedImageError`/`OSError` and returns `None`; new `skip_none_collate` filters corrupt samples from batches.
 - `scripts/train_chest_baseline.py` uses `skip_none_collate` and skips `None` batches in train/eval loops.
