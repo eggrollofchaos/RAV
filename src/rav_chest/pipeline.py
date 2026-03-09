@@ -95,4 +95,3 @@ def infer_from_pil(
     payload["checkpoint"] = str(bundle.checkpoint_path.resolve())
     payload["config"] = str(bundle.config_path.resolve())
     return payload, probs
-

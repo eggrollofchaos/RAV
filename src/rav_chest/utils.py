@@ -48,4 +48,3 @@ def select_device(device_hint: str = "auto") -> torch.device:
             return torch.device("mps")
         return torch.device("cpu")
     return torch.device("cpu")
-

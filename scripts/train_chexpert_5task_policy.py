@@ -28,7 +28,9 @@ from rav_chest.utils import ensure_dir, load_yaml, save_json, select_device, set
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train CheXpert 5-task mixed uncertainty policy model.")
+    parser = argparse.ArgumentParser(
+        description="Train CheXpert 5-task mixed uncertainty policy model."
+    )
     parser.add_argument(
         "--config",
         type=str,
@@ -44,7 +46,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def build_transform(image_size: int, train: bool, augment: Dict[str, object] | None) -> transforms.Compose:
+def build_transform(
+    image_size: int, train: bool, augment: Dict[str, object] | None
+) -> transforms.Compose:
     ops: List[object] = [transforms.Resize((image_size, image_size))]
     augment = augment or {}
     if train and bool(augment.get("enabled", False)):
@@ -57,8 +61,15 @@ def build_transform(image_size: int, train: bool, augment: Dict[str, object] | N
         contrast = float(augment.get("contrast", 0.05))
 
         if hflip_prob > 0.0:
-            ops.append(transforms.RandomHorizontalFlip(p=max(0.0, min(1.0, hflip_prob))))
-        if rotation_degrees > 0.0 or translate > 0.0 or scale_min != 1.0 or scale_max != 1.0:
+            ops.append(
+                transforms.RandomHorizontalFlip(p=max(0.0, min(1.0, hflip_prob)))
+            )
+        if (
+            rotation_degrees > 0.0
+            or translate > 0.0
+            or scale_min != 1.0
+            or scale_max != 1.0
+        ):
             affine_translate = (translate, translate) if translate > 0.0 else None
             ops.append(
                 transforms.RandomAffine(
@@ -101,7 +112,9 @@ class CheXpertRawDataset(Dataset):
         if missing:
             raise ValueError(f"Missing columns in {self.csv_path}: {missing}")
 
-        self.transform = build_transform(image_size=image_size, train=train, augment=augment)
+        self.transform = build_transform(
+            image_size=image_size, train=train, augment=augment
+        )
 
     def __len__(self) -> int:
         return len(self.df)
@@ -167,7 +180,9 @@ class CheXpertFiveTaskModel(nn.Module):
         )
 
     @staticmethod
-    def _build_feature_extractor(backbone: str, pretrained: bool) -> Tuple[nn.Module, int]:
+    def _build_feature_extractor(
+        backbone: str, pretrained: bool
+    ) -> Tuple[nn.Module, int]:
         if backbone == "densenet121":
             weights = models.DenseNet121_Weights.DEFAULT if pretrained else None
             base = models.densenet121(weights=weights)
@@ -200,7 +215,9 @@ class CheXpertFiveTaskModel(nn.Module):
         out: Dict[str, object] = {}
         if self.binary_head is not None:
             out["binary"] = self.binary_head(features)
-        out["multiclass"] = {name: head(features) for name, head in self.multiclass_heads.items()}
+        out["multiclass"] = {
+            name: head(features) for name, head in self.multiclass_heads.items()
+        }
         return out
 
 
@@ -258,7 +275,9 @@ def load_previous_elapsed_seconds(history_path: Path) -> float:
     return float(value) if isinstance(value, (int, float)) else 0.0
 
 
-def parse_policy(cfg: Dict[str, object], class_names: Sequence[str]) -> Tuple[set[str], set[str], set[str]]:
+def parse_policy(
+    cfg: Dict[str, object], class_names: Sequence[str]
+) -> Tuple[set[str], set[str], set[str]]:
     policy_cfg = cfg.get("labels", {}).get("policy", {})
     if not isinstance(policy_cfg, dict):
         policy_cfg = {}
@@ -276,7 +295,11 @@ def parse_policy(cfg: Dict[str, object], class_names: Sequence[str]) -> Tuple[se
     u_multiclass &= class_set
     u_selftrained &= class_set
 
-    overlap = (u_ones & u_multiclass) | (u_ones & u_selftrained) | (u_multiclass & u_selftrained)
+    overlap = (
+        (u_ones & u_multiclass)
+        | (u_ones & u_selftrained)
+        | (u_multiclass & u_selftrained)
+    )
     if overlap:
         raise ValueError(f"Policy label overlap detected: {sorted(overlap)}")
 
@@ -319,7 +342,14 @@ def class_probabilities(
             break
     assert batch_size is not None
 
-    probs = torch.zeros((batch_size, len(class_names)), device=next(iter(outputs["multiclass"].values())).device if outputs["multiclass"] else outputs["binary"].device)
+    probs = torch.zeros(
+        (batch_size, len(class_names)),
+        device=(
+            next(iter(outputs["multiclass"].values())).device
+            if outputs["multiclass"]
+            else outputs["binary"].device
+        ),
+    )
 
     binary_index = {name: i for i, name in enumerate(binary_labels)}
 
@@ -365,28 +395,40 @@ def compute_batch_loss(
         if name in u_selftrained:
             if stage == 1:
                 valid = (~torch.isnan(raw)) & (raw != -1)
-                targets = torch.where(raw > 0, torch.ones_like(raw), torch.zeros_like(raw))
+                targets = torch.where(
+                    raw > 0, torch.ones_like(raw), torch.zeros_like(raw)
+                )
             else:
                 if pseudo_labels is None:
                     valid = (~torch.isnan(raw)) & (raw != -1)
-                    targets = torch.where(raw > 0, torch.ones_like(raw), torch.zeros_like(raw))
+                    targets = torch.where(
+                        raw > 0, torch.ones_like(raw), torch.zeros_like(raw)
+                    )
                 else:
                     pseudo_col = selftrained_pos[name]
                     # `pseudo_labels` is typically CPU-resident; align index device before gather.
                     gather_indices = indices.to(pseudo_labels.device, non_blocking=True)
                     pseudo = pseudo_labels[gather_indices, pseudo_col].to(raw.device)
-                    targets_known = torch.where(raw > 0, torch.ones_like(raw), torch.zeros_like(raw))
+                    targets_known = torch.where(
+                        raw > 0, torch.ones_like(raw), torch.zeros_like(raw)
+                    )
                     targets = torch.where(raw == -1, pseudo, targets_known)
                     valid = ~torch.isnan(raw)
                     valid = valid & ~((raw == -1) & torch.isnan(pseudo))
         else:
             mapped = torch.where(raw > 0, torch.ones_like(raw), torch.zeros_like(raw))
-            mapped = torch.where(raw == -1, torch.ones_like(raw) if name in u_ones else torch.zeros_like(raw), mapped)
+            mapped = torch.where(
+                raw == -1,
+                torch.ones_like(raw) if name in u_ones else torch.zeros_like(raw),
+                mapped,
+            )
             targets = mapped
             valid = ~torch.isnan(raw)
 
         if torch.any(valid):
-            loss_vec = F.binary_cross_entropy_with_logits(logits, targets, reduction="none")
+            loss_vec = F.binary_cross_entropy_with_logits(
+                logits, targets, reduction="none"
+            )
             losses.append(loss_vec[valid].mean())
 
     # Multiclass losses (U-MultiClass)
@@ -423,7 +465,11 @@ def generate_pseudo_labels(
     self_pos = {name: i for i, name in enumerate(selftrained_labels)}
     binary_head = {name: i for i, name in enumerate(binary_labels)}
 
-    pseudo = torch.full((len(loader.dataset), len(selftrained_labels)), float("nan"), dtype=torch.float32)
+    pseudo = torch.full(
+        (len(loader.dataset), len(selftrained_labels)),
+        float("nan"),
+        dtype=torch.float32,
+    )
 
     model.eval()
     with torch.no_grad():
@@ -491,7 +537,9 @@ def evaluate(
                 binary_labels=binary_labels,
                 multiclass_labels=multiclass_labels,
             )
-            true_mapped = map_eval_labels(raw_labels=raw_labels, class_names=class_names, u_ones=u_ones)
+            true_mapped = map_eval_labels(
+                raw_labels=raw_labels, class_names=class_names, u_ones=u_ones
+            )
             probs_all.append(probs.detach().cpu().numpy())
             true_all.append(true_mapped.detach().cpu().numpy())
 
@@ -529,7 +577,9 @@ def main() -> None:
 
     device = select_device(cfg["training"].get("device", "auto"))
     print(f"Using device: {device}")
-    print(f"Policy: u_ones={sorted(u_ones)} u_multiclass={sorted(u_multiclass)} u_selftrained={sorted(u_selftrained)}")
+    print(
+        f"Policy: u_ones={sorted(u_ones)} u_multiclass={sorted(u_multiclass)} u_selftrained={sorted(u_selftrained)}"
+    )
 
     train_ds = CheXpertRawDataset(
         csv_path=cfg["data"]["train_csv"],
@@ -606,7 +656,9 @@ def main() -> None:
     epochs_stage1 = int(cfg["training"].get("epochs_stage1", 3))
     epochs_stage2 = int(cfg["training"].get("epochs_stage2", 3))
     total_epochs = int(cfg["training"].get("epochs", epochs_stage1 + epochs_stage2))
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=total_epochs)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=total_epochs
+    )
 
     amp_enabled = device.type == "cuda" and bool(cfg["training"].get("amp", True))
     scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
@@ -617,9 +669,13 @@ def main() -> None:
         overrides=cfg["evaluation"].get("threshold_overrides", {}),
     )
 
-    selection_metric = str(cfg["training"].get("selection_metric", "f1")).strip().lower()
+    selection_metric = (
+        str(cfg["training"].get("selection_metric", "f1")).strip().lower()
+    )
     early_stopping_patience = int(cfg["training"].get("early_stopping_patience", 0))
-    early_stopping_min_delta = float(cfg["training"].get("early_stopping_min_delta", 0.0))
+    early_stopping_min_delta = float(
+        cfg["training"].get("early_stopping_min_delta", 0.0)
+    )
     bad_epochs = 0
 
     best_score = -1.0
@@ -643,7 +699,9 @@ def main() -> None:
         resumed_epoch = int(state.get("epoch", 0))
         start_epoch = resumed_epoch + 1
         history_mode = "a" if (metrics_dir / "history.jsonl").exists() else "w"
-        elapsed_offset_seconds = load_previous_elapsed_seconds(metrics_dir / "history.jsonl")
+        elapsed_offset_seconds = load_previous_elapsed_seconds(
+            metrics_dir / "history.jsonl"
+        )
         best_score = score_from_metrics(
             state.get("val_metrics"),
             selection_metric=selection_metric,
@@ -657,7 +715,9 @@ def main() -> None:
             best_state = torch.load(best_ckpt_path, map_location="cpu")
             best_score = max(
                 best_score,
-                score_from_metrics(best_state.get("val_metrics"), selection_metric=selection_metric),
+                score_from_metrics(
+                    best_state.get("val_metrics"), selection_metric=selection_metric
+                ),
             )
 
         print(
@@ -694,7 +754,11 @@ def main() -> None:
             model.train()
             train_losses: List[float] = []
 
-            progress = tqdm(train_loader, desc=f"Epoch {epoch}/{total_epochs} [stage={stage}]", leave=False)
+            progress = tqdm(
+                train_loader,
+                desc=f"Epoch {epoch}/{total_epochs} [stage={stage}]",
+                leave=False,
+            )
             for batch in progress:
                 if batch is None:
                     continue

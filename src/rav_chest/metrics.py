@@ -131,7 +131,9 @@ def optimize_thresholds(
 ) -> tuple[np.ndarray, Dict[str, Dict[str, float]]]:
     objective = str(objective).strip().lower()
     if objective != "f1":
-        raise ValueError(f"Unsupported threshold objective '{objective}'. Supported: f1")
+        raise ValueError(
+            f"Unsupported threshold objective '{objective}'. Supported: f1"
+        )
 
     if threshold_candidates is None:
         threshold_candidates = np.linspace(0.05, 0.95, num=19, dtype=np.float32)
@@ -178,8 +180,10 @@ def optimize_thresholds(
             better = score > best_score
             if not better and np.isclose(score, best_score):
                 better = balanced_accuracy > best_balanced_accuracy
-            if not better and np.isclose(score, best_score) and np.isclose(
-                balanced_accuracy, best_balanced_accuracy
+            if (
+                not better
+                and np.isclose(score, best_score)
+                and np.isclose(balanced_accuracy, best_balanced_accuracy)
             ):
                 better = prevalence_gap < best_prevalence_gap
 

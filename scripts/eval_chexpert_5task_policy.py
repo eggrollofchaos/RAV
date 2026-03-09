@@ -33,8 +33,12 @@ from rav_chest.utils import ensure_dir, load_yaml, save_json, select_device
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate CheXpert 5-task mixed uncertainty policy model.")
-    parser.add_argument("--config", type=str, default="configs/primary/chest_chexpert_5task_policy.yaml")
+    parser = argparse.ArgumentParser(
+        description="Evaluate CheXpert 5-task mixed uncertainty policy model."
+    )
+    parser.add_argument(
+        "--config", type=str, default="configs/primary/chest_chexpert_5task_policy.yaml"
+    )
     parser.add_argument(
         "--checkpoint",
         type=str,
@@ -117,7 +121,9 @@ def load_saved_thresholds(path: Path, class_names: Sequence[str]) -> np.ndarray:
 
     saved = payload.get("thresholds")
     if not isinstance(saved, dict):
-        raise ValueError(f"Saved thresholds file must contain an object 'thresholds': {path}")
+        raise ValueError(
+            f"Saved thresholds file must contain an object 'thresholds': {path}"
+        )
 
     missing = [name for name in class_names if name not in saved]
     if missing:
@@ -222,7 +228,9 @@ class CheXpertFiveTaskModel(nn.Module):
         )
 
     @staticmethod
-    def _build_feature_extractor(backbone: str, pretrained: bool) -> Tuple[nn.Module, int]:
+    def _build_feature_extractor(
+        backbone: str, pretrained: bool
+    ) -> Tuple[nn.Module, int]:
         if backbone == "densenet121":
             weights = models.DenseNet121_Weights.DEFAULT if pretrained else None
             base = models.densenet121(weights=weights)
@@ -255,11 +263,15 @@ class CheXpertFiveTaskModel(nn.Module):
         out: Dict[str, object] = {}
         if self.binary_head is not None:
             out["binary"] = self.binary_head(features)
-        out["multiclass"] = {name: head(features) for name, head in self.multiclass_heads.items()}
+        out["multiclass"] = {
+            name: head(features) for name, head in self.multiclass_heads.items()
+        }
         return out
 
 
-def parse_policy(cfg: Dict[str, object], class_names: Sequence[str]) -> Tuple[set[str], set[str], set[str]]:
+def parse_policy(
+    cfg: Dict[str, object], class_names: Sequence[str]
+) -> Tuple[set[str], set[str], set[str]]:
     policy_cfg = cfg.get("labels", {}).get("policy", {})
     if not isinstance(policy_cfg, dict):
         policy_cfg = {}
@@ -277,14 +289,20 @@ def parse_policy(cfg: Dict[str, object], class_names: Sequence[str]) -> Tuple[se
     u_multiclass &= class_set
     u_selftrained &= class_set
 
-    overlap = (u_ones & u_multiclass) | (u_ones & u_selftrained) | (u_multiclass & u_selftrained)
+    overlap = (
+        (u_ones & u_multiclass)
+        | (u_ones & u_selftrained)
+        | (u_multiclass & u_selftrained)
+    )
     if overlap:
         raise ValueError(f"Policy label overlap detected: {sorted(overlap)}")
 
     return u_ones, u_multiclass, u_selftrained
 
 
-def map_eval_labels(raw_labels: torch.Tensor, class_names: Sequence[str], u_ones: set[str]) -> torch.Tensor:
+def map_eval_labels(
+    raw_labels: torch.Tensor, class_names: Sequence[str], u_ones: set[str]
+) -> torch.Tensor:
     mapped = torch.zeros_like(raw_labels)
     for i, name in enumerate(class_names):
         raw = raw_labels[:, i]
@@ -352,7 +370,9 @@ def eval_loss(
             targets = torch.where(raw == -1, torch.zeros_like(raw), targets)
         valid = ~torch.isnan(raw)
         if torch.any(valid):
-            loss_vec = F.binary_cross_entropy_with_logits(logits, targets, reduction="none")
+            loss_vec = F.binary_cross_entropy_with_logits(
+                logits, targets, reduction="none"
+            )
             losses.append(loss_vec[valid].mean())
 
     for name in multiclass_labels:
@@ -441,7 +461,9 @@ def write_per_class_csv(path: Path, metrics: Dict[str, object]) -> None:
             writer.writerow(out)
 
 
-def write_confusion_csv(path: Path, confusion: Dict[str, Dict[str, float | int]]) -> None:
+def write_confusion_csv(
+    path: Path, confusion: Dict[str, Dict[str, float | int]]
+) -> None:
     fields = [
         "class_name",
         "tp",
@@ -485,7 +507,11 @@ def main() -> None:
 
     output_dir = Path(cfg["project"]["output_dir"])
     eval_dir = ensure_dir(output_dir / "metrics")
-    ckpt_path = Path(args.checkpoint) if args.checkpoint else output_dir / "checkpoints" / "best.pt"
+    ckpt_path = (
+        Path(args.checkpoint)
+        if args.checkpoint
+        else output_dir / "checkpoints" / "best.pt"
+    )
     if not ckpt_path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
 
@@ -501,13 +527,18 @@ def main() -> None:
         image_size=int(cfg["training"]["image_size"]),
     )
 
-    num_workers = int(cfg["training"].get("num_workers", 4)) if int(args.num_workers) < 0 else int(args.num_workers)
+    num_workers = (
+        int(cfg["training"].get("num_workers", 4))
+        if int(args.num_workers) < 0
+        else int(args.num_workers)
+    )
     loader = DataLoader(
         dataset,
         batch_size=int(cfg["training"].get("batch_size", 16)),
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=bool(cfg["training"].get("pin_memory", True)) and device.type == "cuda",
+        pin_memory=bool(cfg["training"].get("pin_memory", True))
+        and device.type == "cuda",
         collate_fn=skip_none_collate,
     )
     print(f"Using DataLoader num_workers={num_workers}")
@@ -569,7 +600,9 @@ def main() -> None:
                 "grid_start": float(args.threshold_grid_start),
                 "grid_stop": float(args.threshold_grid_stop),
                 "grid_step": float(args.threshold_grid_step),
-                "thresholds": {name: float(thresholds[i]) for i, name in enumerate(class_names)},
+                "thresholds": {
+                    name: float(thresholds[i]) for i, name in enumerate(class_names)
+                },
                 "per_class": threshold_tuning,
             }
             save_json(save_path, payload)
@@ -609,7 +642,9 @@ def main() -> None:
     )
     print(
         "thresholds="
-        + ", ".join(f"{name}={float(thresholds[i]):.2f}" for i, name in enumerate(class_names))
+        + ", ".join(
+            f"{name}={float(thresholds[i]):.2f}" for i, name in enumerate(class_names)
+        )
     )
     print(f"{args.split} loss={loss:.4f}, macro={metrics['macro']}")
 

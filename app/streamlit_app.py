@@ -19,7 +19,6 @@ from rav_chest.pipeline import infer_from_pil, load_inference_bundle
 from rav_chest.utils import load_yaml
 from rav_chest.version import APP_VERSION
 
-
 DEFAULT_CONFIGS = {
     "Primary (CheXpert)": "configs/primary/chest_chexpert.yaml",
     "POC (Kaggle Binary)": "configs/poc/chest_pneumonia_binary.yaml",
@@ -244,7 +243,11 @@ def maybe_answer_question_with_llm(
     except ValueError as exc:
         return {"ok": False, "model": model_name, "error": str(exc)}
     except Exception as exc:
-        return {"ok": False, "model": model_name, "error": f"{type(exc).__name__}: {exc}"}
+        return {
+            "ok": False,
+            "model": model_name,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def maybe_rewrite_impression_with_llm(
@@ -262,7 +265,11 @@ def maybe_rewrite_impression_with_llm(
     except ValueError as exc:
         return {"ok": False, "model": model_name, "error": str(exc)}
     except Exception as exc:
-        return {"ok": False, "model": model_name, "error": f"{type(exc).__name__}: {exc}"}
+        return {
+            "ok": False,
+            "model": model_name,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def render_inference_page(
@@ -614,7 +621,10 @@ def main() -> None:
         llm_model = st.text_input(
             "LLM Model (Rewrite/Q&A)",
             value="gpt-4.1-mini",
-            disabled=(page == "Model Metrics" or (page == "Inference" and not llm_rewrite_enabled)),
+            disabled=(
+                page == "Model Metrics"
+                or (page == "Inference" and not llm_rewrite_enabled)
+            ),
         )
         metrics_split = st.selectbox(
             "Metrics Split",

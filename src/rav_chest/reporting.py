@@ -5,7 +5,6 @@ from typing import Dict, List, Sequence
 
 import numpy as np
 
-
 CRITICAL_FINDINGS = {"Pneumothorax", "Pleural Effusion", "Edema"}
 
 
@@ -66,7 +65,9 @@ def generate_impression(payload: Dict[str, object]) -> str:
 
     impression = f"Findings suggest: {findings_text}."
     if critical_flags:
-        impression += " Critical attention recommended for: " + ", ".join(critical_flags) + "."
+        impression += (
+            " Critical attention recommended for: " + ", ".join(critical_flags) + "."
+        )
     return impression
 
 
@@ -82,4 +83,3 @@ def probs_to_payload(
     )
     structured["impression"] = generate_impression(structured)
     return structured
-

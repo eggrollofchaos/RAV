@@ -8,7 +8,6 @@ from typing import List
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-
 LABEL_COLUMNS: List[str] = [
     "Atelectasis",
     "Cardiomegaly",
@@ -92,7 +91,9 @@ def _binarize_label(series: pd.Series) -> pd.Series:
     return (numeric > 0.0).astype(int)
 
 
-def _build_stratify_series(df: pd.DataFrame, max_labels: int) -> tuple[pd.Series | None, list[str]]:
+def _build_stratify_series(
+    df: pd.DataFrame, max_labels: int
+) -> tuple[pd.Series | None, list[str]]:
     max_labels = max(1, int(max_labels))
 
     usable_labels: list[tuple[str, float]] = []
@@ -154,7 +155,9 @@ def main() -> None:
     if strat is not None:
         print(f"Using stratified split on labels: {strat_cols}")
     else:
-        print("Falling back to unstratified valid split (insufficient balanced strata).")
+        print(
+            "Falling back to unstratified valid split (insufficient balanced strata)."
+        )
 
     try:
         val_df, test_df = train_test_split(

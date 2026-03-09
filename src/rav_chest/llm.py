@@ -67,7 +67,9 @@ def resolve_openai_api_key(explicit_api_key: str | None = None) -> str:
     return ""
 
 
-def get_openai_client(api_key: str | None = None, base_url: str | None = None) -> OpenAI:
+def get_openai_client(
+    api_key: str | None = None, base_url: str | None = None
+) -> OpenAI:
     key = resolve_openai_api_key(api_key)
     if not key:
         raise ValueError(

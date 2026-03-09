@@ -83,7 +83,8 @@ def _summarize(rows: List[Dict[str, float]], total_epochs: int) -> Dict[str, obj
     epoch_seconds_values = [
         float(row["epoch_seconds"])
         for row in rows
-        if isinstance(row.get("epoch_seconds"), (int, float)) and float(row["epoch_seconds"]) > 0
+        if isinstance(row.get("epoch_seconds"), (int, float))
+        and float(row["epoch_seconds"]) > 0
     ]
     avg_epoch_seconds = (
         sum(epoch_seconds_values) / len(epoch_seconds_values)

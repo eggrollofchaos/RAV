@@ -46,4 +46,3 @@ def build_model(
         f"Unsupported backbone '{backbone}'. "
         "Supported backbones: densenet121, resnet50, efficientnet_b0."
     )
-

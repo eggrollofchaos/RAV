@@ -27,7 +27,9 @@ from rav_chest.utils import ensure_dir, load_yaml, save_json, select_device, set
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train chest X-ray baseline classifier.")
+    parser = argparse.ArgumentParser(
+        description="Train chest X-ray baseline classifier."
+    )
     parser.add_argument(
         "--config",
         type=str,
@@ -110,7 +112,9 @@ def build_pos_weight_from_dataset(
     weights: List[float] = []
     total = float(len(train_ds.df))
     for col in class_names:
-        raw = pd.to_numeric(train_ds.df[col], errors="coerce").to_numpy(dtype=np.float32)
+        raw = pd.to_numeric(train_ds.df[col], errors="coerce").to_numpy(
+            dtype=np.float32
+        )
         mapped = np.where(
             np.isnan(raw),
             0.0,
@@ -273,7 +277,9 @@ def main() -> None:
                 f"mean={float(pos_weight.mean()):.3f}"
             )
         else:
-            print("WARN: use_pos_weight requested, but train dataset type is unexpected. Skipping.")
+            print(
+                "WARN: use_pos_weight requested, but train dataset type is unexpected. Skipping."
+            )
     criterion = nn.BCEWithLogitsLoss(
         pos_weight=pos_weight.to(device) if pos_weight is not None else None
     )
@@ -290,9 +296,13 @@ def main() -> None:
     amp_enabled = device.type == "cuda" and bool(cfg["training"].get("amp", True))
     scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
 
-    selection_metric = str(cfg["training"].get("selection_metric", "auto")).strip().lower()
+    selection_metric = (
+        str(cfg["training"].get("selection_metric", "auto")).strip().lower()
+    )
     early_stopping_patience = int(cfg["training"].get("early_stopping_patience", 0))
-    early_stopping_min_delta = float(cfg["training"].get("early_stopping_min_delta", 0.0))
+    early_stopping_min_delta = float(
+        cfg["training"].get("early_stopping_min_delta", 0.0)
+    )
     bad_epochs = 0
 
     thresholds = per_class_thresholds(
@@ -321,7 +331,9 @@ def main() -> None:
         resumed_epoch = int(state.get("epoch", 0))
         start_epoch = resumed_epoch + 1
         history_mode = "a" if (metrics_dir / "history.jsonl").exists() else "w"
-        elapsed_offset_seconds = load_previous_elapsed_seconds(metrics_dir / "history.jsonl")
+        elapsed_offset_seconds = load_previous_elapsed_seconds(
+            metrics_dir / "history.jsonl"
+        )
         best_score = score_from_metrics(
             state.get("val_metrics"),
             selection_metric=selection_metric,
@@ -383,7 +395,9 @@ def main() -> None:
             scheduler.step()
 
             train_loss = float(np.mean(train_losses)) if train_losses else 0.0
-            val_loss, val_probs, val_true = eval_loop(model, val_loader, device, criterion)
+            val_loss, val_probs, val_true = eval_loop(
+                model, val_loader, device, criterion
+            )
             metric_payload = compute_metrics(
                 y_true=val_true,
                 y_prob=val_probs,

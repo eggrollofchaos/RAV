@@ -107,7 +107,9 @@ def write_per_class_csv(path: Path, metrics: Dict[str, object]) -> None:
             writer.writerow(out)
 
 
-def write_confusion_csv(path: Path, confusion: Dict[str, Dict[str, float | int]]) -> None:
+def write_confusion_csv(
+    path: Path, confusion: Dict[str, Dict[str, float | int]]
+) -> None:
     fields = [
         "class_name",
         "tp",

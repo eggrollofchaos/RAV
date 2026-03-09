@@ -51,12 +51,15 @@ def build_transform(
 
         if hflip_prob > 0.0:
             ops.append(
-                transforms.RandomHorizontalFlip(
-                    p=max(0.0, min(1.0, hflip_prob))
-                )
+                transforms.RandomHorizontalFlip(p=max(0.0, min(1.0, hflip_prob)))
             )
 
-        if rotation_degrees > 0.0 or translate > 0.0 or scale_min != 1.0 or scale_max != 1.0:
+        if (
+            rotation_degrees > 0.0
+            or translate > 0.0
+            or scale_min != 1.0
+            or scale_max != 1.0
+        ):
             affine_translate = (translate, translate) if translate > 0.0 else None
             ops.append(
                 transforms.RandomAffine(
@@ -157,6 +160,8 @@ class CheXpertDataset(Dataset):
             return None
         image_tensor = self.transform(image)
 
-        label_values = [self._normalize_label(row[col], col) for col in self.label_columns]
+        label_values = [
+            self._normalize_label(row[col], col) for col in self.label_columns
+        ]
         labels = torch.tensor(label_values, dtype=torch.float32)
         return image_tensor, labels, str(image_path)

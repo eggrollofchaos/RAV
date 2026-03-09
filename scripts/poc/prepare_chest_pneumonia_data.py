@@ -8,7 +8,6 @@ from typing import Dict, List
 
 import pandas as pd
 
-
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 
 
@@ -43,7 +42,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def extract_archives(zip_dir: Path, data_root: Path, force_extract: bool) -> None:
-    split_dirs_exist = all((data_root / split).exists() for split in ("train", "val", "test"))
+    split_dirs_exist = all(
+        (data_root / split).exists() for split in ("train", "val", "test")
+    )
     if split_dirs_exist and not force_extract:
         print("Split directories already exist; skipping extraction.")
         return
