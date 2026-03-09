@@ -8,6 +8,11 @@ Changed:
 - **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir file redirect and
   `com.apple.fileprovider.ignore#P` xattr to prevent iCloud renaming. Added `.git.nosync/`
   to `.gitignore`, `.dockerignore`, `.gcloudignore`.
+- `scripts/gcp_runner_common.sh` now delegates project env loading, resolved `RUNNER_DIR`
+  assignment, runtime validation, and install checks through shared project-wrapper helpers in
+  `gcp-spot-runner/adapters/spot_runner_common.sh`, removing more wrapper-local setup logic.
+- `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current
+  project-wrapper helper contract for reconciler deploy wrapper execution.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
@@ -19,6 +24,10 @@ Changed:
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.
 
 Updated:
+- App version to `v0.2.43-project-wrapper-runtime-helpers`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.35-project-wrapper-runtime-helpers` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
 - App version to `v0.2.42-runner-bootstrap-discovery`.
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.34-runner-bootstrap-discovery` in:
   - `README.md`

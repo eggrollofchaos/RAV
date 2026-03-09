@@ -4,8 +4,8 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 
 Date: March 1, 2026
 
-Current app version: `v0.2.42-runner-bootstrap-discovery`
-Spot runner lineage version: `gcp-spot-runner v0.6.34-runner-bootstrap-discovery`
+Current app version: `v0.2.43-project-wrapper-runtime-helpers`
+Spot runner lineage version: `gcp-spot-runner v0.6.35-project-wrapper-runtime-helpers`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`
