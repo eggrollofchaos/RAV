@@ -810,8 +810,28 @@ spot_runner_wrapper_require_project_runtime_or_exit() {
   local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
   printf -v "${loaded_var_name}" '%s' "1"
 }
+spot_runner_wrapper_profile_hint() {
+  local profile_name="${1:-default}"
+  if [[ "${profile_name}" == "rav" ]]; then
+    printf '%s\n' "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+    return 0
+  fi
+  printf '%s\n' "Set RUNNER_DIR to your gcp-spot-runner checkout."
+}
+spot_runner_wrapper_profile_required_files() {
+  printf '%s\n' adapters/spot_runner_bootstrap.sh spotctl/__main__.py submit_legacy.sh ops_legacy.sh lib.sh startup.sh
+}
+spot_runner_wrapper_require_project_runtime_for_profile_or_exit() {
+  local runner_dir="$1"
+  local profile_name="$2"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local hint_message
+  hint_message="$(spot_runner_wrapper_profile_hint "${profile_name}")"
+  spot_runner_wrapper_require_project_runtime_or_exit "${runner_dir}" "${hint_message}" "${loaded_var_name}"
+}
 spot_runner_require_install() { return 0; }
 spot_runner_wrapper_require_project_install_or_exit() { return 0; }
+spot_runner_wrapper_require_project_install_for_profile_or_exit() { return 0; }
 spot_runner_check_install() {
   local runner_dir="$1"
   shift

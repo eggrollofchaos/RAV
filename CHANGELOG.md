@@ -17,6 +17,9 @@ Changed:
 - `tests/bats/test_runner_adapter.bats` now stubs shared project-wrapper command helpers directly
   so RAV adapter contract tests remain stable as command wiring moves deeper into shared runner
   helpers.
+- `scripts/gcp_runner_common.sh` no longer carries local runtime/install contract declarations
+  (profile hint text and required runner file list); those now resolve through shared profile-based
+  helpers in `gcp-spot-runner/adapters/spot_runner_common.sh`.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current
   project-wrapper helper contract for reconciler deploy wrapper execution.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
@@ -30,6 +33,10 @@ Changed:
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.
 
 Updated:
+- App version to `v0.2.45-profile-install-runtime-contracts`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.37-profile-install-runtime-contracts` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
 - App version to `v0.2.44-project-wrapper-command-helpers`.
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.36-project-wrapper-command-helpers` in:
   - `README.md`

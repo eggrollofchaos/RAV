@@ -9,6 +9,7 @@ RUNNER_DIR_DEFAULT_PRIMARY="${RAV_ROOT}/../gcp-spot-runner"
 RUNNER_DIR_DEFAULT_WORKTREE="${RAV_ROOT}/../gcp-spot-runner-codex"
 RAV_GCP_ENV_PATH=""
 RUNNER_ADAPTER_LIB_LOADED="0"
+RUNNER_PROFILE="rav"
 RUNNER_BOOTSTRAP_DIR_DEFAULT="${RUNNER_DIR_DEFAULT_PRIMARY}"
 
 _bootstrap_runner_adapter_lib() {
@@ -118,13 +119,13 @@ apply_runner_defaults() {
 }
 
 _require_runner_adapter_lib() {
-  if ! declare -F spot_runner_wrapper_require_project_runtime_or_exit >/dev/null 2>&1; then
-    echo "Runner helper missing required function: spot_runner_wrapper_require_project_runtime_or_exit" >&2
+  if ! declare -F spot_runner_wrapper_require_project_runtime_for_profile_or_exit >/dev/null 2>&1; then
+    echo "Runner helper missing required function: spot_runner_wrapper_require_project_runtime_for_profile_or_exit" >&2
     echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
     exit 1
   fi
 
-  spot_runner_wrapper_require_project_runtime_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED"
+  spot_runner_wrapper_require_project_runtime_for_profile_or_exit "${RUNNER_DIR}" "${RUNNER_PROFILE}" "RUNNER_ADAPTER_LIB_LOADED"
 }
 
 configure_gcloud_runtime() {
@@ -170,20 +171,12 @@ check_required_spot_vars() {
 }
 
 check_runner_install() {
-  if ! declare -F spot_runner_wrapper_require_project_install_or_exit >/dev/null 2>&1; then
-    echo "Runner helper missing required function: spot_runner_wrapper_require_project_install_or_exit" >&2
+  if ! declare -F spot_runner_wrapper_require_project_install_for_profile_or_exit >/dev/null 2>&1; then
+    echo "Runner helper missing required function: spot_runner_wrapper_require_project_install_for_profile_or_exit" >&2
     echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
     exit 1
   fi
-  local required=(
-    adapters/spot_runner_bootstrap.sh
-    spotctl/__main__.py
-    submit_legacy.sh
-    ops_legacy.sh
-    lib.sh
-    startup.sh
-  )
-  spot_runner_wrapper_require_project_install_or_exit "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "${required[@]}"
+  spot_runner_wrapper_require_project_install_for_profile_or_exit "${RUNNER_DIR}" "${RUNNER_PROFILE}"
 }
 
 run_spotctl_with_config() {
