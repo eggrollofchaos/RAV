@@ -27,5 +27,4 @@
 **/__pycache__/**
 *.pyc
 
-# iCloud: actual git dir (gitdir file points here)
-.git.nosync/
+# .git.nosync/ — removed 2026-03-09, repos moved out of iCloud to ~/coding

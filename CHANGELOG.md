@@ -5,9 +5,10 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 Changed:
-- **iCloud git isolation**: Moved `.git/` to `.git.nosync/` with gitdir file redirect and
-  `com.apple.fileprovider.ignore#P` xattr to prevent iCloud renaming. Added `.git.nosync/`
-  to `.gitignore`, `.dockerignore`, `.gcloudignore`.
+- **Revert iCloud git isolation**: Reverted `.git.nosync/` back to standard `.git/` directory
+  after migrating repo from `~/Documents/Programming/` to `~/coding/` (outside iCloud scope).
+  Removed gitdir redirect and xattr. Updated `.gitignore`, `.dockerignore`, `.gcloudignore`.
+  Historical context preserved in comments.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.

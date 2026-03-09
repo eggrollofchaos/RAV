@@ -46,5 +46,4 @@ data/poc/chest_xray_pneumonia/source_archives/
 *.sublime-project
 *.sublime-workspace
 
-# iCloud: actual git dir (gitdir file points here)
-.git.nosync/
+# .git.nosync/ — removed 2026-03-09, repos moved out of iCloud to ~/coding
