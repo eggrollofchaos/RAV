@@ -187,10 +187,9 @@ check_runner_install() {
 }
 
 run_spotctl_with_config() {
-  _require_runner_adapter_lib
   local config_path="$1"
   shift
-  spot_runner_wrapper_run_spotctl_compat "${RUNNER_DIR}" "${config_path}" "$@"
+  spot_runner_wrapper_run_project_spotctl_with_config "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "$@"
 }
 
 _run_profiled_with_config() {
@@ -199,8 +198,7 @@ _run_profiled_with_config() {
   local command_name="$3"
   shift 3
 
-  _require_runner_adapter_lib
-  spot_runner_wrapper_run_profiled_compat "${RUNNER_DIR}" "${config_path}" "${profile_name}" "${command_name}" "$@"
+  spot_runner_wrapper_run_project_profiled_with_config "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "${profile_name}" "${command_name}" "$@"
 }
 
 run_submit_with_job() {
@@ -228,24 +226,20 @@ run_submit_with_job() {
 
 run_ops_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
-  _require_runner_adapter_lib
-  spot_runner_wrapper_run_ops_compat "${RUNNER_DIR}" "${config_path}" "rav" "$@"
+  spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "$@"
 }
 
 run_build_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
-  _require_runner_adapter_lib
-  spot_runner_wrapper_run_profiled_command_compat "${RUNNER_DIR}" "${config_path}" "rav" "build" "$@"
+  spot_runner_wrapper_run_project_profiled_command "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "build" "$@"
 }
 
 run_monitor_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
-  _require_runner_adapter_lib
-  spot_runner_wrapper_run_profiled_command_compat "${RUNNER_DIR}" "${config_path}" "rav" "monitor" "$@"
+  spot_runner_wrapper_run_project_profiled_command "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "monitor" "$@"
 }
 
 run_version_command() {
   local config_path="${RAV_GCP_ENV_PATH:-}"
-  _require_runner_adapter_lib
-  spot_runner_wrapper_run_version_compat "${RUNNER_DIR}" "${config_path}" "$@"
+  spot_runner_wrapper_run_project_version "${RUNNER_DIR}" "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "$@"
 }
