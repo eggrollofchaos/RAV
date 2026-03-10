@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+Fixed:
+- CI: replaced local symlinks for bats test libraries (`bats-core`, `bats-assert`,
+  `bats-support`) with proper git submodules so tests run in CI environments.
+- CI: added fallback adapter stubs in `test_helper.bash` so adapter contract tests
+  pass without a local `gcp-spot-runner` checkout.
+- CI: `test_state_transitions_parity.bats` now skips gracefully when sibling
+  `gcp-spot-runner` checkout is not present.
+
 Changed:
 - **Revert iCloud git isolation**: Reverted `.git.nosync/` back to standard `.git/` directory
   after migrating repo from `~/Documents/Programming/` to `~/coding/` (outside iCloud scope).
