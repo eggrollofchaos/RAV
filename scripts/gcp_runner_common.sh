@@ -118,56 +118,12 @@ apply_runner_defaults() {
   : "${NOTIFY_SECRET:=}"
 }
 
-_require_runner_adapter_lib() {
-  if ! declare -F spot_runner_wrapper_require_project_runtime_for_profile_or_exit >/dev/null 2>&1; then
-    echo "Runner helper missing required function: spot_runner_wrapper_require_project_runtime_for_profile_or_exit" >&2
-    echo "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout." >&2
-    exit 1
-  fi
-
-  spot_runner_wrapper_require_project_runtime_for_profile_or_exit "${RUNNER_DIR}" "${RUNNER_PROFILE}" "RUNNER_ADAPTER_LIB_LOADED"
-}
-
 configure_gcloud_runtime() {
-  : "${CLOUDSDK_CORE_DISABLE_PROMPTS:=1}"
-  export CLOUDSDK_CORE_DISABLE_PROMPTS
-  : "${CLOUDSDK_PYTHON_SITEPACKAGES:=0}"
-  export CLOUDSDK_PYTHON_SITEPACKAGES
-
-  if [[ -n "${CLOUDSDK_PYTHON:-}" ]]; then
-    return 0
-  fi
-
-  local py_candidates=(
-    "${RAV_ROOT}/.venv/bin/python3.12"
-    "${RAV_ROOT}/.venv/bin/python3"
-  )
-
-  local py
-  for py in "${py_candidates[@]}"; do
-    if [[ -x "$py" ]]; then
-      export CLOUDSDK_PYTHON="$py"
-      return 0
-    fi
-  done
-
-  if command -v python3.12 >/dev/null 2>&1; then
-    export CLOUDSDK_PYTHON="$(command -v python3.12)"
-  fi
+  spot_runner_wrapper_configure_gcloud_runtime "${RUNNER_DIR}" "${RAV_ROOT}"
 }
 
 check_required_spot_vars() {
-  local missing=()
-  local key
-  for key in PROJECT REGION SA IMAGE BUCKET; do
-    if [[ -z "${!key:-}" ]]; then
-      missing+=("$key")
-    fi
-  done
-  if [[ ${#missing[@]} -gt 0 ]]; then
-    echo "Missing required gcp/rav_spot.env values: ${missing[*]}" >&2
-    exit 1
-  fi
+  spot_runner_wrapper_check_required_spot_vars
 }
 
 check_runner_install() {

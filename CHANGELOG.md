@@ -31,10 +31,22 @@ Changed:
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared helper contracts (`spot_runner_wrapper_load_env_optional`, `spot_runner_resolve_runner_dir_compat`) after bootstrap, removing local compatibility fallback branches for those paths.
 - `scripts/gcp_runner_common.sh` bootstrap runner-checkout discovery now routes through shared helper `adapters/spot_runner_bootstrap.sh`, replacing the duplicated local candidate-resolution preamble while keeping direct fallback to `adapters/spot_runner_common.sh`.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.
+- PR #1 follow-up cleanup: removed legacy `_require_runner_adapter_lib` from
+  `scripts/gcp_runner_common.sh`, switched `gcp/cloud_reconciler/deploy.sh` to
+  shared `check_runner_install`, and removed a duplicate
+  `spot_runner_wrapper_require_project_install_for_profile_or_exit` stub definition in
+  `tests/bats/test_runner_adapter.bats`.
+- Restored `tests/bats/lib/{bats-core,bats-support,bats-assert}` as real git submodules
+  (gitlink entries) and added `.gitmodules` URLs, so CI can initialize BATS dependencies
+  instead of failing on missing local-only symlink targets.
+- `tests/bats/test_runner_adapter.bats` now stubs required shared helper symbols in
+  `load_rav_spot_env_optional` and `apply_runner_defaults` tests, and
+  `tests/bats/test_state_transitions_parity.bats` now skips cleanly when a sibling
+  `gcp-spot-runner` checkout is unavailable in CI.
 
 Updated:
-- App version to `v0.2.45-profile-install-runtime-contracts`.
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.37-profile-install-runtime-contracts` in:
+- App version to `v0.2.46-profile-install-runtime-contracts`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.38-profile-install-runtime-contracts` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - App version to `v0.2.44-project-wrapper-command-helpers`.

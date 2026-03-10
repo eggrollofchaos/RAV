@@ -28,9 +28,10 @@ _resolve_runner_dir() {
 }
 
 @test "RAV state_transitions.json matches runner canonical map" {
-  local runner_dir
-  runner_dir="$(_resolve_runner_dir)"
-  [ -n "$runner_dir" ]
+  local runner_dir=""
+  if ! runner_dir="$(_resolve_runner_dir)"; then
+    skip "Skipping: sibling gcp-spot-runner checkout not present"
+  fi
 
   local local_map="$REPO_ROOT/gcp/state_transitions.json"
   local canonical_map="$runner_dir/cloud_reconciler/state_transitions.json"

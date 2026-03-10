@@ -101,6 +101,22 @@ _capture_stub() {
 @test "load_rav_spot_env_optional sources env vars without subshell loss" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
 
+  spot_runner_wrapper_load_project_env_optional() {
+    local root_dir="$1"
+    local env_var_name="$2"
+    local default_path="$3"
+    local output_var_name="$4"
+    local cfg="${!env_var_name:-${default_path}}"
+    if [[ "${cfg}" != /* ]]; then
+      cfg="${root_dir}/${cfg}"
+    fi
+    set -a
+    # shellcheck disable=SC1090
+    source "${cfg}"
+    set +a
+    printf -v "${output_var_name}" '%s' "${cfg}"
+  }
+
   local env_file="$BATS_TEST_TMPDIR/rav_spot.env"
   cat > "$env_file" <<'ENV_FILE'
 PROJECT="rav-env-loaded"
@@ -296,6 +312,19 @@ SCRIPT
 
 @test "apply_runner_defaults aligns data disk defaults with rav profile contract" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+
+  spot_runner_wrapper_resolve_project_runner_dir_or_exit() {
+    local root_dir="$1"
+    local default_dir="$2"
+    local env_var_name="$3"
+    local output_var_name="${4:-RUNNER_DIR}"
+    local resolved="${!env_var_name:-${default_dir}}"
+    if [[ "${resolved}" != /* ]]; then
+      resolved="${root_dir}/${resolved}"
+    fi
+    printf -v "${output_var_name}" '%s' "${resolved}"
+  }
+
   unset RUNNER_DIR
 
   unset DATA_DISK_ENABLED DATA_DISK_MOUNT_PATH DATA_DISK_DEVICE_NAME DATA_DISK_FS_TYPE DATA_DISK_TYPE DATA_DISK_SIZE_GB
@@ -832,6 +861,8 @@ spot_runner_wrapper_require_project_runtime_for_profile_or_exit() {
 spot_runner_require_install() { return 0; }
 spot_runner_wrapper_require_project_install_or_exit() { return 0; }
 spot_runner_wrapper_require_project_install_for_profile_or_exit() { return 0; }
+spot_runner_wrapper_configure_gcloud_runtime() { :; }
+spot_runner_wrapper_check_required_spot_vars() { :; }
 spot_runner_check_install() {
   local runner_dir="$1"
   shift
