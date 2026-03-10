@@ -7,6 +7,7 @@ CAPTURE_PATH=""
 
 _capture_stub() {
   CAPTURE_PATH="$1"
+  spot_runner_wrapper_require_project_runtime_or_exit() { :; }
   run_spotctl_with_config() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
@@ -37,11 +38,84 @@ _capture_stub() {
     printf '%s\n' "$@" >> "$CAPTURE_PATH"
   }
   spot_runner_run_profiled() { spot_runner_run_profiled_compat "$@"; }
+  spot_runner_wrapper_run_project_spotctl_with_config() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    shift 4
+    run_spotctl_with_config "$config_path" "$@"
+  }
+  spot_runner_wrapper_run_project_profiled_with_config() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    local profile_name="$5"
+    local command_name="$6"
+    shift 6
+    printf '%s\n' "$config_path" > "$CAPTURE_PATH"
+    printf '%s\n' "$command_name" >> "$CAPTURE_PATH"
+    printf '%s\n' "--profile" "$profile_name" >> "$CAPTURE_PATH"
+    if [[ -n "$config_path" ]]; then
+      printf '%s\n' "--config" "$config_path" >> "$CAPTURE_PATH"
+    fi
+    printf '%s\n' "$@" >> "$CAPTURE_PATH"
+  }
+  spot_runner_wrapper_run_project_ops() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    local profile_name="$5"
+    shift 5
+    local args=("$@")
+    if [[ ${#args[@]} -eq 0 ]]; then
+      args=(status)
+    fi
+    spot_runner_wrapper_run_project_profiled_with_config \
+      "$_runner_dir" "$_hint_message" "$_loaded_var" "$config_path" "$profile_name" "ops" "${args[@]}"
+  }
+  spot_runner_wrapper_run_project_profiled_command() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    local profile_name="$5"
+    local command_name="$6"
+    shift 6
+    spot_runner_wrapper_run_project_profiled_with_config \
+      "$_runner_dir" "$_hint_message" "$_loaded_var" "$config_path" "$profile_name" "$command_name" "$@"
+  }
+  spot_runner_wrapper_run_project_version() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    shift 4
+    run_spotctl_with_config "$config_path" version "$@"
+  }
   RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
 @test "load_rav_spot_env_optional sources env vars without subshell loss" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+
+  spot_runner_wrapper_load_project_env_optional() {
+    local root_dir="$1"
+    local env_var_name="$2"
+    local default_path="$3"
+    local output_var_name="$4"
+    local cfg="${!env_var_name:-${default_path}}"
+    if [[ "${cfg}" != /* ]]; then
+      cfg="${root_dir}/${cfg}"
+    fi
+    set -a
+    # shellcheck disable=SC1090
+    source "${cfg}"
+    set +a
+    printf -v "${output_var_name}" '%s' "${cfg}"
+  }
 
   local env_file="$BATS_TEST_TMPDIR/rav_spot.env"
   cat > "$env_file" <<'ENV_FILE'
@@ -62,8 +136,7 @@ ENV_FILE
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/spotctl_compat_args.txt"
 
-  _require_runner_adapter_lib() { :; }
-  spot_runner_run_spotctl_compat() {
+  spot_runner_wrapper_run_project_spotctl_with_config() {
     printf '%s\n' "$@" > "$captured"
   }
   RUNNER_DIR="/tmp/fake-runner"
@@ -73,16 +146,17 @@ ENV_FILE
   run cat "$captured"
   assert_success
   assert_line --index 0 "/tmp/fake-runner"
-  assert_line --index 1 "/tmp/rav_spot.env"
-  assert_line --index 2 "version"
+  assert_line --index 1 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+  assert_line --index 2 "RUNNER_ADAPTER_LIB_LOADED"
+  assert_line --index 3 "/tmp/rav_spot.env"
+  assert_line --index 4 "version"
 }
 
 @test "run_ops_command delegates to shared profiled compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/profiled_compat_args.txt"
 
-  _require_runner_adapter_lib() { :; }
-  spot_runner_run_profiled_compat() {
+  spot_runner_wrapper_run_project_ops() {
     printf '%s\n' "$@" > "$captured"
   }
   RUNNER_DIR="/tmp/fake-runner"
@@ -93,12 +167,13 @@ ENV_FILE
   run cat "$captured"
   assert_success
   assert_line --index 0 "/tmp/fake-runner"
-  assert_line --index 1 "/tmp/rav_spot.env"
-  assert_line --index 2 "rav"
-  assert_line --index 3 "ops"
-  assert_line --index 4 "watch"
-  assert_line --index 5 "20"
-  assert_line --index 6 "--json"
+  assert_line --index 1 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+  assert_line --index 2 "RUNNER_ADAPTER_LIB_LOADED"
+  assert_line --index 3 "/tmp/rav_spot.env"
+  assert_line --index 4 "rav"
+  assert_line --index 5 "watch"
+  assert_line --index 6 "20"
+  assert_line --index 7 "--json"
 }
 
 _setup_temp_submit_wrappers() {
@@ -237,6 +312,19 @@ SCRIPT
 
 @test "apply_runner_defaults aligns data disk defaults with rav profile contract" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+
+  spot_runner_wrapper_resolve_project_runner_dir_or_exit() {
+    local root_dir="$1"
+    local default_dir="$2"
+    local env_var_name="$3"
+    local output_var_name="${4:-RUNNER_DIR}"
+    local resolved="${!env_var_name:-${default_dir}}"
+    if [[ "${resolved}" != /* ]]; then
+      resolved="${root_dir}/${resolved}"
+    fi
+    printf -v "${output_var_name}" '%s' "${resolved}"
+  }
+
   unset RUNNER_DIR
 
   unset DATA_DISK_ENABLED DATA_DISK_MOUNT_PATH DATA_DISK_DEVICE_NAME DATA_DISK_FS_TYPE DATA_DISK_TYPE DATA_DISK_SIZE_GB
@@ -726,14 +814,55 @@ spot_runner_wrapper_load_env_optional() {
     printf -v "${output_var_name}" '%s' "${cfg}"
   fi
 }
+spot_runner_wrapper_load_project_env_optional() {
+  spot_runner_wrapper_load_env_optional "$@"
+}
 spot_runner_resolve_runner_dir_compat() {
   local _project_root="$1"
   local bootstrap_dir="$2"
   local env_var_name="$3"
   printf '%s\n' "${!env_var_name:-${bootstrap_dir}}"
 }
+spot_runner_wrapper_resolve_project_runner_dir_or_exit() {
+  local project_root="$1"
+  local bootstrap_dir="$2"
+  local env_var_name="$3"
+  local output_var_name="${4:-RUNNER_DIR}"
+  local resolved_dir=""
+  resolved_dir="$(spot_runner_resolve_runner_dir_compat "${project_root}" "${bootstrap_dir}" "${env_var_name}")"
+  printf -v "${output_var_name}" '%s' "${resolved_dir}"
+}
 spot_runner_require_wrapper_runtime_or_exit() { :; }
+spot_runner_wrapper_require_project_runtime_or_exit() {
+  local _runner_dir="$1"
+  local _hint_message="${2:-}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  printf -v "${loaded_var_name}" '%s' "1"
+}
+spot_runner_wrapper_profile_hint() {
+  local profile_name="${1:-default}"
+  if [[ "${profile_name}" == "rav" ]]; then
+    printf '%s\n' "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+    return 0
+  fi
+  printf '%s\n' "Set RUNNER_DIR to your gcp-spot-runner checkout."
+}
+spot_runner_wrapper_profile_required_files() {
+  printf '%s\n' adapters/spot_runner_bootstrap.sh spotctl/__main__.py submit_legacy.sh ops_legacy.sh lib.sh startup.sh
+}
+spot_runner_wrapper_require_project_runtime_for_profile_or_exit() {
+  local runner_dir="$1"
+  local profile_name="$2"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local hint_message
+  hint_message="$(spot_runner_wrapper_profile_hint "${profile_name}")"
+  spot_runner_wrapper_require_project_runtime_or_exit "${runner_dir}" "${hint_message}" "${loaded_var_name}"
+}
 spot_runner_require_install() { return 0; }
+spot_runner_wrapper_require_project_install_or_exit() { return 0; }
+spot_runner_wrapper_require_project_install_for_profile_or_exit() { return 0; }
+spot_runner_wrapper_configure_gcloud_runtime() { :; }
+spot_runner_wrapper_check_required_spot_vars() { :; }
 spot_runner_check_install() {
   local runner_dir="$1"
   shift

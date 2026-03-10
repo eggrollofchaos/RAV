@@ -17,6 +17,20 @@ Changed:
   after migrating repo from `~/Documents/Programming/` to `~/coding/` (outside iCloud scope).
   Removed gitdir redirect and xattr. Updated `.gitignore`, `.dockerignore`, `.gcloudignore`.
   Historical context preserved in comments.
+- `scripts/gcp_runner_common.sh` now delegates project env loading, resolved `RUNNER_DIR`
+  assignment, runtime validation, and install checks through shared project-wrapper helpers in
+  `gcp-spot-runner/adapters/spot_runner_common.sh`, removing more wrapper-local setup logic.
+- `scripts/gcp_runner_common.sh` now delegates direct `spotctl`, profiled dispatch, ops/build/monitor,
+  and version command wiring through shared project-wrapper command helpers in
+  `gcp-spot-runner/adapters/spot_runner_common.sh`.
+- `tests/bats/test_runner_adapter.bats` now stubs shared project-wrapper command helpers directly
+  so RAV adapter contract tests remain stable as command wiring moves deeper into shared runner
+  helpers.
+- `scripts/gcp_runner_common.sh` no longer carries local runtime/install contract declarations
+  (profile hint text and required runner file list); those now resolve through shared profile-based
+  helpers in `gcp-spot-runner/adapters/spot_runner_common.sh`.
+- `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current
+  project-wrapper helper contract for reconciler deploy wrapper execution.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
@@ -26,8 +40,32 @@ Changed:
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared helper contracts (`spot_runner_wrapper_load_env_optional`, `spot_runner_resolve_runner_dir_compat`) after bootstrap, removing local compatibility fallback branches for those paths.
 - `scripts/gcp_runner_common.sh` bootstrap runner-checkout discovery now routes through shared helper `adapters/spot_runner_bootstrap.sh`, replacing the duplicated local candidate-resolution preamble while keeping direct fallback to `adapters/spot_runner_common.sh`.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.
+- PR #1 follow-up cleanup: removed legacy `_require_runner_adapter_lib` from
+  `scripts/gcp_runner_common.sh`, switched `gcp/cloud_reconciler/deploy.sh` to
+  shared `check_runner_install`, and removed a duplicate
+  `spot_runner_wrapper_require_project_install_for_profile_or_exit` stub definition in
+  `tests/bats/test_runner_adapter.bats`.
+- Restored `tests/bats/lib/{bats-core,bats-support,bats-assert}` as real git submodules
+  (gitlink entries) and added `.gitmodules` URLs, so CI can initialize BATS dependencies
+  instead of failing on missing local-only symlink targets.
+- `tests/bats/test_runner_adapter.bats` now stubs required shared helper symbols in
+  `load_rav_spot_env_optional` and `apply_runner_defaults` tests, and
+  `tests/bats/test_state_transitions_parity.bats` now skips cleanly when a sibling
+  `gcp-spot-runner` checkout is unavailable in CI.
 
 Updated:
+- App version to `v0.2.46-profile-install-runtime-contracts`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.38-profile-install-runtime-contracts` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+- App version to `v0.2.44-project-wrapper-command-helpers`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.36-project-wrapper-command-helpers` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+- App version to `v0.2.43-project-wrapper-runtime-helpers`.
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.35-project-wrapper-runtime-helpers` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
 - App version to `v0.2.42-runner-bootstrap-discovery`.
 - Runner lineage docs synchronized to `gcp-spot-runner v0.6.34-runner-bootstrap-discovery` in:
   - `README.md`
