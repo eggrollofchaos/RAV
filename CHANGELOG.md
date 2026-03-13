@@ -29,6 +29,9 @@ Changed:
 - `scripts/gcp_runner_common.sh` no longer carries local runtime/install contract declarations
   (profile hint text and required runner file list); those now resolve through shared profile-based
   helpers in `gcp-spot-runner/adapters/spot_runner_common.sh`.
+- `scripts/gcp_runner_common.sh` now derives runner install hint text from shared profile helper
+  `spot_runner_wrapper_profile_hint_or_default`, removing wrapper-local hint fallback logic and
+  repeated inline hint literals across env-load/runtime/install/dispatch error paths.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current
   project-wrapper helper contract for reconciler deploy wrapper execution.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
