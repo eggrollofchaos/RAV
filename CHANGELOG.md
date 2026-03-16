@@ -66,6 +66,9 @@ Changed:
 - `gcp/state_helpers.sh` now prefers shared wrapper-level helper
   `spot_runner_wrapper_source_project_state_helpers_entrypoint_compat_or_fallback`, reducing
   additional wrapper-local state-helper fallback branching across helper versions.
+- `gcp/state_helpers.sh` now prefers shared helper
+  `spot_runner_wrapper_source_project_state_helpers_or_fail`, reducing additional wrapper-local
+  state-helper entrypoint branching and direct fallback wiring.
 - `gcp/state_helpers.sh` now drops the redundant direct runtime-or-exit fallback branch; the
   shared entrypoint helper owns that fallback behavior.
 - `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
