@@ -59,6 +59,41 @@ spot_runner_require_wrapper_runtime_or_exit() {
   printf -v "${loaded_var_name}" '%s' "1"
 }
 spot_runner_require_install_or_exit() { return 0; }
+spot_runner_wrapper_apply_rav_defaults() {
+  : "${ZONE:=us-east1-c}"
+  if ! declare -p FALLBACK_ZONES >/dev/null 2>&1; then
+    FALLBACK_ZONES=("us-east1-b" "us-east1-c" "us-east1-d")
+  fi
+  : "${MACHINE_TYPE:=n1-standard-8}"
+  : "${GPU_TYPE:=nvidia-tesla-t4}"
+  : "${BOOT_DISK_SIZE:=100}"
+  : "${BOOT_DISK_TYPE:=pd-ssd}"
+  : "${DATA_DISK_ENABLED:=true}"
+  : "${DATA_DISK_NAME:=}"
+  : "${DATA_DISK_SIZE_GB:=500}"
+  : "${DATA_DISK_TYPE:=pd-ssd}"
+  : "${DATA_DISK_DEVICE_NAME:=spot-data}"
+  : "${DATA_DISK_MOUNT_PATH:=/var/lib/spot-data}"
+  : "${DATA_DISK_FS_TYPE:=ext4}"
+  : "${CONTAINER_NAME:=rav-trainer}"
+  : "${CONDA_ENV:=}"
+  : "${GPU_TIMEOUT_SEC:=600}"
+  : "${MAX_RUNTIME_SEC:=172800}"
+  : "${POLL_INTERVAL:=120}"
+  : "${HEARTBEAT_STALE_SEC:=600}"
+  : "${HEARTBEAT_STALE_MAX:=3}"
+  : "${PROGRESS_STALL_POLLS:=6}"
+  : "${MAX_RESTARTS:=3}"
+  : "${RESTART_BACKOFF_SEC:=60}"
+  : "${WALL_CLOCK_DEADLINE:=}"
+  : "${DEADLINE_TZ:=America/New_York}"
+  : "${OWNER_LOCK_STALE_SEC:=300}"
+  : "${METADATA_PREFIX:=spot}"
+  : "${RUNNER_LABEL:=spot-runner}"
+  : "${LOG_LEVEL:=INFO}"
+  : "${DISCORD_WEBHOOK_URL:=}"
+  : "${NOTIFY_SECRET:=}"
+}
 # Inner functions — tests may override these to capture arguments.
 spot_runner_run_spotctl_compat() {
   local runner_dir="$1"
@@ -109,6 +144,34 @@ spot_runner_wrapper_run_version_compat() {
   local config_path="${2:-}"
   shift 2 || true
   spot_runner_wrapper_run_spotctl_compat "$runner_dir" "$config_path" version "$@"
+}
+spot_runner_wrapper_run_project_submit_with_job_compat() {
+  local runner_dir="$1"
+  local _hint_message="${2:-}"
+  local _loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="$4"
+  local profile_name="$5"
+  local job_command="$6"
+  shift 6
+  local args=("$@")
+  local has_skip_build=false
+  local arg
+  for arg in "${args[@]}"; do
+    if [[ "$arg" == "--skip-build" ]]; then
+      has_skip_build=true
+      break
+    fi
+  done
+  if [[ "$has_skip_build" != true ]]; then
+    args=(--skip-build "${args[@]}")
+  fi
+  spot_runner_wrapper_run_profiled_compat \
+    "$runner_dir" \
+    "$config_path" \
+    "$profile_name" \
+    "submit" \
+    --job-command "$job_command" \
+    "${args[@]}"
 }
 
 setup() {

@@ -32,16 +32,98 @@ Changed:
 - `scripts/gcp_runner_common.sh` now derives runner install hint text from shared profile helper
   `spot_runner_wrapper_profile_hint_or_default`, removing wrapper-local hint fallback logic and
   repeated inline hint literals across env-load/runtime/install/dispatch error paths.
+- `scripts/gcp_runner_common.sh` now prefers shared hint assignment helper
+  `spot_runner_wrapper_assign_profile_hint_compat`, reducing wrapper-local hint initialization
+  branching while preserving compatibility with older helper surfaces.
+- `scripts/gcp_runner_common.sh` now prefers shared hint-assignment entrypoint helper
+  `spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback`, reducing wrapper-local
+  hint fallback branching across helper versions.
+- `scripts/gcp_runner_common.sh` now drops redundant post-entrypoint fallback branches in profile
+  hint assignment and submit-shell setup, relying on shared entrypoint helpers to own those
+  fallback paths.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now uses a simplified candidate loop and
+  initializer call path while preserving shared bootstrap helper behavior.
+- `scripts/gcp_runner_common.sh` now delegates RAV runtime/env default initialization through
+  shared helper `spot_runner_wrapper_apply_rav_defaults`, reducing wrapper-local default
+  assignment logic.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now prefers shared runtime bootstrap helper
+  `spot_runner_bootstrap_source_project_runtime`, with fallback to legacy
+  bootstrap-contract/common sourcing paths for older runner checkouts.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current
   project-wrapper helper contract for reconciler deploy wrapper execution.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
+- `gcp/state_helpers.sh` now routes state-helper runtime/fallback sourcing through shared helper
+  `spot_runner_source_state_helpers_entrypoint_compat`, removing duplicated wrapper-local
+  runtime-or-exit/shared-file fallback branches.
+- `gcp/state_helpers.sh` now prefers shared wrapper-level helper
+  `spot_runner_wrapper_source_project_state_helpers_entrypoint_compat`, reducing additional
+  wrapper-local state-helper entrypoint fallback wiring.
+- `gcp/state_helpers.sh` now prefers shared wrapper-level helper
+  `spot_runner_wrapper_source_project_state_helpers_entrypoint_compat_or_fallback`, reducing
+  additional wrapper-local state-helper fallback branching across helper versions.
+- `gcp/state_helpers.sh` now drops the redundant direct runtime-or-exit fallback branch; the
+  shared entrypoint helper owns that fallback behavior.
 - `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
 - `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
-- `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_require_install_or_exit`), removing local compatibility fallback branches.
-- `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared helper contracts (`spot_runner_wrapper_load_env_optional`, `spot_runner_resolve_runner_dir_compat`) after bootstrap, removing local compatibility fallback branches for those paths.
+- `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_wrapper_require_project_install_for_profile_compat_or_exit`), removing wrapper-local compatibility fallback branches.
+- `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared compat helper contracts (`spot_runner_wrapper_load_project_env_optional_compat`, `spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit`) after bootstrap, removing wrapper-local compatibility fallback branches for those paths.
+- `scripts/gcp_runner_common.sh` now uses shared helper
+  `spot_runner_wrapper_load_project_env_required_compat_or_exit` for required env-file guidance and
+  `spot_runner_wrapper_run_project_submit_with_job` for submit wrapper defaults, reducing
+  wrapper-local required-env and `--skip-build` command wiring.
+- `scripts/gcp_runner_common.sh` submit path now delegates through
+  `spot_runner_wrapper_run_project_submit_with_job_compat`, so submit wrappers use the shared
+  runner entrypoint contract directly instead of carrying wrapper-local submit fallback logic.
+- `gcp/cloud_reconciler/deploy.sh` now prefers shared reconciler deploy entrypoint compat helper
+  `spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat`, keeping reconciler
+  dispatch/fallback behavior centralized in `gcp-spot-runner`.
+- `gcp/cloud_reconciler/deploy.sh` now uses a single shared entrypoint path plus direct
+  `spotctl` fallback, removing duplicated intermediate reconciler fallback branches from RAV.
+- `gcp/cloud_reconciler/deploy.sh` now prefers shared helper
+  `spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback`, further
+  reducing wrapper-local reconciler deploy fallback wiring.
+- `gcp/cloud_reconciler/deploy.sh` now drops the redundant legacy reconciler-entrypoint branch
+  after the new shared helper check, keeping one direct `spotctl` fallback path.
+- `tests/bats/test_runner_adapter.bats` reconciler adapter stub now includes the new shared
+  compat helper symbols used by `scripts/gcp_runner_common.sh` bootstrap/env/install paths.
+- `tests/bats/test_runner_adapter.bats` and `tests/bats/test_helper.bash` now include the
+  submit compat helper stub so adapter tests remain hermetic when no sibling
+  `gcp-spot-runner` checkout is available.
+- `scripts/gcp_runner_common.sh` now exposes `prepare_submit_shell` and submit wrappers
+  (`gcp_submit_primary.sh`, `gcp_submit_poc.sh`, `gcp_submit_chexpert_experiment.sh`,
+  `gcp_iterate_chexpert.sh`) now delegate submit-shell/caffeinate setup through that helper,
+  removing duplicated wrapper-local submit-shell preamble wiring.
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now delegates through shared runner helper
+  `spot_runner_wrapper_prepare_project_submit_shell_compat`, reducing duplicated submit-shell
+  wiring between IXQT/RAV thin wrappers.
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now prefers shared wrapper entrypoint
+  helper `spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat`, reducing
+  additional wrapper-local submit-shell fallback wiring.
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now prefers shared entrypoint-or-fallback
+  helper `spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback`,
+  reducing additional wrapper-local submit-shell fallback branching across helper versions.
+- `scripts/gcp_runner_common.sh` now removes redundant legacy submit-shell fallback dispatch
+  branches after the shared submit entrypoint helper check.
 - `scripts/gcp_runner_common.sh` bootstrap runner-checkout discovery now routes through shared helper `adapters/spot_runner_bootstrap.sh`, replacing the duplicated local candidate-resolution preamble while keeping direct fallback to `adapters/spot_runner_common.sh`.
+- `scripts/gcp_runner_common.sh` bootstrap runtime dispatch now uses shared helper
+  `spot_runner_bootstrap_source_project_runtime_or_common`, removing duplicated local fallback
+  branches across bootstrap runtime/adapter helper variants.
+- `scripts/gcp_runner_common.sh` now prefers shared bootstrap entrypoint
+  `spot_runner_bootstrap_source_project_entrypoint_compat`, centralizing bootstrap-library
+  discovery + runtime fallback dispatch through one shared compat path.
+- `scripts/gcp_runner_common.sh` now prefers shared bootstrap wrapper initializer
+  `spot_runner_bootstrap_initialize_wrapper_compat`, reducing additional duplicated bootstrap
+  fallback sequencing in the RAV thin wrapper.
+- `scripts/gcp_runner_common.sh` now prefers shared bootstrap wrapper entrypoint helper
+  `spot_runner_bootstrap_initialize_wrapper_entrypoint_compat`, reducing additional
+  wrapper-local bootstrap initializer fallback wiring.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now prefers shared helper
+  `spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback`, reducing
+  duplicated bootstrap fallback branching in the thin wrapper.
+- `scripts/gcp_runner_common.sh` now removes the redundant direct source-entrypoint bootstrap
+  fallback branch after shared bootstrap entrypoint helper checks.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.
 - PR #1 follow-up cleanup: removed legacy `_require_runner_adapter_lib` from
   `scripts/gcp_runner_common.sh`, switched `gcp/cloud_reconciler/deploy.sh` to

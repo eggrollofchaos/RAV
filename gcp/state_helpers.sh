@@ -14,17 +14,20 @@ _state_helpers_fail() {
 # shellcheck disable=SC1090
 source "${_STATE_HELPERS_PROJECT_ROOT}/scripts/gcp_runner_common.sh"
 
-if declare -F _resolve_runner_dir_for_wrapper >/dev/null 2>&1; then
-  if ! RUNNER_DIR="$(_resolve_runner_dir_for_wrapper 2>/dev/null)"; then
-    _state_helpers_fail "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR."
-  fi
-fi
-
-if declare -F spot_runner_source_state_helpers_runtime_or_exit >/dev/null 2>&1; then
-  spot_runner_source_state_helpers_runtime_or_exit \
+if declare -F spot_runner_wrapper_source_project_state_helpers_entrypoint_compat_or_fallback >/dev/null 2>&1; then
+  if ! spot_runner_wrapper_source_project_state_helpers_entrypoint_compat_or_fallback \
     "${RUNNER_DIR}" \
     "${_STATE_HELPERS_PROJECT_ROOT}" \
-    "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout."
+    "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout."; then
+    _state_helpers_fail "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR."
+  fi
+elif declare -F spot_runner_wrapper_source_project_state_helpers_entrypoint_compat >/dev/null 2>&1; then
+  if ! spot_runner_wrapper_source_project_state_helpers_entrypoint_compat \
+    "${RUNNER_DIR}" \
+    "${_STATE_HELPERS_PROJECT_ROOT}" \
+    "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout."; then
+    _state_helpers_fail "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR."
+  fi
 elif [[ -f "${RUNNER_DIR}/state_helpers.sh" ]]; then
   # shellcheck disable=SC1090
   source "${RUNNER_DIR}/state_helpers.sh"
