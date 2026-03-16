@@ -140,6 +140,9 @@ Changed:
 - `scripts/gcp_runner_common.sh` bootstrap preamble now prefers shared helper
   `spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback`, reducing
   duplicated bootstrap fallback branching in the thin wrapper.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now routes through shared helper
+  `spot_runner_bootstrap_initialize_project_wrapper`, centralizing bootstrap initialization and
+  profile-hint assignment under one shared bootstrap helper contract.
 - `scripts/gcp_runner_common.sh` now removes the redundant direct source-entrypoint bootstrap
   fallback branch after shared bootstrap entrypoint helper checks.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current shared wrapper runtime contract for `version` and reconciler deploy delegation after rebasing onto `gcp-spot-runner v0.6.34`.

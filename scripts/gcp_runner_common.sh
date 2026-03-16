@@ -38,21 +38,46 @@ _bootstrap_runner_adapter_lib() {
     break
   done
 
+  if declare -F spot_runner_bootstrap_initialize_project_wrapper >/dev/null 2>&1; then
+    spot_runner_bootstrap_initialize_project_wrapper \
+      "${RAV_ROOT}" \
+      "${RUNNER_PROFILE}" \
+      "${RUNNER_HINT_DEFAULT}" \
+      RUNNER_BOOTSTRAP_DIR_DEFAULT \
+      "RUNNER_DIR" \
+      RUNNER_HINT_MESSAGE \
+      "${RUNNER_DIR_DEFAULT_PRIMARY}" \
+      "${RUNNER_DIR_DEFAULT_WORKTREE}" && return 0
+  fi
+
+  local initialized=false
   if declare -F spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback >/dev/null 2>&1; then
-    spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}" && return 0
+    if spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; then
+      initialized=true
+    fi
   fi
-  if declare -F spot_runner_bootstrap_initialize_wrapper_compat >/dev/null 2>&1; then
-    spot_runner_bootstrap_initialize_wrapper_compat "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}" && return 0
+  if [[ "${initialized}" != true ]] && declare -F spot_runner_bootstrap_initialize_wrapper_compat >/dev/null 2>&1; then
+    if spot_runner_bootstrap_initialize_wrapper_compat "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; then
+      initialized=true
+    fi
   fi
+  if [[ "${initialized}" != true ]]; then
+    return 1
+  fi
+
+  if declare -F spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback >/dev/null 2>&1; then
+    spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback "${RUNNER_PROFILE}" "${RUNNER_HINT_DEFAULT}" RUNNER_HINT_MESSAGE
+    return "$?"
+  fi
+  if declare -F spot_runner_wrapper_assign_profile_hint_compat >/dev/null 2>&1; then
+    spot_runner_wrapper_assign_profile_hint_compat "${RUNNER_PROFILE}" "${RUNNER_HINT_DEFAULT}" RUNNER_HINT_MESSAGE
+    return "$?"
+  fi
+  RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
+  return 0
 }
 
 _bootstrap_runner_adapter_lib
-
-if declare -F spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback >/dev/null 2>&1; then
-  spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback "${RUNNER_PROFILE}" "${RUNNER_HINT_DEFAULT}" RUNNER_HINT_MESSAGE
-elif declare -F spot_runner_wrapper_assign_profile_hint_compat >/dev/null 2>&1; then
-  spot_runner_wrapper_assign_profile_hint_compat "${RUNNER_PROFILE}" "${RUNNER_HINT_DEFAULT}" RUNNER_HINT_MESSAGE
-fi
 
 load_rav_spot_env_optional() {
   spot_runner_wrapper_load_project_env_optional_compat "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH "${RUNNER_HINT_MESSAGE}"
