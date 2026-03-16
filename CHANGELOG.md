@@ -66,6 +66,12 @@ Changed:
 - `gcp/state_helpers.sh` now drops the redundant direct runtime-or-exit fallback branch; the
   shared entrypoint helper owns that fallback behavior.
 - `scripts/gcp_runner_common.sh` command helpers (`run_ops_command`, `run_build_command`, `run_monitor_command`, `run_version_command`) now rely on shared runner wrapper command helpers directly, removing local per-command fallback branches in RAV.
+- `scripts/gcp_runner_common.sh` now routes `run_build_command` and `run_monitor_command`
+  through the local profiled-dispatch helper (`_run_profiled_with_config`), keeping command
+  dispatch shape aligned with IXQT thin-wrapper wiring.
+- `scripts/gcp_runner_common.sh` now centralizes required runner-helper checks through
+  `_require_runner_function`, and `apply_runner_defaults` uses that helper when validating
+  `spot_runner_wrapper_apply_rav_defaults`.
 - `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
 - `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_wrapper_require_project_install_for_profile_compat_or_exit`), removing wrapper-local compatibility fallback branches.
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared compat helper contracts (`spot_runner_wrapper_load_project_env_optional_compat`, `spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit`) after bootstrap, removing wrapper-local compatibility fallback branches for those paths.

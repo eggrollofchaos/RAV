@@ -68,14 +68,25 @@ load_rav_spot_env() {
     "Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it."
 }
 
+_require_runner_function() {
+  local function_name="$1"
+
+  if [[ "$(type -t spot_runner_wrapper_require_function_or_hint || true)" == "function" ]]; then
+    spot_runner_wrapper_require_function_or_hint "${function_name}" "${RUNNER_HINT_MESSAGE}"
+    return "$?"
+  fi
+  if [[ "$(type -t "${function_name}" || true)" == "function" ]]; then
+    return 0
+  fi
+  echo "Runner helper missing required function: ${function_name}" >&2
+  echo "${RUNNER_HINT_MESSAGE}" >&2
+  return 1
+}
+
 apply_runner_defaults() {
   spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit "${RAV_ROOT}" "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" "RUNNER_DIR" RUNNER_DIR "${RUNNER_HINT_MESSAGE}"
 
-  if [[ "$(type -t spot_runner_wrapper_apply_rav_defaults || true)" != "function" ]]; then
-    echo "Runner helper missing required function: spot_runner_wrapper_apply_rav_defaults" >&2
-    echo "${RUNNER_HINT_MESSAGE}" >&2
-    exit 1
-  fi
+  _require_runner_function "spot_runner_wrapper_apply_rav_defaults" || exit 1
   spot_runner_wrapper_apply_rav_defaults
 }
 
@@ -115,8 +126,12 @@ _run_profiled_with_config() {
   local profile_name="$2"
   local command_name="$3"
   shift 3
-
   spot_runner_wrapper_run_project_profiled_with_config "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "${profile_name}" "${command_name}" "$@"
+}
+
+run_ops_command() {
+  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "$@"
 }
 
 run_submit_with_job() {
@@ -134,19 +149,14 @@ run_submit_with_job() {
     "$@"
 }
 
-run_ops_command() {
-  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
-  spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "$@"
-}
-
 run_build_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
-  spot_runner_wrapper_run_project_profiled_command "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "build" "$@"
+  _run_profiled_with_config "${config_path}" "rav" "build" "$@"
 }
 
 run_monitor_command() {
   local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
-  spot_runner_wrapper_run_project_profiled_command "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "monitor" "$@"
+  _run_profiled_with_config "${config_path}" "rav" "monitor" "$@"
 }
 
 run_version_command() {
