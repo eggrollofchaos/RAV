@@ -28,3 +28,5 @@
 *.pyc
 
 # .git.nosync/ — removed 2026-03-09, repos moved out of iCloud to ~/coding
+
+.agent-sessions/
