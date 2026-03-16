@@ -138,6 +138,10 @@ spot_runner_wrapper_apply_rav_defaults() {
   : "${DISCORD_WEBHOOK_URL:=}"
   : "${NOTIFY_SECRET:=}"
 }
+spot_runner_wrapper_apply_rav_defaults_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  spot_runner_wrapper_apply_rav_defaults
+}
 # Inner functions — tests may override these to capture arguments.
 spot_runner_run_spotctl_compat() {
   local runner_dir="$1"

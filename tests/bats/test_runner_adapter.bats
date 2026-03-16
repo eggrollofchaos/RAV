@@ -14,6 +14,10 @@ _capture_stub() {
     : "${DATA_DISK_DEVICE_NAME:=spot-data}"
     : "${DATA_DISK_FS_TYPE:=ext4}"
   }
+  spot_runner_wrapper_apply_rav_defaults_required() {
+    local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+    spot_runner_wrapper_apply_rav_defaults
+  }
   run_spotctl_with_config() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
@@ -926,6 +930,10 @@ spot_runner_wrapper_apply_rav_defaults() {
   : "${DATA_DISK_MOUNT_PATH:=/var/lib/spot-data}"
   : "${DATA_DISK_DEVICE_NAME:=spot-data}"
   : "${DATA_DISK_FS_TYPE:=ext4}"
+}
+spot_runner_wrapper_apply_rav_defaults_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  spot_runner_wrapper_apply_rav_defaults
 }
 spot_runner_wrapper_profile_hint() {
   local profile_name="${1:-default}"

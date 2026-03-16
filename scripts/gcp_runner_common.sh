@@ -68,8 +68,7 @@ load_rav_spot_env() {
 apply_runner_defaults() {
   spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit "${RAV_ROOT}" "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" "RUNNER_DIR" RUNNER_DIR "${RUNNER_HINT_MESSAGE}"
 
-  spot_runner_wrapper_require_function_or_hint "spot_runner_wrapper_apply_rav_defaults" "${RUNNER_HINT_MESSAGE}" || exit 1
-  spot_runner_wrapper_apply_rav_defaults
+  spot_runner_wrapper_apply_rav_defaults_required "${RUNNER_HINT_MESSAGE}" || exit 1
 }
 
 check_runner_install() {

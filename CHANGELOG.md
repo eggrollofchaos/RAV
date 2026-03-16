@@ -136,6 +136,12 @@ Changed:
 - `scripts/gcp_runner_common.sh` `prepare_submit_shell` now routes through shared required-helper
   `spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required`, centralizing
   submit-shell entrypoint contract enforcement.
+- `scripts/gcp_runner_common.sh` `apply_runner_defaults` now routes through shared
+  required-helper `spot_runner_wrapper_apply_rav_defaults_required`, centralizing RAV default
+  initializer contract enforcement.
+- `tests/bats/test_helper.bash` and `tests/bats/test_runner_adapter.bats` now stub
+  `spot_runner_wrapper_apply_rav_defaults_required`, keeping RAV adapter tests hermetic with
+  the updated required-helper contract surface.
 - `gcp/cloud_reconciler/deploy.sh` now routes through shared required-helper
   `spot_runner_wrapper_run_project_reconciler_deploy_from_env_required`, reducing wrapper-local
   reconciler helper contract enforcement boilerplate.
