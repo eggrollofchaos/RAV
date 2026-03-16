@@ -20,8 +20,7 @@ CONFIG_PATH="${RAV_GCP_ENV_PATH:-}"
 DEFAULT_FUNCTION_NAME="rav-reconciler"
 DEFAULT_SCHEDULER_NAME="rav-reconciler-trigger"
 
-spot_runner_wrapper_require_function_or_hint "spot_runner_wrapper_run_project_reconciler_deploy_from_env" "${RUNNER_HINT_MESSAGE}" || exit 1
-spot_runner_wrapper_run_project_reconciler_deploy_from_env \
+spot_runner_wrapper_run_project_reconciler_deploy_from_env_required \
   "${RUNNER_DIR}" \
   "${RUNNER_HINT_MESSAGE}" \
   "RUNNER_ADAPTER_LIB_LOADED" \

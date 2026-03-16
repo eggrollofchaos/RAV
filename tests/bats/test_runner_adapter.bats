@@ -1019,6 +1019,9 @@ spot_runner_wrapper_run_project_reconciler_deploy_from_env() {
     "${scheduler_name}" \
     "$@"
 }
+spot_runner_wrapper_run_project_reconciler_deploy_from_env_required() {
+  spot_runner_wrapper_run_project_reconciler_deploy_from_env "$@"
+}
 spot_runner_wrapper_run_reconciler_deploy_compat() {
   local runner_dir="$1"
   local config_path="$2"

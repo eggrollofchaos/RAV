@@ -96,6 +96,9 @@ spot_runner_wrapper_source_project_state_helpers_or_fail() {
   echo "${hint_message}" >&2
   return 1
 }
+spot_runner_wrapper_source_project_state_helpers_required() {
+  spot_runner_wrapper_source_project_state_helpers_or_fail "$@"
+}
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
   : "${ZONE:=us-east1-c}"
