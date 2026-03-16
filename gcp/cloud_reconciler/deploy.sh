@@ -20,21 +20,13 @@ CONFIG_PATH="${RAV_GCP_ENV_PATH:-}"
 
 : "${FUNCTION_NAME:=rav-reconciler}"
 : "${SCHEDULER_NAME:=rav-reconciler-trigger}"
-if declare -F spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback >/dev/null 2>&1; then
-  spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "${CONFIG_PATH}" \
-    "${RUNNER_PROFILE}" \
-    "${FUNCTION_NAME}" \
-    "${SCHEDULER_NAME}" \
-    "$@"
-  exit "$?"
-fi
-
-args=(reconciler deploy --profile "${RUNNER_PROFILE}" --function-name "${FUNCTION_NAME}" --scheduler-name "${SCHEDULER_NAME}")
-if [[ -n "${CONFIG_PATH}" ]]; then
-  args+=(--config "${CONFIG_PATH}")
-fi
-run_spotctl_with_config "${CONFIG_PATH}" "${args[@]}" "$@"
+spot_runner_wrapper_require_function_or_hint "spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback" "${RUNNER_HINT_MESSAGE}" || exit 1
+spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback \
+  "${RUNNER_DIR}" \
+  "${RUNNER_HINT_MESSAGE}" \
+  "RUNNER_ADAPTER_LIB_LOADED" \
+  "${CONFIG_PATH}" \
+  "${RUNNER_PROFILE}" \
+  "${FUNCTION_NAME}" \
+  "${SCHEDULER_NAME}" \
+  "$@"

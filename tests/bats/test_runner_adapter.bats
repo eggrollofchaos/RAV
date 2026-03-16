@@ -994,6 +994,9 @@ spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat() {
     "${scheduler_name}" \
     "$@"
 }
+spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback() {
+  spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat "$@"
+}
 spot_runner_wrapper_run_reconciler_deploy_compat() {
   local runner_dir="$1"
   local config_path="$2"

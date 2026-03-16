@@ -104,6 +104,10 @@ Changed:
   reducing wrapper-local reconciler deploy fallback wiring.
 - `gcp/cloud_reconciler/deploy.sh` now drops the redundant legacy reconciler-entrypoint branch
   after the new shared helper check, keeping one direct `spotctl` fallback path.
+- `gcp/cloud_reconciler/deploy.sh` now requires shared helper
+  `spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback` and delegates
+  reconciler deploy through that contract directly, removing remaining wrapper-local fallback arg
+  assembly.
 - `tests/bats/test_runner_adapter.bats` reconciler adapter stub now includes the new shared
   compat helper symbols used by `scripts/gcp_runner_common.sh` bootstrap/env/install paths.
 - `tests/bats/test_runner_adapter.bats` and `tests/bats/test_helper.bash` now include the
