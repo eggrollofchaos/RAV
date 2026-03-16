@@ -58,6 +58,16 @@ spot_runner_require_wrapper_runtime_or_exit() {
   local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
   printf -v "${loaded_var_name}" '%s' "1"
 }
+spot_runner_wrapper_require_function_or_hint() {
+  local function_name="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  if [[ "$(type -t "${function_name}" || true)" == "function" ]]; then
+    return 0
+  fi
+  echo "Runner helper missing required function: ${function_name}" >&2
+  echo "${hint_message}" >&2
+  return 1
+}
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
   : "${ZONE:=us-east1-c}"

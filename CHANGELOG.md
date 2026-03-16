@@ -51,6 +51,9 @@ Changed:
   bootstrap-contract/common sourcing paths for older runner checkouts.
 - `tests/bats/test_runner_adapter.bats` fake runner helpers now cover the current
   project-wrapper helper contract for reconciler deploy wrapper execution.
+- `tests/bats/test_helper.bash` and `tests/bats/test_runner_adapter.bats` now stub shared
+  helper `spot_runner_wrapper_require_function_or_hint`, keeping wrapper tests hermetic as
+  required-helper checks move into shared runner helper contracts.
 - `scripts/gcp_runner_common.sh`, `gcp/cloud_reconciler/deploy.sh`, and `gcp/state_helpers.sh` now preserve shared wrapper semantics when pointed at older minimal runner helper stubs, including local env/config resolution and install/runtime guard fallbacks.
 - RAV thin-wrapper runner resolution and parity tests now recognize sibling worktree checkouts such as `../gcp-spot-runner-codex` in addition to the standard sibling repo layout.
 - `gcp/state_helpers.sh` now resolves `RUNNER_DIR` through `scripts/gcp_runner_common.sh` and delegates shared state-helper runtime loading/fallback behavior through `gcp-spot-runner/adapters/spot_runner_common.sh`.
@@ -72,6 +75,12 @@ Changed:
 - `scripts/gcp_runner_common.sh` now centralizes required runner-helper checks through
   `_require_runner_function`, and `apply_runner_defaults` uses that helper when validating
   `spot_runner_wrapper_apply_rav_defaults`.
+- `scripts/gcp_runner_common.sh` now centralizes active config resolution through
+  `_active_config_path`, and submit/ops/build/monitor dispatch helpers consume that shared
+  config-path helper instead of repeating inline config fallback expressions.
+- `scripts/gcp_runner_common.sh` now uses shared helper
+  `spot_runner_wrapper_require_function_or_hint` directly for required-helper checks in
+  `apply_runner_defaults`, dropping wrapper-local required-function check glue.
 - `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
 - `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_wrapper_require_project_install_for_profile_compat_or_exit`), removing wrapper-local compatibility fallback branches.
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared compat helper contracts (`spot_runner_wrapper_load_project_env_optional_compat`, `spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit`) after bootstrap, removing wrapper-local compatibility fallback branches for those paths.

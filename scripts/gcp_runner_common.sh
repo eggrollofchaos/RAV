@@ -68,30 +68,19 @@ load_rav_spot_env() {
     "Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it."
 }
 
-_require_runner_function() {
-  local function_name="$1"
-
-  if [[ "$(type -t spot_runner_wrapper_require_function_or_hint || true)" == "function" ]]; then
-    spot_runner_wrapper_require_function_or_hint "${function_name}" "${RUNNER_HINT_MESSAGE}"
-    return "$?"
-  fi
-  if [[ "$(type -t "${function_name}" || true)" == "function" ]]; then
-    return 0
-  fi
-  echo "Runner helper missing required function: ${function_name}" >&2
-  echo "${RUNNER_HINT_MESSAGE}" >&2
-  return 1
-}
-
 apply_runner_defaults() {
   spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit "${RAV_ROOT}" "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" "RUNNER_DIR" RUNNER_DIR "${RUNNER_HINT_MESSAGE}"
 
-  _require_runner_function "spot_runner_wrapper_apply_rav_defaults" || exit 1
+  spot_runner_wrapper_require_function_or_hint "spot_runner_wrapper_apply_rav_defaults" "${RUNNER_HINT_MESSAGE}" || exit 1
   spot_runner_wrapper_apply_rav_defaults
 }
 
 check_runner_install() {
   spot_runner_wrapper_require_project_install_for_profile_compat_or_exit "${RUNNER_DIR}" "${RUNNER_PROFILE}" "${RUNNER_HINT_MESSAGE}"
+}
+
+_active_config_path() {
+  printf '%s\n' "${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
 }
 
 prepare_submit_shell() {
@@ -130,7 +119,8 @@ _run_profiled_with_config() {
 }
 
 run_ops_command() {
-  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  local config_path
+  config_path="$(_active_config_path)"
   spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "$@"
 }
 
@@ -138,7 +128,8 @@ run_submit_with_job() {
   local job_command="$1"
   shift
 
-  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  local config_path
+  config_path="$(_active_config_path)"
   spot_runner_wrapper_run_project_submit_with_job_compat \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
@@ -150,12 +141,14 @@ run_submit_with_job() {
 }
 
 run_build_command() {
-  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  local config_path
+  config_path="$(_active_config_path)"
   _run_profiled_with_config "${config_path}" "rav" "build" "$@"
 }
 
 run_monitor_command() {
-  local config_path="${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  local config_path
+  config_path="$(_active_config_path)"
   _run_profiled_with_config "${config_path}" "rav" "monitor" "$@"
 }
 
