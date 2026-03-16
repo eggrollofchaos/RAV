@@ -38,11 +38,7 @@ _bootstrap_runner_adapter_lib() {
     break
   done
 
-  if [[ "$(type -t spot_runner_bootstrap_initialize_project_wrapper || true)" != "function" ]]; then
-    return 1
-  fi
-
-  spot_runner_bootstrap_initialize_project_wrapper \
+  spot_runner_bootstrap_initialize_project_wrapper_required \
     "${RAV_ROOT}" \
     "${RUNNER_PROFILE}" \
     "${RUNNER_HINT_DEFAULT}" \
@@ -87,10 +83,10 @@ _active_config_path() {
 prepare_submit_shell() {
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
-  spot_runner_wrapper_require_function_or_hint \
-    "spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback" \
-    "${RUNNER_HINT_MESSAGE}" || return 1
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required \
+    "${RUNNER_HINT_MESSAGE}" \
+    "${guard_alias_csv}" \
+    "$@"
 }
 
 configure_gcloud_runtime() {

@@ -67,6 +67,9 @@ spot_runner_bootstrap_initialize_project_wrapper() {
   printf -v "${output_var_name}" '%s' "${candidate}"
   printf -v "${hint_output_var_name}" '%s' "${default_hint}"
 }
+spot_runner_bootstrap_initialize_project_wrapper_required() {
+  spot_runner_bootstrap_initialize_project_wrapper "$@"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"
@@ -236,6 +239,12 @@ spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback()
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
   spot_runner_prepare_submit_shell_compat "_SPOT_CAFFEINATED" "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local guard_alias_csv="${2:-_IXQT_CAFFEINATED}"
+  shift 2 || true
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
 }
 
 setup() {

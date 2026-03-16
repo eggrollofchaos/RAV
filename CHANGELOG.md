@@ -130,12 +130,12 @@ Changed:
 - `gcp/state_helpers.sh` now routes through shared required-helper
   `spot_runner_wrapper_source_project_state_helpers_required`, reducing wrapper-local
   state-helper contract enforcement boilerplate.
-- `scripts/gcp_runner_common.sh` now requires shared bootstrap helper
-  `spot_runner_bootstrap_initialize_project_wrapper` directly for runner bootstrap/hint setup,
-  removing wrapper-local legacy bootstrap fallback branches.
-- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now requires shared helper
-  `spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback` directly,
-  removing wrapper-local submit-shell helper fallback branches.
+- `scripts/gcp_runner_common.sh` bootstrap/hint setup now routes through shared required-helper
+  `spot_runner_bootstrap_initialize_project_wrapper_required`, centralizing contract enforcement
+  for wrapper initialization.
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now routes through shared required-helper
+  `spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required`, centralizing
+  submit-shell entrypoint contract enforcement.
 - `gcp/cloud_reconciler/deploy.sh` now routes through shared required-helper
   `spot_runner_wrapper_run_project_reconciler_deploy_from_env_required`, reducing wrapper-local
   reconciler helper contract enforcement boilerplate.
