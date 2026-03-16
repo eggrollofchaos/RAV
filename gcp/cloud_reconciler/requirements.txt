@@ -1,3 +1,0 @@
-# Thin wrapper module.
-# Canonical Cloud Function requirements are maintained in:
-#   gcp-spot-runner/cloud_reconciler/requirements.txt

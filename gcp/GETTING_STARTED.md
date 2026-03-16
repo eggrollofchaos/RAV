@@ -4,7 +4,7 @@ This guide gets you from zero to a running RAV training job on GCP Spot VMs with
 For incident learnings and deeper troubleshooting patterns, see `GCP_NOTES.md` (in this directory).
 
 Reconciler ownership note:
-- `gcp/cloud_reconciler/` in this repo is a thin wrapper layer.
+- `gcp/cloud_reconciler/deploy.sh` in this repo is the thin deploy wrapper.
 - Canonical reconciler implementation lives in `../gcp-spot-runner/cloud_reconciler/`.
 
 Operator CLI note:

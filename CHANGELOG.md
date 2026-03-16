@@ -116,6 +116,10 @@ Changed:
   dispatch, while preserving fallback to
   `spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback` for older
   runner helper surfaces.
+- Removed project-local reconciler Python wrapper artifacts
+  (`gcp/cloud_reconciler/{main.py,state_machine.py,requirements.txt,__init__.py}`); RAV now keeps
+  only `gcp/cloud_reconciler/deploy.sh` as the thin project wrapper while reconciler implementation
+  remains canonical in `gcp-spot-runner/cloud_reconciler/`.
 - `tests/bats/test_runner_adapter.bats` reconciler adapter stub now includes the new shared
   compat helper symbols used by `scripts/gcp_runner_common.sh` bootstrap/env/install paths.
 - `tests/bats/test_runner_adapter.bats` and `tests/bats/test_helper.bash` now include the
