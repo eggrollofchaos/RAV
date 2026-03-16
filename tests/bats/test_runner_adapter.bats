@@ -997,6 +997,28 @@ spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat() {
 spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback() {
   spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat "$@"
 }
+spot_runner_wrapper_run_project_reconciler_deploy_from_env() {
+  local runner_dir="$1"
+  local hint_message="${2:-}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="$4"
+  local profile_name="$5"
+  local default_function_name="$6"
+  local default_scheduler_name="$7"
+  shift 7
+
+  local function_name="${FUNCTION_NAME:-${default_function_name}}"
+  local scheduler_name="${SCHEDULER_NAME:-${default_scheduler_name}}"
+  spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compat_or_fallback \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${config_path}" \
+    "${profile_name}" \
+    "${function_name}" \
+    "${scheduler_name}" \
+    "$@"
+}
 spot_runner_wrapper_run_reconciler_deploy_compat() {
   local runner_dir="$1"
   local config_path="$2"

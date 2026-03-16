@@ -68,6 +68,19 @@ spot_runner_wrapper_require_function_or_hint() {
   echo "${hint_message}" >&2
   return 1
 }
+spot_runner_wrapper_source_project_state_helpers_or_fail() {
+  local runner_dir="$1"
+  local project_root="${2:-}"
+  local hint_message="${3:-Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local helper_path="${runner_dir}/state_helpers.sh"
+  if [[ -f "${helper_path}" ]]; then
+    # shellcheck disable=SC1090
+    source "${helper_path}"
+    return 0
+  fi
+  echo "${hint_message}" >&2
+  return 1
+}
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
   : "${ZONE:=us-east1-c}"

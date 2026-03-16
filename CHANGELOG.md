@@ -120,6 +120,13 @@ Changed:
   (`gcp/cloud_reconciler/{main.py,state_machine.py,requirements.txt,__init__.py}`); RAV now keeps
   only `gcp/cloud_reconciler/deploy.sh` as the thin project wrapper while reconciler implementation
   remains canonical in `gcp-spot-runner/cloud_reconciler/`.
+- `gcp/cloud_reconciler/deploy.sh` now requires shared helper
+  `spot_runner_wrapper_run_project_reconciler_deploy_from_env` directly (instead of carrying a
+  wrapper-local fallback branch), further reducing RAV reconciler wrapper compatibility wiring.
+- `gcp/state_helpers.sh` now requires shared helper
+  `spot_runner_wrapper_source_project_state_helpers_or_fail` directly (instead of carrying a
+  wrapper-local direct-source fallback branch), further reducing RAV state-helper wrapper
+  compatibility wiring.
 - `tests/bats/test_runner_adapter.bats` reconciler adapter stub now includes the new shared
   compat helper symbols used by `scripts/gcp_runner_common.sh` bootstrap/env/install paths.
 - `tests/bats/test_runner_adapter.bats` and `tests/bats/test_helper.bash` now include the
