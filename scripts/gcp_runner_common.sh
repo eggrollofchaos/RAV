@@ -38,43 +38,19 @@ _bootstrap_runner_adapter_lib() {
     break
   done
 
-  if declare -F spot_runner_bootstrap_initialize_project_wrapper >/dev/null 2>&1; then
-    spot_runner_bootstrap_initialize_project_wrapper \
-      "${RAV_ROOT}" \
-      "${RUNNER_PROFILE}" \
-      "${RUNNER_HINT_DEFAULT}" \
-      RUNNER_BOOTSTRAP_DIR_DEFAULT \
-      "RUNNER_DIR" \
-      RUNNER_HINT_MESSAGE \
-      "${RUNNER_DIR_DEFAULT_PRIMARY}" \
-      "${RUNNER_DIR_DEFAULT_WORKTREE}" && return 0
-  fi
-
-  local initialized=false
-  if declare -F spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback >/dev/null 2>&1; then
-    if spot_runner_bootstrap_initialize_wrapper_entrypoint_compat_or_fallback "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; then
-      initialized=true
-    fi
-  fi
-  if [[ "${initialized}" != true ]] && declare -F spot_runner_bootstrap_initialize_wrapper_compat >/dev/null 2>&1; then
-    if spot_runner_bootstrap_initialize_wrapper_compat "${RAV_ROOT}" RUNNER_BOOTSTRAP_DIR_DEFAULT "RUNNER_DIR" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; then
-      initialized=true
-    fi
-  fi
-  if [[ "${initialized}" != true ]]; then
+  if [[ "$(type -t spot_runner_bootstrap_initialize_project_wrapper || true)" != "function" ]]; then
     return 1
   fi
 
-  if declare -F spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback >/dev/null 2>&1; then
-    spot_runner_wrapper_assign_profile_hint_entrypoint_compat_or_fallback "${RUNNER_PROFILE}" "${RUNNER_HINT_DEFAULT}" RUNNER_HINT_MESSAGE
-    return "$?"
-  fi
-  if declare -F spot_runner_wrapper_assign_profile_hint_compat >/dev/null 2>&1; then
-    spot_runner_wrapper_assign_profile_hint_compat "${RUNNER_PROFILE}" "${RUNNER_HINT_DEFAULT}" RUNNER_HINT_MESSAGE
-    return "$?"
-  fi
-  RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
-  return 0
+  spot_runner_bootstrap_initialize_project_wrapper \
+    "${RAV_ROOT}" \
+    "${RUNNER_PROFILE}" \
+    "${RUNNER_HINT_DEFAULT}" \
+    RUNNER_BOOTSTRAP_DIR_DEFAULT \
+    "RUNNER_DIR" \
+    RUNNER_HINT_MESSAGE \
+    "${RUNNER_DIR_DEFAULT_PRIMARY}" \
+    "${RUNNER_DIR_DEFAULT_WORKTREE}"
 }
 
 _bootstrap_runner_adapter_lib
@@ -111,14 +87,10 @@ _active_config_path() {
 prepare_submit_shell() {
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
-  if declare -F spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback >/dev/null 2>&1; then
-    spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
-    return "$?"
-  fi
-  if declare -F spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat >/dev/null 2>&1; then
-    spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat "${guard_alias_csv}" "$@"
-    return "$?"
-  fi
+  spot_runner_wrapper_require_function_or_hint \
+    "spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback" \
+    "${RUNNER_HINT_MESSAGE}" || return 1
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
 }
 
 configure_gcloud_runtime() {

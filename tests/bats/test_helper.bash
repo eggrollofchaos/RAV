@@ -52,6 +52,21 @@ spot_runner_resolve_runner_dir_compat() {
   local env_var_name="$3"
   printf '%s\n' "${!env_var_name:-${bootstrap_dir}}"
 }
+spot_runner_bootstrap_initialize_project_wrapper() {
+  local project_root="$1"
+  local _profile_name="${2:-default}"
+  local default_hint="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local output_var_name="${4:-RUNNER_BOOTSTRAP_DIR_DEFAULT}"
+  local env_var_name="${5:-RUNNER_DIR}"
+  local hint_output_var_name="${6:-RUNNER_HINT_MESSAGE}"
+  shift 6 || true
+  local candidate="${!env_var_name:-${1:-${project_root}/../gcp-spot-runner}}"
+  if [[ "${candidate}" != /* ]]; then
+    candidate="${project_root}/${candidate}"
+  fi
+  printf -v "${output_var_name}" '%s' "${candidate}"
+  printf -v "${hint_output_var_name}" '%s' "${default_hint}"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"
@@ -195,6 +210,29 @@ spot_runner_wrapper_run_project_submit_with_job_compat() {
     "submit" \
     --job-command "$job_command" \
     "${args[@]}"
+}
+spot_runner_maybe_reexec_caffeinate_compat() {
+  local guard_var="${1:-_SPOT_CAFFEINATED}"
+  shift 2 || true
+  if [[ -n "${!guard_var:-}" ]]; then
+    return 0
+  fi
+  if ! command -v caffeinate >/dev/null 2>&1; then
+    return 0
+  fi
+  exec env "${guard_var}=1" caffeinate -i "$0" "$@"
+}
+spot_runner_prepare_submit_shell_compat() {
+  local guard_var="${1:-_SPOT_CAFFEINATED}"
+  local guard_alias_csv="${2:-}"
+  shift 2 || true
+  spot_runner_maybe_reexec_caffeinate_compat "${guard_var}" "${guard_alias_csv}" "$@"
+  trap '' HUP
+}
+spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+  local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
+  shift || true
+  spot_runner_prepare_submit_shell_compat "_SPOT_CAFFEINATED" "${guard_alias_csv}" "$@"
 }
 
 setup() {

@@ -127,6 +127,12 @@ Changed:
   `spot_runner_wrapper_source_project_state_helpers_or_fail` directly (instead of carrying a
   wrapper-local direct-source fallback branch), further reducing RAV state-helper wrapper
   compatibility wiring.
+- `scripts/gcp_runner_common.sh` now requires shared bootstrap helper
+  `spot_runner_bootstrap_initialize_project_wrapper` directly for runner bootstrap/hint setup,
+  removing wrapper-local legacy bootstrap fallback branches.
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now requires shared helper
+  `spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback` directly,
+  removing wrapper-local submit-shell helper fallback branches.
 - `tests/bats/test_runner_adapter.bats` reconciler adapter stub now includes the new shared
   compat helper symbols used by `scripts/gcp_runner_common.sh` bootstrap/env/install paths.
 - `tests/bats/test_runner_adapter.bats` and `tests/bats/test_helper.bash` now include the

@@ -216,7 +216,7 @@ ENV_FILE
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/prepare_project_submit_args.txt"
 
-  spot_runner_wrapper_prepare_project_submit_shell_compat() {
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
     printf '%s\n' "$@" > "$captured"
   }
 
