@@ -81,6 +81,9 @@ Changed:
 - `scripts/gcp_runner_common.sh` now uses shared helper
   `spot_runner_wrapper_require_function_or_hint` directly for required-helper checks in
   `apply_runner_defaults`, dropping wrapper-local required-function check glue.
+- `scripts/gcp_runner_common.sh` and `gcp/cloud_reconciler/deploy.sh` now derive profile
+  dispatch from `RUNNER_PROFILE` instead of hardcoded `rav` literals, keeping profile identity
+  single-sourced in the thin wrapper.
 - `scripts/gcp_runner_common.sh` dispatch helpers (`run_spotctl_with_config`, `_run_profiled_with_config`) now rely directly on shared wrapper dispatch helpers, removing local fallback branches for direct/profiler command routing.
 - `scripts/gcp_runner_common.sh` runtime/install guard helpers now rely directly on shared runner guard contracts (`spot_runner_require_wrapper_runtime_or_exit`, `spot_runner_wrapper_require_project_install_for_profile_compat_or_exit`), removing wrapper-local compatibility fallback branches.
 - `scripts/gcp_runner_common.sh` optional env loading and resolved `RUNNER_DIR` selection now rely directly on shared compat helper contracts (`spot_runner_wrapper_load_project_env_optional_compat`, `spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit`) after bootstrap, removing wrapper-local compatibility fallback branches for those paths.

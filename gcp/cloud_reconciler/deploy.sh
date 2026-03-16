@@ -26,14 +26,14 @@ if declare -F spot_runner_wrapper_run_project_reconciler_deploy_entrypoint_compa
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
     "${CONFIG_PATH}" \
-    "rav" \
+    "${RUNNER_PROFILE}" \
     "${FUNCTION_NAME}" \
     "${SCHEDULER_NAME}" \
     "$@"
   exit "$?"
 fi
 
-args=(reconciler deploy --profile rav --function-name "${FUNCTION_NAME}" --scheduler-name "${SCHEDULER_NAME}")
+args=(reconciler deploy --profile "${RUNNER_PROFILE}" --function-name "${FUNCTION_NAME}" --scheduler-name "${SCHEDULER_NAME}")
 if [[ -n "${CONFIG_PATH}" ]]; then
   args+=(--config "${CONFIG_PATH}")
 fi

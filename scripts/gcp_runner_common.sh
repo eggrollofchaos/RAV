@@ -121,7 +121,7 @@ _run_profiled_with_config() {
 run_ops_command() {
   local config_path
   config_path="$(_active_config_path)"
-  spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "rav" "$@"
+  spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "${RUNNER_PROFILE}" "$@"
 }
 
 run_submit_with_job() {
@@ -135,7 +135,7 @@ run_submit_with_job() {
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
     "${config_path}" \
-    "rav" \
+    "${RUNNER_PROFILE}" \
     "${job_command}" \
     "$@"
 }
@@ -143,13 +143,13 @@ run_submit_with_job() {
 run_build_command() {
   local config_path
   config_path="$(_active_config_path)"
-  _run_profiled_with_config "${config_path}" "rav" "build" "$@"
+  _run_profiled_with_config "${config_path}" "${RUNNER_PROFILE}" "build" "$@"
 }
 
 run_monitor_command() {
   local config_path
   config_path="$(_active_config_path)"
-  _run_profiled_with_config "${config_path}" "rav" "monitor" "$@"
+  _run_profiled_with_config "${config_path}" "${RUNNER_PROFILE}" "monitor" "$@"
 }
 
 run_version_command() {
