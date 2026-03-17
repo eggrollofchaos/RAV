@@ -1162,6 +1162,51 @@ spot_runner_wrapper_run_project_standard_command_loaded_required() {
     "${command_name}" \
     "$@"
 }
+spot_runner_wrapper_project_command_config_mode() {
+  local profile_name="${1:-default}"
+  local command_name="${2:-}"
+  case "${profile_name}:${command_name}" in
+    ixqt:*)
+      printf '%s\n' "loaded"
+      ;;
+    rav:version|rav:reconciler_deploy)
+      printf '%s\n' "loaded"
+      ;;
+    rav:ops|rav:build|rav:monitor|rav:submit_with_job)
+      printf '%s\n' "active"
+      ;;
+    *:version|*:reconciler_deploy)
+      printf '%s\n' "loaded"
+      ;;
+    *)
+      printf '%s\n' "active"
+      ;;
+  esac
+}
+spot_runner_wrapper_run_project_profile_command_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  local config_mode=""
+  config_mode="$(spot_runner_wrapper_project_command_config_mode "${profile_name}" "${command_name}")"
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${config_mode}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
 spot_runner_wrapper_apply_rav_defaults() {
   : "${DATA_DISK_ENABLED:=true}"
   : "${DATA_DISK_MOUNT_PATH:=/var/lib/spot-data}"

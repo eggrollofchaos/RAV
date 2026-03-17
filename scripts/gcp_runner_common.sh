@@ -71,48 +71,33 @@ prepare_submit_shell() {
 }
 
 run_ops_command() {
-  run_project_command_active "ops" "$@"
+  run_project_command "ops" "$@"
 }
 
 run_submit_with_job() {
   local job_command="$1"
   shift
 
-  run_project_command_active "submit_with_job" "${job_command}" "$@"
+  run_project_command "submit_with_job" "${job_command}" "$@"
 }
 
 run_build_command() {
-  run_project_command_active "build" "$@"
+  run_project_command "build" "$@"
 }
 
 run_monitor_command() {
-  run_project_command_active "monitor" "$@"
+  run_project_command "monitor" "$@"
 }
 
 run_version_command() {
-  run_project_command_loaded "version" "$@"
+  run_project_command "version" "$@"
 }
 
-run_project_command_active() {
+run_project_command() {
   local command_name="$1"
   shift || true
 
-  spot_runner_wrapper_run_project_standard_command_active_required \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_PROFILE}" \
-    "${command_name}" \
-    "$@"
-}
-
-run_project_command_loaded() {
-  local command_name="$1"
-  shift || true
-
-  spot_runner_wrapper_run_project_standard_command_loaded_required \
+  spot_runner_wrapper_run_project_profile_command_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
@@ -124,5 +109,5 @@ run_project_command_loaded() {
 }
 
 run_reconciler_deploy() {
-  run_project_command_loaded "reconciler_deploy" "$@"
+  run_project_command "reconciler_deploy" "$@"
 }

@@ -16,16 +16,12 @@ Changed:
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`, `reconciler_deploy`) through one
   wrapper-local helper `run_project_command`, which now directly requires shared
-  mode-specific dispatch helpers
-  `spot_runner_wrapper_run_project_standard_command_active_required` and
-  `spot_runner_wrapper_run_project_standard_command_loaded_required`; shared runner
-  helper ownership now handles mode selection plus fallback dispatch sequencing
-  internally. `reconciler_deploy` now routes through the same shared dispatch path,
-  removing the remaining wrapper-local fallback branch for dedicated reconciler
-  deploy wiring.
-- `scripts/gcp_runner_common.sh` now splits command dispatch into explicit
-  `run_project_command_active` and `run_project_command_loaded` helpers, removing the
-  wrapper-local config-mode switch branch while keeping mode routing single-sourced.
+  profile-aware command helper
+  `spot_runner_wrapper_run_project_profile_command_required`; shared runner helper
+  ownership now handles profile+command config-mode selection plus fallback dispatch
+  sequencing internally. `reconciler_deploy` now routes through the same shared
+  dispatch path, removing the remaining wrapper-local fallback branch for dedicated
+  reconciler deploy wiring.
 - `tests/bats/test_runner_adapter.bats` fake runner adapter now stubs
   `spot_runner_wrapper_run_project_standard_command_compat_required`, keeping
   reconciler wrapper contract tests aligned with the shared dispatch-helper requirement.
@@ -39,10 +35,6 @@ Changed:
   wrappers (`gcp_submit_primary.sh`, `gcp_submit_poc.sh`,
   `gcp_submit_chexpert_experiment.sh`) now forward `"$@"` directly to
   `prepare_submit_shell` (no wrapper-local submit-guard alias state required).
-- `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
-  `submit_with_job`, `build`, `monitor`, `version`) through shared helper
-  `spot_runner_wrapper_run_project_command_with_mode_required`, reducing repeated
-  wrapper-local config-path + dispatch glue.
 - `gcp/state_helpers.sh` now uses shared helper
   `spot_runner_wrapper_source_project_state_helpers_required_or_fail`, removing duplicate
   wrapper-local state-helper failure plumbing.
