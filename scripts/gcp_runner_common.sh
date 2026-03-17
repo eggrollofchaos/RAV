@@ -46,21 +46,18 @@ prepare_rav_runtime() {
   local configure_gcloud="${3:-1}"
   local missing_env_message="${4:-Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it.}"
 
-  spot_runner_wrapper_setup_project_runtime_required \
+  spot_runner_wrapper_setup_project_profile_runtime_required \
     "${RAV_ROOT}" \
     "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
-    "RUNNER_DIR" \
-    "RUNNER_DIR" \
-    "${RUNNER_PROFILE}" \
     "${RUNNER_HINT_MESSAGE}" \
-    "${env_mode}" \
+    "${RUNNER_PROFILE}" \
     "RAV_GCP_ENV" \
     "${RAV_GCP_ENV_DEFAULT}" \
     "RAV_GCP_ENV_PATH" \
+    "${env_mode}" \
     "${missing_env_message}" \
     "${require_spot_vars}" \
-    "${configure_gcloud}" \
-    "${RAV_ROOT}"
+    "${configure_gcloud}"
 }
 
 prepare_submit_shell() {

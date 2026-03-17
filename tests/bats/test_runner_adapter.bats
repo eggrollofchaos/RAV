@@ -54,6 +54,41 @@ _capture_stub() {
       "${profile_name}" \
       "${hint_message}"
   }
+  spot_runner_wrapper_setup_project_profile_runtime_required() {
+    local project_root="$1"
+    local default_runner_dir="$2"
+    local hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+    local profile_name="${4:-default}"
+    local env_var_name="${5:-RAV_GCP_ENV}"
+    local default_env_path="${6:-}"
+    local output_env_var_name="${7:-RAV_GCP_ENV_PATH}"
+    local env_mode="${8:-optional}"
+    local missing_env_message="${9:-Missing required project environment file.}"
+    local require_spot_vars="${10:-0}"
+    local configure_gcloud="${11:-0}"
+    local gcloud_project_root="${12:-${project_root}}"
+    if [[ $# -gt 12 ]]; then
+      shift 12
+    else
+      set --
+    fi
+    spot_runner_wrapper_setup_project_runtime_required \
+      "${project_root}" \
+      "${default_runner_dir}" \
+      "RUNNER_DIR" \
+      "RUNNER_DIR" \
+      "${profile_name}" \
+      "${hint_message}" \
+      "${env_mode}" \
+      "${env_var_name}" \
+      "${default_env_path}" \
+      "${output_env_var_name}" \
+      "${missing_env_message}" \
+      "${require_spot_vars}" \
+      "${configure_gcloud}" \
+      "${gcloud_project_root}" \
+      "$@"
+  }
   run_spotctl_with_config() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
@@ -992,6 +1027,41 @@ spot_runner_wrapper_setup_project_runtime_required() {
     "${runner_output_var_name}" \
     "${profile_name}" \
     "${hint_message}"
+}
+spot_runner_wrapper_setup_project_profile_runtime_required() {
+  local project_root="$1"
+  local default_runner_dir="$2"
+  local hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${4:-default}"
+  local env_var_name="${5:-RAV_GCP_ENV}"
+  local default_env_path="${6:-}"
+  local output_env_var_name="${7:-RAV_GCP_ENV_PATH}"
+  local env_mode="${8:-optional}"
+  local missing_env_message="${9:-Missing required project environment file.}"
+  local require_spot_vars="${10:-0}"
+  local configure_gcloud="${11:-0}"
+  local gcloud_project_root="${12:-${project_root}}"
+  if [[ $# -gt 12 ]]; then
+    shift 12
+  else
+    set --
+  fi
+  spot_runner_wrapper_setup_project_runtime_required \
+    "${project_root}" \
+    "${default_runner_dir}" \
+    "RUNNER_DIR" \
+    "RUNNER_DIR" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "${env_mode}" \
+    "${env_var_name}" \
+    "${default_env_path}" \
+    "${output_env_var_name}" \
+    "${missing_env_message}" \
+    "${require_spot_vars}" \
+    "${configure_gcloud}" \
+    "${gcloud_project_root}" \
+    "$@"
 }
 spot_runner_wrapper_resolve_active_config_path() {
   local current_config_path="${1:-}"
