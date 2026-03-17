@@ -954,6 +954,17 @@ spot_runner_wrapper_resolve_active_config_path() {
     printf '%s\n' "${default_config_path}"
   fi
 }
+spot_runner_wrapper_resolve_loaded_config_path() {
+  local current_config_path="${1:-}"
+  local default_config_path="${2:-}"
+  spot_runner_wrapper_resolve_active_config_path "${current_config_path}" "${default_config_path}" "0"
+}
+spot_runner_wrapper_resolve_active_config_path_required() {
+  spot_runner_wrapper_resolve_active_config_path "$@"
+}
+spot_runner_wrapper_resolve_loaded_config_path_required() {
+  spot_runner_wrapper_resolve_loaded_config_path "$@"
+}
 spot_runner_require_wrapper_runtime_or_exit() { :; }
 spot_runner_wrapper_require_project_runtime_or_exit() {
   local _runner_dir="$1"

@@ -69,6 +69,12 @@ spot_runner_wrapper_resolve_loaded_config_path() {
   local default_config_path="${2:-}"
   spot_runner_wrapper_resolve_active_config_path "${current_config_path}" "${default_config_path}" "0"
 }
+spot_runner_wrapper_resolve_active_config_path_required() {
+  spot_runner_wrapper_resolve_active_config_path "$@"
+}
+spot_runner_wrapper_resolve_loaded_config_path_required() {
+  spot_runner_wrapper_resolve_loaded_config_path "$@"
+}
 spot_runner_bootstrap_initialize_project_wrapper() {
   local project_root="$1"
   local _profile_name="${2:-default}"

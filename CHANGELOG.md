@@ -96,6 +96,10 @@ Changed:
   `spot_runner_wrapper_resolve_loaded_config_path` (with fallback to
   `spot_runner_wrapper_resolve_active_config_path` and local logic), reducing wrapper-local
   loaded-config branch handling.
+- `scripts/gcp_runner_common.sh` now requires shared config-path helper contracts
+  `spot_runner_wrapper_resolve_active_config_path_required` and
+  `spot_runner_wrapper_resolve_loaded_config_path_required`, removing remaining wrapper-local
+  config-path fallback branching after bootstrap.
 - `scripts/gcp_runner_common.sh` now uses shared helper
   `spot_runner_wrapper_require_function_or_hint` directly for required-helper checks in
   `apply_runner_defaults`, dropping wrapper-local required-function check glue.

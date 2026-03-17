@@ -77,23 +77,18 @@ check_runner_install() {
 }
 
 _active_config_path() {
-  if declare -F spot_runner_wrapper_resolve_active_config_path >/dev/null 2>&1; then
-    spot_runner_wrapper_resolve_active_config_path "${RAV_GCP_ENV_PATH:-}" "${RAV_GCP_ENV_DEFAULT}" "1"
-    return 0
-  fi
-  printf '%s\n' "${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
+  spot_runner_wrapper_resolve_active_config_path_required \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "1" \
+    "${RUNNER_HINT_MESSAGE}"
 }
 
 _loaded_config_path() {
-  if declare -F spot_runner_wrapper_resolve_loaded_config_path >/dev/null 2>&1; then
-    spot_runner_wrapper_resolve_loaded_config_path "${RAV_GCP_ENV_PATH:-}" "${RAV_GCP_ENV_DEFAULT}"
-    return 0
-  fi
-  if declare -F spot_runner_wrapper_resolve_active_config_path >/dev/null 2>&1; then
-    spot_runner_wrapper_resolve_active_config_path "${RAV_GCP_ENV_PATH:-}" "${RAV_GCP_ENV_DEFAULT}" "0"
-    return 0
-  fi
-  printf '%s\n' "${RAV_GCP_ENV_PATH:-}"
+  spot_runner_wrapper_resolve_loaded_config_path_required \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_HINT_MESSAGE}"
 }
 
 prepare_submit_shell() {
