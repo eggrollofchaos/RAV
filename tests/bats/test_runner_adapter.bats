@@ -942,6 +942,26 @@ spot_runner_wrapper_resolve_project_runner_dir_or_exit() {
 spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit() {
   spot_runner_wrapper_resolve_project_runner_dir_or_exit "$@"
 }
+spot_runner_wrapper_profile_apply_defaults_required() {
+  local _profile_name="${1:-default}"
+  local _hint_message="${2:-}"
+  :
+}
+spot_runner_wrapper_apply_project_runner_defaults_required() {
+  local root_dir="$1"
+  local default_dir="$2"
+  local env_var_name="$3"
+  local output_var_name="${4:-RUNNER_DIR}"
+  local profile_name="${5:-default}"
+  local hint_message="${6:-}"
+  spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit \
+    "${root_dir}" \
+    "${default_dir}" \
+    "${env_var_name}" \
+    "${output_var_name}" \
+    "${hint_message}"
+  spot_runner_wrapper_profile_apply_defaults_required "${profile_name}" "${hint_message}"
+}
 spot_runner_wrapper_resolve_active_config_path() {
   local current_config_path="${1:-}"
   local default_config_path="${2:-}"

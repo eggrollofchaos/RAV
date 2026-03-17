@@ -170,6 +170,9 @@ Changed:
 - `scripts/gcp_runner_common.sh` `apply_runner_defaults` now routes through shared
   required-helper `spot_runner_wrapper_apply_rav_defaults_required`, centralizing RAV default
   initializer contract enforcement.
+- `scripts/gcp_runner_common.sh` `apply_runner_defaults` now delegates through shared helper
+  `spot_runner_wrapper_apply_project_runner_defaults_required`, reducing wrapper-local
+  runner-dir/default setup plumbing.
 - `tests/bats/test_helper.bash` and `tests/bats/test_runner_adapter.bats` now stub
   `spot_runner_wrapper_apply_rav_defaults_required`, keeping RAV adapter tests hermetic with
   the updated required-helper contract surface.
