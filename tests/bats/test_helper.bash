@@ -187,6 +187,24 @@ spot_runner_wrapper_run_profiled_command_compat() {
   shift 4
   spot_runner_wrapper_run_profiled_compat "$runner_dir" "$config_path" "$profile_name" "$command_name" "$@"
 }
+spot_runner_wrapper_run_project_build_with_config() {
+  local runner_dir="$1"
+  local _hint_message="${2:-}"
+  local _loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="$4"
+  local profile_name="$5"
+  shift 5
+  spot_runner_wrapper_run_profiled_compat "$runner_dir" "$config_path" "$profile_name" "build" "$@"
+}
+spot_runner_wrapper_run_project_monitor_with_config() {
+  local runner_dir="$1"
+  local _hint_message="${2:-}"
+  local _loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="$4"
+  local profile_name="$5"
+  shift 5
+  spot_runner_wrapper_run_profiled_compat "$runner_dir" "$config_path" "$profile_name" "monitor" "$@"
+}
 spot_runner_wrapper_run_version_compat() {
   local runner_dir="$1"
   local config_path="${2:-}"

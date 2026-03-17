@@ -127,6 +127,26 @@ _capture_stub() {
     spot_runner_wrapper_run_project_profiled_with_config \
       "$_runner_dir" "$_hint_message" "$_loaded_var" "$config_path" "$profile_name" "$command_name" "$@"
   }
+  spot_runner_wrapper_run_project_build_with_config() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    local profile_name="$5"
+    shift 5
+    spot_runner_wrapper_run_project_profiled_command \
+      "$_runner_dir" "$_hint_message" "$_loaded_var" "$config_path" "$profile_name" "build" "$@"
+  }
+  spot_runner_wrapper_run_project_monitor_with_config() {
+    local _runner_dir="$1"
+    local _hint_message="$2"
+    local _loaded_var="$3"
+    local config_path="$4"
+    local profile_name="$5"
+    shift 5
+    spot_runner_wrapper_run_project_profiled_command \
+      "$_runner_dir" "$_hint_message" "$_loaded_var" "$config_path" "$profile_name" "monitor" "$@"
+  }
   spot_runner_wrapper_run_project_version() {
     local _runner_dir="$1"
     local _hint_message="$2"
