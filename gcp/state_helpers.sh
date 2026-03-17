@@ -6,11 +6,6 @@
 _STATE_HELPERS_WRAPPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 _STATE_HELPERS_PROJECT_ROOT="$(cd "${_STATE_HELPERS_WRAPPER_DIR}/.." && pwd)"
 
-_state_helpers_fail() {
-  echo "ERROR: $*" >&2
-  return 1 2>/dev/null || exit 1
-}
-
 # shellcheck disable=SC1090
 source "${_STATE_HELPERS_PROJECT_ROOT}/scripts/gcp_runner_common.sh"
 
@@ -25,9 +20,10 @@ if [[ -z "${RUNNER_DIR:-}" ]]; then
     "${RUNNER_HINT_MESSAGE}"
 fi
 
-if ! spot_runner_wrapper_source_project_state_helpers_required \
+if ! spot_runner_wrapper_source_project_state_helpers_required_or_fail \
   "${RUNNER_DIR}" \
   "${_STATE_HELPERS_PROJECT_ROOT}" \
-  "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout."; then
-  _state_helpers_fail "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR."
+  "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout." \
+  "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR."; then
+  return 1 2>/dev/null || exit 1
 fi

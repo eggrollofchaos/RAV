@@ -260,6 +260,17 @@ spot_runner_wrapper_source_project_state_helpers_or_fail() {
 spot_runner_wrapper_source_project_state_helpers_required() {
   spot_runner_wrapper_source_project_state_helpers_or_fail "$@"
 }
+spot_runner_wrapper_source_project_state_helpers_required_or_fail() {
+  local runner_dir="$1"
+  local project_root="$2"
+  local hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local error_message="${4:-Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR.}"
+  if spot_runner_wrapper_source_project_state_helpers_required "${runner_dir}" "${project_root}" "${hint_message}"; then
+    return 0
+  fi
+  echo "ERROR: ${error_message}" >&2
+  return 1
+}
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
   : "${ZONE:=us-east1-c}"
@@ -396,6 +407,72 @@ spot_runner_wrapper_run_project_submit_with_job_compat() {
     "submit" \
     --job-command "$job_command" \
     "${args[@]}"
+}
+spot_runner_wrapper_run_project_ops() {
+  local runner_dir="$1"
+  local _hint_message="${2:-}"
+  local _loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="$4"
+  local profile_name="$5"
+  shift 5
+  local args=("$@")
+  if [[ ${#args[@]} -eq 0 ]]; then
+    args=(status)
+  fi
+  spot_runner_wrapper_run_profiled_compat "$runner_dir" "$config_path" "$profile_name" "ops" "${args[@]}"
+}
+spot_runner_wrapper_run_project_version() {
+  local runner_dir="$1"
+  local _hint_message="${2:-}"
+  local _loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="${4:-}"
+  shift 4 || true
+  spot_runner_wrapper_run_spotctl_compat "$runner_dir" "$config_path" version "$@"
+}
+spot_runner_wrapper_run_project_command_with_mode() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_mode="${4:-active}"
+  local current_config_path="${5:-}"
+  local default_config_path="${6:-}"
+  local profile_name="${7:-default}"
+  local command_name="${8:-}"
+  shift 8 || true
+
+  local config_path=""
+  config_path="$(spot_runner_wrapper_resolve_config_path_required "${config_mode}" "${current_config_path}" "${default_config_path}" "${hint_message}")" || return "$?"
+
+  case "${command_name}" in
+    ops)
+      spot_runner_wrapper_run_project_ops "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "${profile_name}" "$@"
+      ;;
+    build)
+      spot_runner_wrapper_run_project_build_with_config "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "${profile_name}" "$@"
+      ;;
+    monitor)
+      spot_runner_wrapper_run_project_monitor_with_config "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "${profile_name}" "$@"
+      ;;
+    version)
+      spot_runner_wrapper_run_project_version "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "$@"
+      ;;
+    submit_with_job)
+      if [[ $# -lt 1 ]]; then
+        echo "Missing submit_with_job command argument: job command" >&2
+        return 2
+      fi
+      local job_command="$1"
+      shift
+      spot_runner_wrapper_run_project_submit_with_job_compat "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "${profile_name}" "${job_command}" "$@"
+      ;;
+    *)
+      echo "Unsupported project command with mode: ${command_name}" >&2
+      return 1
+      ;;
+  esac
+}
+spot_runner_wrapper_run_project_command_with_mode_required() {
+  spot_runner_wrapper_run_project_command_with_mode "$@"
 }
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="${1:-_SPOT_CAFFEINATED}"
