@@ -292,6 +292,30 @@ spot_runner_wrapper_source_project_state_helpers_required_or_fail() {
   echo "ERROR: ${error_message}" >&2
   return 1
 }
+spot_runner_wrapper_init_project_state_helpers_wrapper_required() {
+  local project_root="$1"
+  local default_runner_dir="$2"
+  local profile_name="${3:-default}"
+  local hint_message="${4:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local error_message="${5:-Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR.}"
+  local runner_env_var_name="${6:-RUNNER_DIR}"
+  local runner_output_var_name="${7:-RUNNER_DIR}"
+
+  spot_runner_wrapper_ensure_project_runner_defaults_if_unset_required \
+    "${project_root}" \
+    "${default_runner_dir}" \
+    "${runner_env_var_name}" \
+    "${runner_output_var_name}" \
+    "${profile_name}" \
+    "${hint_message}" || return "$?"
+
+  local runner_dir="${!runner_output_var_name:-}"
+  spot_runner_wrapper_source_project_state_helpers_required_or_fail \
+    "${runner_dir}" \
+    "${project_root}" \
+    "${hint_message}" \
+    "${error_message}"
+}
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
   : "${ZONE:=us-east1-c}"
