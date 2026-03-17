@@ -100,7 +100,21 @@ run_project_command() {
   local command_name="$2"
   shift 2 || true
 
-  spot_runner_wrapper_run_project_standard_command_required \
+  if declare -F spot_runner_wrapper_run_project_standard_command_required >/dev/null 2>&1; then
+    spot_runner_wrapper_run_project_standard_command_required \
+      "${RUNNER_DIR}" \
+      "${RUNNER_HINT_MESSAGE}" \
+      "RUNNER_ADAPTER_LIB_LOADED" \
+      "${config_mode}" \
+      "${RAV_GCP_ENV_PATH:-}" \
+      "${RAV_GCP_ENV_DEFAULT}" \
+      "${RUNNER_PROFILE}" \
+      "${command_name}" \
+      "$@"
+    return "$?"
+  fi
+
+  spot_runner_wrapper_run_project_command_with_mode_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
@@ -113,6 +127,12 @@ run_project_command() {
 }
 
 run_reconciler_deploy() {
+  if declare -F spot_runner_wrapper_run_project_standard_command_required >/dev/null 2>&1 || \
+    declare -F spot_runner_wrapper_run_project_command_with_mode_required >/dev/null 2>&1; then
+    run_project_command "loaded" "reconciler_deploy" "$@"
+    return "$?"
+  fi
+
   spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \

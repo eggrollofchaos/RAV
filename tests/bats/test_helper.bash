@@ -474,6 +474,50 @@ spot_runner_wrapper_run_project_version() {
   shift 4 || true
   spot_runner_wrapper_run_spotctl_compat "$runner_dir" "$config_path" version "$@"
 }
+spot_runner_wrapper_profile_reconciler_defaults() {
+  local profile_name="${1:-default}"
+  local function_name_out="${2:-DEFAULT_FUNCTION_NAME}"
+  local scheduler_name_out="${3:-DEFAULT_SCHEDULER_NAME}"
+  local function_name=""
+  case "${profile_name}" in
+    ixqt)
+      function_name="ixqt-cloud-reconciler"
+      ;;
+    rav)
+      function_name="rav-cloud-reconciler"
+      ;;
+    *)
+      function_name="spot-reconciler"
+      ;;
+  esac
+  local scheduler_name="${function_name}-scheduler"
+  printf -v "${function_name_out}" '%s' "${function_name}"
+  printf -v "${scheduler_name_out}" '%s' "${scheduler_name}"
+}
+spot_runner_wrapper_run_project_reconciler_deploy_with_profile_defaults_required() {
+  local runner_dir="$1"
+  local _hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local _loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="${4:-}"
+  local profile_name="${5:-default}"
+  shift 5 || true
+
+  local function_name=""
+  local scheduler_name=""
+  spot_runner_wrapper_profile_reconciler_defaults "${profile_name}" function_name scheduler_name
+  function_name="${FUNCTION_NAME:-${function_name}}"
+  scheduler_name="${SCHEDULER_NAME:-${scheduler_name}}"
+
+  spot_runner_wrapper_run_spotctl_compat \
+    "${runner_dir}" \
+    "${config_path}" \
+    reconciler \
+    deploy \
+    --profile "${profile_name}" \
+    --function-name "${function_name}" \
+    --scheduler-name "${scheduler_name}" \
+    "$@"
+}
 spot_runner_wrapper_run_project_command_with_mode() {
   local runner_dir="$1"
   local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
@@ -500,6 +544,9 @@ spot_runner_wrapper_run_project_command_with_mode() {
       ;;
     version)
       spot_runner_wrapper_run_project_version "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "$@"
+      ;;
+    reconciler_deploy)
+      spot_runner_wrapper_run_project_reconciler_deploy_with_profile_defaults_required "${runner_dir}" "${hint_message}" "${loaded_var_name}" "${config_path}" "${profile_name}" "$@"
       ;;
     submit_with_job)
       if [[ $# -lt 1 ]]; then

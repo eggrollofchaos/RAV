@@ -14,10 +14,15 @@ Fixed:
 
 Changed:
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
-  `submit_with_job`, `build`, `monitor`, `version`) through one wrapper-local helper
-  `run_project_command`, which delegates to shared required helper
-  `spot_runner_wrapper_run_project_standard_command_required`; this removes repeated
-  per-command dispatch argument blocks from the thin wrapper.
+  `submit_with_job`, `build`, `monitor`, `version`, `reconciler_deploy`) through one
+  wrapper-local helper `run_project_command`, which prefers shared required helper
+  `spot_runner_wrapper_run_project_standard_command_required` with fallback to
+  `spot_runner_wrapper_run_project_command_with_mode_required`; `reconciler_deploy`
+  additionally falls back to dedicated helper
+  `spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required`
+  when command-dispatch helpers are unavailable. This removes repeated per-command
+  dispatch argument blocks while preserving compatibility with older/fake runner
+  helper surfaces.
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`) through shared helper
   `spot_runner_wrapper_run_project_command_with_mode_required`, reducing repeated
