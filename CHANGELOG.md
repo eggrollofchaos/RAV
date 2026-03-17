@@ -13,6 +13,9 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` `run_project_command` now delegates through shared helper
+  `spot_runner_wrapper_run_project_profile_command_with_paths_required`, reducing wrapper-local
+  profile command argument plumbing while retaining shared config-mode behavior.
 - `scripts/gcp_runner_common.sh` runtime setup now delegates through shared helper
   `spot_runner_wrapper_setup_project_profile_runtime_required`, reducing repeated
   profile runtime argument plumbing in the thin wrapper.

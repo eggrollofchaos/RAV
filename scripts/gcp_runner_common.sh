@@ -94,14 +94,14 @@ run_project_command() {
   local command_name="$1"
   shift || true
 
-  spot_runner_wrapper_run_project_profile_command_required \
+  spot_runner_wrapper_run_project_profile_command_with_paths_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
     "${RUNNER_PROFILE}" \
     "${command_name}" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
     "$@"
 }
 
