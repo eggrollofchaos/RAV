@@ -444,6 +444,10 @@ spot_runner_wrapper_run_project_build_command_entrypoint_required() {
     runtime_args=("\${build_passthrough_args[@]}")
     build_passthrough_args=("\$@")
   fi
+  if [[ -z "\${runtime_function_name}" && "\${saw_delimiter}" == "1" && "\${#runtime_args[@]}" -gt 0 ]]; then
+    build_passthrough_args=("\${runtime_args[@]}" "\${build_passthrough_args[@]}")
+    runtime_args=()
+  fi
 
   local build_args=(
     --source "\${source_path}"
@@ -454,7 +458,9 @@ spot_runner_wrapper_run_project_build_command_entrypoint_required() {
   fi
   build_args+=("\${build_passthrough_args[@]}")
 
-  "\${runtime_function_name}" "\${runtime_args[@]}"
+  if [[ -n "\${runtime_function_name}" ]]; then
+    "\${runtime_function_name}" "\${runtime_args[@]}"
+  fi
   "\${command_function_name}" build "\${build_args[@]}"
 }
 spot_runner_wrapper_run_project_command_entrypoint_required() {
@@ -939,7 +945,7 @@ SCRIPT
   refute_line --partial "gcp_train_with_checkpoint_sync.sh"
 }
 
-@test "gcp_build_image wrapper delegates to shared run_build_command" {
+@test "gcp_build_image wrapper delegates through shared build-command entrypoint contract" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/build_wrapper.log"
   _write_fake_runner_common "$call_log"

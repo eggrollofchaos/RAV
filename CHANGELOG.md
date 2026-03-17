@@ -13,6 +13,8 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_build_image.sh` now relies on the shared build-command entrypoint's
+  optional runtime callback contract directly (removed wrapper-local no-op runtime shim).
 - `scripts/gcp_build_image.sh` now delegates through shared helper
   `spot_runner_wrapper_run_project_build_command_entrypoint_required`, so build
   wrappers use the same command-dispatch build contract as other thin entrypoints.
