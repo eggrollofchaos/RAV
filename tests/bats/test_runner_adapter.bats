@@ -467,6 +467,31 @@ spot_runner_wrapper_run_project_named_command_entrypoint_required() {
   "\${runtime_function_name}" "\${runtime_args[@]}"
   "\${command_dispatch_function_name}" "\${command_name}" "\${command_args[@]}"
 }
+spot_runner_wrapper_run_project_named_command_from_script_entrypoint_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_dispatch_function_name="\${3:-}"
+  local script_path="\${4:-}"
+  local script_prefix="\${5:-}"
+  local script_suffix="\${6:-}"
+  shift 6 || true
+
+  local script_name="\${script_path##*/}"
+  local command_name="\${script_name}"
+  if [[ -n "\${script_prefix}" ]]; then
+    command_name="\${command_name#"\${script_prefix}"}"
+  fi
+  if [[ -n "\${script_suffix}" ]]; then
+    command_name="\${command_name%"\${script_suffix}"}"
+  fi
+
+  spot_runner_wrapper_run_project_named_command_entrypoint_required \
+    "\${_hint_message}" \
+    "\${runtime_function_name}" \
+    "\${command_dispatch_function_name}" \
+    "\${command_name}" \
+    "\$@"
+}
 spot_runner_wrapper_run_project_submit_entrypoint_required() {
   local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local submit_shell_function_name="\${2:-}"

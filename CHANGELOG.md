@@ -20,6 +20,10 @@ Changed:
   `spot_runner_wrapper_run_project_named_command_entrypoint_required` with fixed command names,
   and `scripts/gcp_runner_common.sh` dropped wrapper-local `run_ops_command`,
   `run_monitor_command`, and `run_version_command` aliases.
+- `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now derive command names from wrapper
+  script names (`gcp_*.sh`) via shared helper
+  `spot_runner_wrapper_run_project_named_command_from_script_entrypoint_required`, removing
+  repeated hard-coded command strings in thin wrappers while preserving runtime-arg behavior.
 - `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now uses the shared
   optional-runtime submit-entrypoint contract directly (no wrapper-local no-op runtime
   callback needed).
