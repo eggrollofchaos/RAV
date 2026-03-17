@@ -46,6 +46,9 @@ Changed:
 - `scripts/gcp_runner_common.sh` bootstrap preamble now routes through shared helper
   `spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required`, centralizing
   candidate-list bootstrap initialization under one required entrypoint.
+- `scripts/gcp_runner_common.sh` bootstrap candidate discovery now runs through a single ordered
+  loop (`RUNNER_DIR`, primary sibling checkout, worktree sibling checkout), reducing additional
+  wrapper-local branch duplication in the thin bootstrap preamble.
 - `scripts/gcp_runner_common.sh` now delegates RAV runtime/env default initialization through
   shared helper `spot_runner_wrapper_apply_rav_defaults`, reducing wrapper-local default
   assignment logic.
