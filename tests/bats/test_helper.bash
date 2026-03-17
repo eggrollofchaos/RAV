@@ -643,6 +643,39 @@ spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required() {
   shift 2 || true
   spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
 }
+spot_runner_wrapper_profile_submit_guard_aliases() {
+  local profile_name="${1:-default}"
+  case "${profile_name}" in
+    rav)
+      printf '%s\n' "_RAV_CAFFEINATED,_IXQT_CAFFEINATED"
+      ;;
+    *)
+      printf '%s\n' "_IXQT_CAFFEINATED"
+      ;;
+  esac
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat() {
+  local profile_name="${1:-default}"
+  local guard_alias_csv_override="${2:-}"
+  shift 2 || true
+
+  local guard_alias_csv="${guard_alias_csv_override}"
+  if [[ -z "${guard_alias_csv}" ]]; then
+    guard_alias_csv="$(spot_runner_wrapper_profile_submit_guard_aliases "${profile_name}")"
+  fi
+
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  local guard_alias_csv_override="${3:-}"
+  shift 3 || true
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat \
+    "${profile_name}" \
+    "${guard_alias_csv_override}" \
+    "$@"
+}
 
 setup() {
     : > "$SHIM_LOG"

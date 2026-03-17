@@ -236,6 +236,24 @@ _capture_stub() {
   assert_line --index 3 "--dry-run"
 }
 
+@test "prepare_submit_shell resolves rav default guard alias when none is provided" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/prepare_project_submit_default_alias_args.txt"
+
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+    printf '%s\n' "$@" > "$captured"
+  }
+
+  prepare_submit_shell --run-id rav-caf-4 --dry-run
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "_RAV_CAFFEINATED,_IXQT_CAFFEINATED"
+  assert_line --index 1 "--run-id"
+  assert_line --index 2 "rav-caf-4"
+  assert_line --index 3 "--dry-run"
+}
+
 _setup_temp_submit_wrappers() {
   export TEMP_REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$TEMP_REPO/scripts"
@@ -326,8 +344,11 @@ spot_runner_prepare_submit_shell_compat() {
   trap '' HUP
 }
 prepare_submit_shell() {
-  local guard_alias_csv="\${1:-_IXQT_CAFFEINATED}"
-  shift || true
+  local guard_alias_csv="_RAV_CAFFEINATED,_IXQT_CAFFEINATED"
+  if [[ "\${1:-}" == _*CAFFEINATED* ]]; then
+    guard_alias_csv="\$1"
+    shift || true
+  fi
   spot_runner_prepare_submit_shell_compat "_SPOT_CAFFEINATED" "\${guard_alias_csv}" "\$@"
 }
 run_submit_with_job() {

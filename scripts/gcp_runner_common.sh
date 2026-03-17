@@ -13,7 +13,6 @@ RUNNER_PROFILE="rav"
 RUNNER_BOOTSTRAP_DIR_DEFAULT="${RUNNER_DIR_DEFAULT_PRIMARY}"
 RUNNER_HINT_DEFAULT="Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
 RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
-RUNNER_SUBMIT_GUARD_ALIASES="_IXQT_CAFFEINATED"
 
 RUNNER_BOOTSTRAP_ENV_CANDIDATE="${RUNNER_DIR:-}"
 if [[ -n "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" && "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" != /* ]]; then
@@ -41,13 +40,6 @@ spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
   "${RUNNER_DIR_DEFAULT_PRIMARY}" \
   "${RUNNER_DIR_DEFAULT_WORKTREE}"
 
-if declare -F spot_runner_wrapper_profile_submit_guard_aliases >/dev/null 2>&1; then
-  RUNNER_SUBMIT_GUARD_ALIASES="$(spot_runner_wrapper_profile_submit_guard_aliases "${RUNNER_PROFILE}")"
-  if [[ -z "${RUNNER_SUBMIT_GUARD_ALIASES}" ]]; then
-    RUNNER_SUBMIT_GUARD_ALIASES="_IXQT_CAFFEINATED"
-  fi
-fi
-
 prepare_rav_runtime() {
   local env_mode="${1:-required}"
   local require_spot_vars="${2:-1}"
@@ -72,11 +64,16 @@ prepare_rav_runtime() {
 }
 
 prepare_submit_shell() {
-  local guard_alias_csv="${1:-${RUNNER_SUBMIT_GUARD_ALIASES}}"
-  shift || true
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required \
+  local guard_alias_csv_override=""
+  if [[ "${1:-}" == _*CAFFEINATED* ]]; then
+    guard_alias_csv_override="$1"
+    shift || true
+  fi
+
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_required \
     "${RUNNER_HINT_MESSAGE}" \
-    "${guard_alias_csv}" \
+    "${RUNNER_PROFILE}" \
+    "${guard_alias_csv_override}" \
     "$@"
 }
 

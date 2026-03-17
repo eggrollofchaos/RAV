@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/gcp_runner_common.sh"
 
 # Prevent macOS idle sleep and survive terminal close.
-prepare_submit_shell "${RUNNER_SUBMIT_GUARD_ALIASES:-_IXQT_CAFFEINATED}" "$@"
+prepare_submit_shell "$@"
 
 set -euo pipefail
 

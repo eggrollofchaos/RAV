@@ -33,12 +33,12 @@ Changed:
   `spot_runner_wrapper_run_project_standard_command_active_required` and
   `spot_runner_wrapper_run_project_standard_command_loaded_required`, keeping RAV
   adapter tests aligned with the new shared mode-specific dispatch entrypoints.
-- `scripts/gcp_runner_common.sh` now resolves submit-shell guard aliases from shared helper
-  `spot_runner_wrapper_profile_submit_guard_aliases` (with safe fallback), and submit
+- `scripts/gcp_runner_common.sh` now delegates submit-shell/caffeinate setup through shared
+  profile-aware helper
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_required`, and submit
   wrappers (`gcp_submit_primary.sh`, `gcp_submit_poc.sh`,
-  `gcp_submit_chexpert_experiment.sh`) now pass
-  `${RUNNER_SUBMIT_GUARD_ALIASES:-_IXQT_CAFFEINATED}` instead of hardcoded alias
-  literals.
+  `gcp_submit_chexpert_experiment.sh`) now forward `"$@"` directly to
+  `prepare_submit_shell` (no wrapper-local submit-guard alias state required).
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`) through shared helper
   `spot_runner_wrapper_run_project_command_with_mode_required`, reducing repeated
