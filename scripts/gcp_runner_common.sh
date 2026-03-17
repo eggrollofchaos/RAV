@@ -80,38 +80,21 @@ prepare_rav_runtime() {
   local configure_gcloud="${3:-1}"
   local missing_env_message="${4:-Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it.}"
 
-  if declare -F spot_runner_wrapper_setup_project_runtime_required >/dev/null 2>&1; then
-    spot_runner_wrapper_setup_project_runtime_required \
-      "${RAV_ROOT}" \
-      "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
-      "RUNNER_DIR" \
-      "RUNNER_DIR" \
-      "${RUNNER_PROFILE}" \
-      "${RUNNER_HINT_MESSAGE}" \
-      "${env_mode}" \
-      "RAV_GCP_ENV" \
-      "${RAV_GCP_ENV_DEFAULT}" \
-      "RAV_GCP_ENV_PATH" \
-      "${missing_env_message}" \
-      "${require_spot_vars}" \
-      "${configure_gcloud}" \
-      "${RAV_ROOT}"
-    return "$?"
-  fi
-
-  if [[ "${env_mode}" == "required" ]]; then
-    load_rav_spot_env
-  elif [[ "${env_mode}" == "optional" ]]; then
-    load_rav_spot_env_optional
-  fi
-  apply_runner_defaults
-  if [[ "${require_spot_vars}" == "1" ]]; then
-    check_required_spot_vars
-  fi
-  check_runner_install
-  if [[ "${configure_gcloud}" == "1" ]]; then
-    configure_gcloud_runtime
-  fi
+  spot_runner_wrapper_setup_project_runtime_required \
+    "${RAV_ROOT}" \
+    "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
+    "RUNNER_DIR" \
+    "RUNNER_DIR" \
+    "${RUNNER_PROFILE}" \
+    "${RUNNER_HINT_MESSAGE}" \
+    "${env_mode}" \
+    "RAV_GCP_ENV" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "RAV_GCP_ENV_PATH" \
+    "${missing_env_message}" \
+    "${require_spot_vars}" \
+    "${configure_gcloud}" \
+    "${RAV_ROOT}"
 }
 
 _active_config_path() {

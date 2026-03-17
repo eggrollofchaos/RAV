@@ -24,6 +24,9 @@ Changed:
   (`gcp_submit_*`, `gcp_build_image.sh`, `gcp_ops.sh`, `gcp_monitor.sh`, `gcp_version.sh`,
   `gcp_iterate_chexpert.sh`) now call that shared setup path instead of repeating
   load/defaults/check/install/gcloud boilerplate per script.
+- `scripts/gcp_runner_common.sh` `prepare_rav_runtime` now requires shared helper
+  `spot_runner_wrapper_setup_project_runtime_required` directly, removing wrapper-local
+  runtime setup fallback branches.
 - `gcp/cloud_reconciler/deploy.sh` now also uses `prepare_rav_runtime` (optional-env, no
   spot-var/gcloud checks) before delegating reconciler deploy through the shared runner contract.
 - `gcp/cloud_reconciler/deploy.sh` now prefers shared helper

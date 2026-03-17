@@ -18,6 +18,42 @@ _capture_stub() {
     local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
     spot_runner_wrapper_apply_rav_defaults
   }
+  spot_runner_wrapper_setup_project_runtime_required() {
+    local project_root="$1"
+    local default_runner_dir="$2"
+    local runner_env_var_name="$3"
+    local runner_output_var_name="$4"
+    local profile_name="$5"
+    local hint_message="${6:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+    local env_mode="${7:-optional}"
+    local env_var_name="${8:-RAV_GCP_ENV}"
+    local default_env_path="${9:-}"
+    local output_env_var_name="${10:-RAV_GCP_ENV_PATH}"
+
+    if [[ "${env_mode}" == "required" ]]; then
+      spot_runner_wrapper_load_project_env_required_compat_or_exit \
+        "${project_root}" \
+        "${env_var_name}" \
+        "${default_env_path}" \
+        "${output_env_var_name}" \
+        "${hint_message}"
+    else
+      spot_runner_wrapper_load_project_env_optional_compat \
+        "${project_root}" \
+        "${env_var_name}" \
+        "${default_env_path}" \
+        "${output_env_var_name}" \
+        "${hint_message}"
+    fi
+
+    spot_runner_wrapper_apply_project_runner_defaults_required \
+      "${project_root}" \
+      "${default_runner_dir}" \
+      "${runner_env_var_name}" \
+      "${runner_output_var_name}" \
+      "${profile_name}" \
+      "${hint_message}"
+  }
   run_spotctl_with_config() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
@@ -979,6 +1015,42 @@ spot_runner_wrapper_apply_project_runner_defaults_required() {
     "${output_var_name}" \
     "${hint_message}"
   spot_runner_wrapper_profile_apply_defaults_required "${profile_name}" "${hint_message}"
+}
+spot_runner_wrapper_setup_project_runtime_required() {
+  local project_root="$1"
+  local default_runner_dir="$2"
+  local runner_env_var_name="$3"
+  local runner_output_var_name="$4"
+  local profile_name="$5"
+  local hint_message="${6:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local env_mode="${7:-optional}"
+  local env_var_name="${8:-RAV_GCP_ENV}"
+  local default_env_path="${9:-}"
+  local output_env_var_name="${10:-RAV_GCP_ENV_PATH}"
+
+  if [[ "${env_mode}" == "required" ]]; then
+    spot_runner_wrapper_load_project_env_required_compat_or_exit \
+      "${project_root}" \
+      "${env_var_name}" \
+      "${default_env_path}" \
+      "${output_env_var_name}" \
+      "${hint_message}"
+  else
+    spot_runner_wrapper_load_project_env_optional_compat \
+      "${project_root}" \
+      "${env_var_name}" \
+      "${default_env_path}" \
+      "${output_env_var_name}" \
+      "${hint_message}"
+  fi
+
+  spot_runner_wrapper_apply_project_runner_defaults_required \
+    "${project_root}" \
+    "${default_runner_dir}" \
+    "${runner_env_var_name}" \
+    "${runner_output_var_name}" \
+    "${profile_name}" \
+    "${hint_message}"
 }
 spot_runner_wrapper_resolve_active_config_path() {
   local current_config_path="${1:-}"
