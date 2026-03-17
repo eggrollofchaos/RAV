@@ -14,37 +14,31 @@ RUNNER_BOOTSTRAP_DIR_DEFAULT="${RUNNER_DIR_DEFAULT_PRIMARY}"
 RUNNER_HINT_DEFAULT="Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
 RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
 
-_bootstrap_runner_adapter_lib() {
-  local bootstrap_lib=""
-  local candidate=""
-  for candidate in "${RUNNER_DIR:-}" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; do
-    [[ -n "${candidate}" ]] || continue
-    if [[ "${candidate}" != /* ]]; then
-      candidate="${RAV_ROOT}/${candidate}"
-    fi
-    bootstrap_lib="${candidate}/adapters/spot_runner_bootstrap.sh"
-    if [[ -f "${bootstrap_lib}" ]]; then
-      break
-    fi
-  done
+RUNNER_BOOTSTRAP_ENV_CANDIDATE="${RUNNER_DIR:-}"
+if [[ -n "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" && "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" != /* ]]; then
+  RUNNER_BOOTSTRAP_ENV_CANDIDATE="${RAV_ROOT}/${RUNNER_BOOTSTRAP_ENV_CANDIDATE}"
+fi
 
-  if [[ -n "${bootstrap_lib}" && -f "${bootstrap_lib}" ]]; then
+RUNNER_BOOTSTRAP_LIB=""
+for RUNNER_BOOTSTRAP_CANDIDATE in "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" "${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}"; do
+  [[ -n "${RUNNER_BOOTSTRAP_CANDIDATE}" ]] || continue
+  RUNNER_BOOTSTRAP_LIB="${RUNNER_BOOTSTRAP_CANDIDATE}/adapters/spot_runner_bootstrap.sh"
+  if [[ -f "${RUNNER_BOOTSTRAP_LIB}" ]]; then
     # shellcheck disable=SC1090
-    source "${bootstrap_lib}"
+    source "${RUNNER_BOOTSTRAP_LIB}"
+    break
   fi
+done
 
-  spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
-    "${RAV_ROOT}" \
-    "${RUNNER_PROFILE}" \
-    "${RUNNER_HINT_DEFAULT}" \
-    RUNNER_BOOTSTRAP_DIR_DEFAULT \
-    "RUNNER_DIR" \
-    RUNNER_HINT_MESSAGE \
-    "${RUNNER_DIR_DEFAULT_PRIMARY}" \
-    "${RUNNER_DIR_DEFAULT_WORKTREE}"
-}
-
-_bootstrap_runner_adapter_lib
+spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
+  "${RAV_ROOT}" \
+  "${RUNNER_PROFILE}" \
+  "${RUNNER_HINT_DEFAULT}" \
+  RUNNER_BOOTSTRAP_DIR_DEFAULT \
+  "RUNNER_DIR" \
+  RUNNER_HINT_MESSAGE \
+  "${RUNNER_DIR_DEFAULT_PRIMARY}" \
+  "${RUNNER_DIR_DEFAULT_WORKTREE}"
 
 load_rav_spot_env_optional() {
   spot_runner_wrapper_load_project_env_optional_compat "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH "${RUNNER_HINT_MESSAGE}"
