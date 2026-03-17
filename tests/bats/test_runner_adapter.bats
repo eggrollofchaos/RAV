@@ -705,6 +705,21 @@ spot_runner_wrapper_run_project_submit_entrypoint_required() {
   fi
   "\${submit_function_name}" "\${job_command}" "\${submit_args[@]}"
 }
+spot_runner_wrapper_run_project_submit_wrapper_defaults_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local submit_shell_function_name="\${2:-}"
+  local runtime_function_name="\${3:-}"
+  local submit_function_name="\${4:-}"
+  local job_command="\${5:-}"
+  shift 5 || true
+  spot_runner_wrapper_run_project_submit_entrypoint_required \
+    "\${_hint_message}" \
+    "\${submit_shell_function_name}" \
+    "\${runtime_function_name}" \
+    "\${submit_function_name}" \
+    "\${job_command}" \
+    "\$@"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="\${1:-_SPOT_CAFFEINATED}"
   shift 2 || true
@@ -734,7 +749,7 @@ prepare_submit_shell() {
 run_submit_entrypoint_with_job() {
   local job_command="\$1"
   shift || true
-  spot_runner_wrapper_run_project_submit_entrypoint_required \
+  spot_runner_wrapper_run_project_submit_wrapper_defaults_required \
     "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
     "prepare_submit_shell" \
     "" \

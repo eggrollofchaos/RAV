@@ -13,6 +13,12 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for `spot_runner_wrapper_run_project_submit_wrapper_defaults_required`,
+  keeping submit-wrapper test stubs aligned with shared defaults wiring.
+- `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now delegates
+  through shared helper `spot_runner_wrapper_run_project_submit_wrapper_defaults_required`,
+  so submit-wrapper defaults stay single-sourced before submit entrypoint handling.
 - `scripts/gcp_build_image.sh` now relies on the shared build-command entrypoint's
   optional runtime callback contract directly (removed wrapper-local no-op runtime shim).
 - `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
