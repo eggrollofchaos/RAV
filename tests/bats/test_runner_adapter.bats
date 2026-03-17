@@ -379,6 +379,25 @@ prepare_rav_runtime() {
     configure_gcloud_runtime
   fi
 }
+spot_runner_wrapper_run_project_command_entrypoint_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_function_name="\${3:-}"
+  shift 3 || true
+
+  local runtime_args=()
+  while [[ \$# -gt 0 ]]; do
+    if [[ "\$1" == "--" ]]; then
+      shift
+      break
+    fi
+    runtime_args+=("\$1")
+    shift
+  done
+
+  "\${runtime_function_name}" "\${runtime_args[@]}"
+  "\${command_function_name}" "\$@"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="\${1:-_SPOT_CAFFEINATED}"
   shift 2 || true

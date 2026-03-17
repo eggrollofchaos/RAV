@@ -5,6 +5,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/gcp_runner_common.sh"
 
-prepare_rav_runtime "optional" "0" "1"
-
-run_version_command "$@"
+spot_runner_wrapper_run_project_command_entrypoint_required \
+  "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+  "prepare_rav_runtime" \
+  "run_version_command" \
+  "optional" \
+  "0" \
+  "1" \
+  -- \
+  "$@"
