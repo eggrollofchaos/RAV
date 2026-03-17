@@ -691,6 +691,21 @@ spot_runner_wrapper_run_project_standard_wrapper_defaults_required() {
     "\${delegated_callsite_depth}" \
     "\$@"
 }
+spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_dispatch_function_name="\${3:-}"
+  local profile_name="\${4:-}"
+  shift 4 || true
+
+  spot_runner_wrapper_run_project_standard_wrapper_defaults_required \
+    "\${_hint_message}" \
+    "\${runtime_function_name}" \
+    "\${command_dispatch_function_name}" \
+    "\${profile_name}" \
+    "3" \
+    "\$@"
+}
 spot_runner_wrapper_run_project_submit_entrypoint_required() {
   local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local submit_shell_function_name="\${2:-}"
@@ -822,12 +837,11 @@ run_project_command() {
   printf '%s\n' "\$@" >> "$log_path"
 }
 run_rav_standard_command_wrapper() {
-  spot_runner_wrapper_run_project_standard_wrapper_defaults_required \
+  spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required \
     "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
     "prepare_rav_runtime" \
     "run_project_command" \
     "rav" \
-    "2" \
     "\$@"
 }
 SCRIPT

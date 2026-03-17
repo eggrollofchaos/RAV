@@ -126,11 +126,10 @@ run_project_command() {
 }
 
 run_rav_standard_command_wrapper() {
-  spot_runner_wrapper_run_project_standard_wrapper_defaults_required \
+  spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required \
     "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
     "prepare_rav_runtime" \
     "run_project_command" \
     "${RUNNER_PROFILE}" \
-    "2" \
     "$@"
 }

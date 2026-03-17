@@ -14,6 +14,12 @@ Fixed:
 
 Changed:
 - `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for `spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required`,
+  keeping standard-wrapper common test stubs aligned with shared defaults wiring.
+- `scripts/gcp_runner_common.sh` `run_rav_standard_command_wrapper` now delegates
+  through shared helper `spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required`,
+  so wrapper-common callsite depth wiring is single-sourced in runner.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
   contract behavior for `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required`,
   keeping command-wrapper test stubs aligned with shared defaults wiring.
 - `scripts/gcp_runner_common.sh` `run_project_command` now delegates through shared
