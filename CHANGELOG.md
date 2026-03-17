@@ -13,6 +13,9 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `gcp/cloud_reconciler/deploy.sh` now calls
+  `run_project_command "reconciler_deploy"` directly; removed wrapper-local
+  `run_reconciler_deploy` alias from `scripts/gcp_runner_common.sh`.
 - `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now uses the shared
   optional-runtime submit-entrypoint contract directly (no wrapper-local no-op runtime
   callback needed).

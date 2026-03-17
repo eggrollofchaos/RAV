@@ -12,4 +12,4 @@ spot_runner_wrapper_apply_spot_config_path_override_required RAV_GCP_ENV "${RUNN
 
 prepare_rav_runtime "optional" "0" "0"
 
-run_reconciler_deploy "$@"
+run_project_command "reconciler_deploy" "$@"

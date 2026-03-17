@@ -136,7 +136,3 @@ run_project_command() {
     "${RAV_GCP_ENV_DEFAULT}" \
     "$@"
 }
-
-run_reconciler_deploy() {
-  run_project_command "reconciler_deploy" "$@"
-}
