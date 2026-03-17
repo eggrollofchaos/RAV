@@ -37,8 +37,16 @@ Changed:
 - Removed unused wrapper-local shim functions `load_rav_spot_env_optional()` and
   `run_spotctl_with_config()` from `scripts/gcp_runner_common.sh`; runtime env loading and
   spotctl dispatch stay centralized behind shared required helper contracts.
+- Removed unused wrapper-local shim function `apply_runner_defaults()` from
+  `scripts/gcp_runner_common.sh`; state-helper runner-dir resolution now calls shared required
+  helper `spot_runner_wrapper_apply_project_runner_defaults_required` directly.
 - `tests/bats/test_runner_adapter.bats` removed direct tests for the retired
   `load_rav_spot_env_optional` and `run_spotctl_with_config` shims.
+- `tests/bats/test_runner_adapter.bats` removed the direct test for retired shim
+  `apply_runner_defaults`.
+- `gcp/state_helpers.sh` now resolves default runner directory via shared required helper
+  `spot_runner_wrapper_apply_project_runner_defaults_required` directly (instead of routing
+  through the removed `apply_runner_defaults` shim).
 - `gcp/cloud_reconciler/deploy.sh` now also uses `prepare_rav_runtime` (optional-env, no
   spot-var/gcloud checks) before delegating reconciler deploy through the shared runner contract.
 - `gcp/cloud_reconciler/deploy.sh` now prefers shared helper

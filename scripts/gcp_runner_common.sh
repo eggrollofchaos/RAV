@@ -40,16 +40,6 @@ spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
   "${RUNNER_DIR_DEFAULT_PRIMARY}" \
   "${RUNNER_DIR_DEFAULT_WORKTREE}"
 
-apply_runner_defaults() {
-  spot_runner_wrapper_apply_project_runner_defaults_required \
-    "${RAV_ROOT}" \
-    "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
-    "RUNNER_DIR" \
-    "RUNNER_DIR" \
-    "${RUNNER_PROFILE}" \
-    "${RUNNER_HINT_MESSAGE}"
-}
-
 prepare_rav_runtime() {
   local env_mode="${1:-required}"
   local require_spot_vars="${2:-1}"
