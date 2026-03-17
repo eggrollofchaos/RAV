@@ -17,20 +17,10 @@ apply_runner_defaults
 check_runner_install
 
 CONFIG_PATH="$(_loaded_config_path)"
-DEFAULT_FUNCTION_NAME=""
-DEFAULT_SCHEDULER_NAME=""
-spot_runner_wrapper_profile_reconciler_defaults_required \
-  "${RUNNER_PROFILE}" \
-  DEFAULT_FUNCTION_NAME \
-  DEFAULT_SCHEDULER_NAME \
-  "${RUNNER_HINT_MESSAGE}"
-
-spot_runner_wrapper_run_project_reconciler_deploy_from_env_required \
+spot_runner_wrapper_run_project_reconciler_deploy_with_profile_defaults_required \
   "${RUNNER_DIR}" \
   "${RUNNER_HINT_MESSAGE}" \
   "RUNNER_ADAPTER_LIB_LOADED" \
   "${CONFIG_PATH}" \
   "${RUNNER_PROFILE}" \
-  "${DEFAULT_FUNCTION_NAME}" \
-  "${DEFAULT_SCHEDULER_NAME}" \
   "$@"

@@ -1121,6 +1121,32 @@ spot_runner_wrapper_run_project_reconciler_deploy_from_env() {
 spot_runner_wrapper_run_project_reconciler_deploy_from_env_required() {
   spot_runner_wrapper_run_project_reconciler_deploy_from_env "$@"
 }
+spot_runner_wrapper_run_project_reconciler_deploy_with_profile_defaults_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_path="$4"
+  local profile_name="$5"
+  shift 5
+
+  local default_function_name=""
+  local default_scheduler_name=""
+  spot_runner_wrapper_profile_reconciler_defaults_required \
+    "${profile_name}" \
+    default_function_name \
+    default_scheduler_name \
+    "${hint_message}"
+
+  spot_runner_wrapper_run_project_reconciler_deploy_from_env_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${config_path}" \
+    "${profile_name}" \
+    "${default_function_name}" \
+    "${default_scheduler_name}" \
+    "$@"
+}
 spot_runner_wrapper_run_reconciler_deploy_compat() {
   local runner_dir="$1"
   local config_path="$2"
