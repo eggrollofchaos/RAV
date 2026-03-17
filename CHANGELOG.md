@@ -20,10 +20,14 @@ Changed:
 - `gcp/state_helpers.sh` now uses shared helper
   `spot_runner_wrapper_source_project_state_helpers_required_or_fail`, removing duplicate
   wrapper-local state-helper failure plumbing.
+- `gcp/state_helpers.sh` now uses shared helper
+  `spot_runner_wrapper_ensure_project_runner_defaults_if_unset_required` for conditional
+  `RUNNER_DIR` default resolution, removing duplicated wrapper-local unset checks.
 - `tests/bats/test_helper.bash` fallback adapter stubs now include
-  `spot_runner_wrapper_run_project_command_with_mode` (+ required variant) and
-  `spot_runner_wrapper_source_project_state_helpers_required_or_fail` for parity with the
-  expanded shared runner helper contract.
+  `spot_runner_wrapper_run_project_command_with_mode` (+ required variant),
+  `spot_runner_wrapper_source_project_state_helpers_required_or_fail`, and
+  `spot_runner_wrapper_ensure_project_runner_defaults_if_unset` (+ required variant) for
+  parity with the expanded shared runner helper contract.
 - `scripts/gcp_runner_common.sh` now resolves command config paths through shared helper
   `spot_runner_wrapper_resolve_config_path_required` (`active` for submit/ops/build/monitor,
   `loaded` for version), removing wrapper-local `_active_config_path` and

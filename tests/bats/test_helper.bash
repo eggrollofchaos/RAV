@@ -106,6 +106,27 @@ spot_runner_wrapper_apply_project_runner_defaults_required() {
     "${hint_message}"
   spot_runner_wrapper_profile_apply_defaults_required "${profile_name}" "${hint_message}"
 }
+spot_runner_wrapper_ensure_project_runner_defaults_if_unset() {
+  local root_dir="$1"
+  local default_dir="$2"
+  local env_var_name="$3"
+  local output_var_name="${4:-RUNNER_DIR}"
+  local profile_name="${5:-default}"
+  local hint_message="${6:-}"
+  if [[ -n "${!output_var_name:-}" ]]; then
+    return 0
+  fi
+  spot_runner_wrapper_apply_project_runner_defaults_required \
+    "${root_dir}" \
+    "${default_dir}" \
+    "${env_var_name}" \
+    "${output_var_name}" \
+    "${profile_name}" \
+    "${hint_message}"
+}
+spot_runner_wrapper_ensure_project_runner_defaults_if_unset_required() {
+  spot_runner_wrapper_ensure_project_runner_defaults_if_unset "$@"
+}
 spot_runner_wrapper_setup_project_runtime_required() {
   local root_dir="$1"
   local default_runner_dir="$2"
