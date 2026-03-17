@@ -114,7 +114,7 @@ run_project_command() {
   local command_name="$1"
   shift || true
 
-  spot_runner_wrapper_run_project_profile_command_with_paths_required \
+  spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \

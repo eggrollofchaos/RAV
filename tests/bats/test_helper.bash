@@ -797,6 +797,26 @@ spot_runner_wrapper_run_project_profile_command_with_paths_required() {
     "${command_name}" \
     "$@"
 }
+spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local profile_name="${4:-default}"
+  local command_name="${5:-}"
+  local current_config_path="${6:-}"
+  local default_config_path="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_profile_command_with_paths_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "$@"
+}
 spot_runner_wrapper_run_project_standard_wrapper_defaults_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local runtime_function_name="${2:-}"
