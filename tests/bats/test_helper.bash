@@ -181,11 +181,31 @@ spot_runner_wrapper_resolve_loaded_config_path() {
   local default_config_path="${2:-}"
   spot_runner_wrapper_resolve_active_config_path "${current_config_path}" "${default_config_path}" "0"
 }
+spot_runner_wrapper_resolve_config_path() {
+  local mode="${1:-active}"
+  local current_config_path="${2:-}"
+  local default_config_path="${3:-}"
+  case "${mode}" in
+    active)
+      spot_runner_wrapper_resolve_active_config_path "${current_config_path}" "${default_config_path}" "1"
+      ;;
+    loaded)
+      spot_runner_wrapper_resolve_loaded_config_path "${current_config_path}" "${default_config_path}"
+      ;;
+    *)
+      echo "Unsupported config-path mode: ${mode}" >&2
+      return 1
+      ;;
+  esac
+}
 spot_runner_wrapper_resolve_active_config_path_required() {
   spot_runner_wrapper_resolve_active_config_path "$@"
 }
 spot_runner_wrapper_resolve_loaded_config_path_required() {
   spot_runner_wrapper_resolve_loaded_config_path "$@"
+}
+spot_runner_wrapper_resolve_config_path_required() {
+  spot_runner_wrapper_resolve_config_path "$@"
 }
 spot_runner_bootstrap_initialize_project_wrapper() {
   local project_root="$1"

@@ -13,6 +13,14 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` now resolves command config paths through shared helper
+  `spot_runner_wrapper_resolve_config_path_required` (`active` for submit/ops/build/monitor,
+  `loaded` for version), removing wrapper-local `_active_config_path` and
+  `_loaded_config_path` glue.
+- `tests/bats/test_helper.bash` fallback adapter stubs now include
+  `spot_runner_wrapper_resolve_config_path` and
+  `spot_runner_wrapper_resolve_config_path_required` for parity with the updated shared
+  runner helper surface.
 - **Revert iCloud git isolation**: Reverted `.git.nosync/` back to standard `.git/` directory
   after migrating repo from `~/Documents/Programming/` to `~/coding/` (outside iCloud scope).
   Removed gitdir redirect and xattr. Updated `.gitignore`, `.dockerignore`, `.gcloudignore`.

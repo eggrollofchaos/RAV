@@ -63,21 +63,6 @@ prepare_rav_runtime() {
     "${RAV_ROOT}"
 }
 
-_active_config_path() {
-  spot_runner_wrapper_resolve_active_config_path_required \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "1" \
-    "${RUNNER_HINT_MESSAGE}"
-}
-
-_loaded_config_path() {
-  spot_runner_wrapper_resolve_loaded_config_path_required \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_HINT_MESSAGE}"
-}
-
 prepare_submit_shell() {
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
@@ -89,7 +74,11 @@ prepare_submit_shell() {
 
 run_ops_command() {
   local config_path
-  config_path="$(_active_config_path)"
+  config_path="$(spot_runner_wrapper_resolve_config_path_required \
+    "active" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_HINT_MESSAGE}")"
   spot_runner_wrapper_run_project_ops "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "${RUNNER_PROFILE}" "$@"
 }
 
@@ -98,7 +87,11 @@ run_submit_with_job() {
   shift
 
   local config_path
-  config_path="$(_active_config_path)"
+  config_path="$(spot_runner_wrapper_resolve_config_path_required \
+    "active" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_HINT_MESSAGE}")"
   spot_runner_wrapper_run_project_submit_with_job_compat \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
@@ -111,7 +104,11 @@ run_submit_with_job() {
 
 run_build_command() {
   local config_path
-  config_path="$(_active_config_path)"
+  config_path="$(spot_runner_wrapper_resolve_config_path_required \
+    "active" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_HINT_MESSAGE}")"
   spot_runner_wrapper_run_project_build_with_config \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
@@ -123,7 +120,11 @@ run_build_command() {
 
 run_monitor_command() {
   local config_path
-  config_path="$(_active_config_path)"
+  config_path="$(spot_runner_wrapper_resolve_config_path_required \
+    "active" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_HINT_MESSAGE}")"
   spot_runner_wrapper_run_project_monitor_with_config \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
@@ -135,7 +136,11 @@ run_monitor_command() {
 
 run_version_command() {
   local config_path
-  config_path="$(_loaded_config_path)"
+  config_path="$(spot_runner_wrapper_resolve_config_path_required \
+    "loaded" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_HINT_MESSAGE}")"
   spot_runner_wrapper_run_project_version "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "$@"
 }
 
