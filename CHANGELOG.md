@@ -92,6 +92,9 @@ Changed:
   `_loaded_config_path`; `run_version_command` and `gcp/cloud_reconciler/deploy.sh` now consume
   that helper so non-submit command paths consistently avoid default-config fallback unless a
   config file is actually loaded.
+- `gcp/cloud_reconciler/deploy.sh` now derives default reconciler function/scheduler names via
+  shared helper `spot_runner_wrapper_profile_reconciler_defaults_required` instead of wrapper-local
+  hardcoded literals.
 - `_loaded_config_path` in `scripts/gcp_runner_common.sh` now prefers shared helper
   `spot_runner_wrapper_resolve_loaded_config_path` (with fallback to
   `spot_runner_wrapper_resolve_active_config_path` and local logic), reducing wrapper-local

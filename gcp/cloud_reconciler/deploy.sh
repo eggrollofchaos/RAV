@@ -17,8 +17,13 @@ apply_runner_defaults
 check_runner_install
 
 CONFIG_PATH="$(_loaded_config_path)"
-DEFAULT_FUNCTION_NAME="rav-reconciler"
-DEFAULT_SCHEDULER_NAME="rav-reconciler-trigger"
+DEFAULT_FUNCTION_NAME=""
+DEFAULT_SCHEDULER_NAME=""
+spot_runner_wrapper_profile_reconciler_defaults_required \
+  "${RUNNER_PROFILE}" \
+  DEFAULT_FUNCTION_NAME \
+  DEFAULT_SCHEDULER_NAME \
+  "${RUNNER_HINT_MESSAGE}"
 
 spot_runner_wrapper_run_project_reconciler_deploy_from_env_required \
   "${RUNNER_DIR}" \

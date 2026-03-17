@@ -982,6 +982,40 @@ spot_runner_wrapper_require_function_or_hint() {
   echo "${hint_message}" >&2
   return 1
 }
+spot_runner_wrapper_profile_reconciler_defaults() {
+  local profile_name="${1:-default}"
+  local function_name_var="${2:-}"
+  local scheduler_name_var="${3:-}"
+
+  local function_name=""
+  local scheduler_name=""
+  case "${profile_name}" in
+    ixqt)
+      function_name="ixqt-reconciler"
+      scheduler_name="ixqt-reconciler-trigger"
+      ;;
+    rav)
+      function_name="rav-reconciler"
+      scheduler_name="rav-reconciler-trigger"
+      ;;
+    *)
+      function_name="${profile_name}-reconciler"
+      scheduler_name="${profile_name}-reconciler-trigger"
+      ;;
+  esac
+
+  if [[ -n "${function_name_var}" && -n "${scheduler_name_var}" ]]; then
+    printf -v "${function_name_var}" '%s' "${function_name}"
+    printf -v "${scheduler_name_var}" '%s' "${scheduler_name}"
+    return 0
+  fi
+
+  printf '%s\n' "${function_name}"
+  printf '%s\n' "${scheduler_name}"
+}
+spot_runner_wrapper_profile_reconciler_defaults_required() {
+  spot_runner_wrapper_profile_reconciler_defaults "$@"
+}
 spot_runner_wrapper_apply_rav_defaults() {
   : "${DATA_DISK_ENABLED:=true}"
   : "${DATA_DISK_MOUNT_PATH:=/var/lib/spot-data}"
