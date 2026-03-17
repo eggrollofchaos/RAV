@@ -105,6 +105,9 @@ Changed:
   through shared helper
   `spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required`, reducing
   wrapper-local config-path glue in the thin deploy wrapper.
+- `scripts/gcp_runner_common.sh` now exposes `run_reconciler_deploy`, and
+  `gcp/cloud_reconciler/deploy.sh` now delegates through that helper so deploy-wrapper dispatch
+  arguments are single-sourced in runner-common.
 - `_loaded_config_path` in `scripts/gcp_runner_common.sh` now prefers shared helper
   `spot_runner_wrapper_resolve_loaded_config_path` (with fallback to
   `spot_runner_wrapper_resolve_active_config_path` and local logic), reducing wrapper-local

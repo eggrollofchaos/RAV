@@ -163,3 +163,14 @@ run_version_command() {
   config_path="$(_loaded_config_path)"
   spot_runner_wrapper_run_project_version "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "$@"
 }
+
+run_reconciler_deploy() {
+  spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required \
+    "${RUNNER_DIR}" \
+    "${RUNNER_HINT_MESSAGE}" \
+    "RUNNER_ADAPTER_LIB_LOADED" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_PROFILE}" \
+    "$@"
+}

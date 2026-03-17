@@ -16,11 +16,4 @@ load_rav_spot_env_optional
 apply_runner_defaults
 check_runner_install
 
-spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required \
-  "${RUNNER_DIR}" \
-  "${RUNNER_HINT_MESSAGE}" \
-  "RUNNER_ADAPTER_LIB_LOADED" \
-  "${RAV_GCP_ENV_PATH:-}" \
-  "${RAV_GCP_ENV_DEFAULT}" \
-  "${RUNNER_PROFILE}" \
-  "$@"
+run_reconciler_deploy "$@"
