@@ -5,12 +5,4 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/gcp_runner_common.sh"
 
-spot_runner_wrapper_run_project_profile_named_command_from_script_entrypoint_required \
-  "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
-  "prepare_rav_runtime" \
-  "run_project_command" \
-  "${BASH_SOURCE[0]}" \
-  "gcp_" \
-  ".sh" \
-  "rav" \
-  "$@"
+run_rav_standard_command_wrapper "$@"

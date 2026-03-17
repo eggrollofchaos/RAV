@@ -532,6 +532,27 @@ spot_runner_wrapper_run_project_profile_named_command_from_script_entrypoint_req
   "\${runtime_function_name}" "\${env_mode}" "\${require_spot_vars}" "\${configure_gcloud}"
   "\${command_dispatch_function_name}" "\${command_name}" "\$@"
 }
+spot_runner_wrapper_run_project_profile_named_command_for_callsite_entrypoint_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_dispatch_function_name="\${3:-}"
+  local profile_name="\${4:-}"
+  local script_prefix="\${5:-}"
+  local script_suffix="\${6:-}"
+  local callsite_depth="\${7:-2}"
+  shift 7 || true
+
+  local script_path="\${BASH_SOURCE[\${callsite_depth}]:-\$0}"
+  spot_runner_wrapper_run_project_profile_named_command_from_script_entrypoint_required \
+    "\${_hint_message}" \
+    "\${runtime_function_name}" \
+    "\${command_dispatch_function_name}" \
+    "\${script_path}" \
+    "\${script_prefix}" \
+    "\${script_suffix}" \
+    "\${profile_name}" \
+    "\$@"
+}
 spot_runner_wrapper_run_project_submit_entrypoint_required() {
   local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local submit_shell_function_name="\${2:-}"
@@ -646,6 +667,17 @@ run_project_command() {
       ;;
   esac
   printf '%s\n' "\$@" >> "$log_path"
+}
+run_rav_standard_command_wrapper() {
+  spot_runner_wrapper_run_project_profile_named_command_for_callsite_entrypoint_required \
+    "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+    "prepare_rav_runtime" \
+    "run_project_command" \
+    "rav" \
+    "gcp_" \
+    ".sh" \
+    "2" \
+    "\$@"
 }
 SCRIPT
   chmod +x "$TEMP_REPO/scripts/gcp_runner_common.sh"
