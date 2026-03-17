@@ -10,6 +10,9 @@ Reconciler ownership note:
 Operator CLI note:
 - Use `./scripts/rav-gcp.sh` as the canonical command entrypoint.
 - `scripts/gcp_*.sh` remain thin compatibility wrappers.
+- Standard command wrappers derive command names from filenames by trimming
+  `gcp_` prefix and `.sh` suffix (`gcp_ops.sh` -> `ops`, `gcp_monitor.sh` -> `monitor`,
+  `gcp_version.sh` -> `version`).
 
 ## 1) What this setup does
 
