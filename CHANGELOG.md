@@ -20,6 +20,10 @@ Changed:
 - `scripts/gcp_runner_common.sh` now delegates project env loading, resolved `RUNNER_DIR`
   assignment, runtime validation, and install checks through shared project-wrapper helpers in
   `gcp-spot-runner/adapters/spot_runner_common.sh`, removing more wrapper-local setup logic.
+- `scripts/gcp_runner_common.sh` now exposes `prepare_rav_runtime`, and RAV thin wrapper entrypoints
+  (`gcp_submit_*`, `gcp_build_image.sh`, `gcp_ops.sh`, `gcp_monitor.sh`, `gcp_version.sh`,
+  `gcp_iterate_chexpert.sh`) now call that shared setup path instead of repeating
+  load/defaults/check/install/gcloud boilerplate per script.
 - `scripts/gcp_runner_common.sh` now delegates direct `spotctl`, profiled dispatch, ops/build/monitor,
   and version command wiring through shared project-wrapper command helpers in
   `gcp-spot-runner/adapters/spot_runner_common.sh`.

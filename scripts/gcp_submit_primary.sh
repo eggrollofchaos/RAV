@@ -9,11 +9,7 @@ prepare_submit_shell "_IXQT_CAFFEINATED" "$@"
 
 set -euo pipefail
 
-load_rav_spot_env
-apply_runner_defaults
-check_required_spot_vars
-check_runner_install
-configure_gcloud_runtime
+prepare_rav_runtime "required" "1" "1"
 
 SYNC_INTERVAL_SEC_VALUE="${SYNC_INTERVAL_SEC:-180}"
 DEFAULT_JOB_COMMAND="set -euo pipefail; bash scripts/gcp_train_with_checkpoint_sync.sh --config configs/primary/chest_chexpert.yaml --eval-split val --sync-interval-sec ${SYNC_INTERVAL_SEC_VALUE}"

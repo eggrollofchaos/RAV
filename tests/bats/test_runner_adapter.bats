@@ -307,6 +307,24 @@ apply_runner_defaults() {
 check_required_spot_vars() { :; }
 check_runner_install() { :; }
 configure_gcloud_runtime() { :; }
+prepare_rav_runtime() {
+  local env_mode="\${1:-required}"
+  local require_spot_vars="\${2:-1}"
+  local configure_gcloud="\${3:-1}"
+  if [[ "\${env_mode}" == "required" ]]; then
+    load_rav_spot_env
+  else
+    load_rav_spot_env_optional
+  fi
+  apply_runner_defaults
+  if [[ "\${require_spot_vars}" == "1" ]]; then
+    check_required_spot_vars
+  fi
+  check_runner_install
+  if [[ "\${configure_gcloud}" == "1" ]]; then
+    configure_gcloud_runtime
+  fi
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="\${1:-_SPOT_CAFFEINATED}"
   shift 2 || true

@@ -76,11 +76,7 @@ if ! [[ "$MAX_RUNS" =~ ^[0-9]+$ ]] || [[ "$MAX_RUNS" -le 0 ]]; then
   exit 2
 fi
 
-load_rav_spot_env
-apply_runner_defaults
-check_required_spot_vars
-check_runner_install
-configure_gcloud_runtime
+prepare_rav_runtime "required" "1" "1"
 
 mkdir -p "$(dirname "$SUMMARY_PATH")"
 

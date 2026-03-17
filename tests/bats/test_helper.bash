@@ -46,6 +46,30 @@ spot_runner_wrapper_load_env_optional() {
     printf -v "${output_var_name}" '%s' "${cfg}"
   fi
 }
+spot_runner_wrapper_load_project_env_optional_compat() {
+  local root_dir="$1"
+  local env_var_name="$2"
+  local default_path="$3"
+  local output_var_name="${4:-}"
+  spot_runner_wrapper_load_env_optional "${root_dir}" "${env_var_name}" "${default_path}" "${output_var_name}"
+}
+spot_runner_wrapper_load_project_env_required_compat_or_exit() {
+  local root_dir="$1"
+  local env_var_name="$2"
+  local default_path="$3"
+  local output_var_name="${4:-}"
+  local _hint_message="${5:-}"
+  local missing_message="${6:-Missing required project environment file.}"
+  spot_runner_wrapper_load_project_env_optional_compat "${root_dir}" "${env_var_name}" "${default_path}" "${output_var_name}"
+  if [[ -z "${!output_var_name:-}" ]]; then
+    local cfg="${!env_var_name:-${default_path}}"
+    if [[ "${cfg}" != /* ]]; then
+      cfg="${root_dir}/${cfg}"
+    fi
+    echo "Missing ${cfg}. ${missing_message}" >&2
+    exit 1
+  fi
+}
 spot_runner_resolve_runner_dir_compat() {
   local _project_root="$1"
   local bootstrap_dir="$2"
@@ -81,6 +105,64 @@ spot_runner_wrapper_apply_project_runner_defaults_required() {
     "${output_var_name}" \
     "${hint_message}"
   spot_runner_wrapper_profile_apply_defaults_required "${profile_name}" "${hint_message}"
+}
+spot_runner_wrapper_setup_project_runtime_required() {
+  local root_dir="$1"
+  local default_runner_dir="$2"
+  local runner_env_var_name="${3:-RUNNER_DIR}"
+  local runner_output_var_name="${4:-RUNNER_DIR}"
+  local profile_name="${5:-default}"
+  local hint_message="${6:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local env_mode="${7:-optional}"
+  local env_var_name="${8:-}"
+  local env_default_path="${9:-}"
+  local env_output_var_name="${10:-PROJECT_GCP_ENV_PATH}"
+  local missing_env_message="${11:-Missing required project environment file.}"
+  local require_spot_vars="${12:-0}"
+  local configure_gcloud="${13:-0}"
+  local gcloud_project_root="${14:-${root_dir}}"
+
+  case "${env_mode}" in
+    required)
+      spot_runner_wrapper_load_project_env_required_compat_or_exit \
+        "${root_dir}" \
+        "${env_var_name}" \
+        "${env_default_path}" \
+        "${env_output_var_name}" \
+        "${hint_message}" \
+        "${missing_env_message}"
+      ;;
+    optional)
+      spot_runner_wrapper_load_project_env_optional_compat \
+        "${root_dir}" \
+        "${env_var_name}" \
+        "${env_default_path}" \
+        "${env_output_var_name}" \
+        "${hint_message}"
+      ;;
+    *)
+      ;;
+  esac
+
+  spot_runner_wrapper_apply_project_runner_defaults_required \
+    "${root_dir}" \
+    "${default_runner_dir}" \
+    "${runner_env_var_name}" \
+    "${runner_output_var_name}" \
+    "${profile_name}" \
+    "${hint_message}"
+
+  local runner_dir="${!runner_output_var_name:-}"
+  if [[ "${require_spot_vars}" == "1" ]]; then
+    spot_runner_wrapper_check_required_spot_vars "${hint_message}"
+  fi
+  spot_runner_wrapper_require_project_install_for_profile_compat_or_exit \
+    "${runner_dir}" \
+    "${profile_name}" \
+    "${hint_message}"
+  if [[ "${configure_gcloud}" == "1" ]]; then
+    spot_runner_wrapper_configure_gcloud_runtime "${runner_dir}" "${gcloud_project_root}" "${hint_message}"
+  fi
 }
 spot_runner_wrapper_resolve_active_config_path() {
   local current_config_path="${1:-}"

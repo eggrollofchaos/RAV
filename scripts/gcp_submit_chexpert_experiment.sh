@@ -58,11 +58,7 @@ if [[ ! -f "${RAV_ROOT}/${CONFIG_PATH}" ]]; then
   exit 2
 fi
 
-load_rav_spot_env
-apply_runner_defaults
-check_required_spot_vars
-check_runner_install
-configure_gcloud_runtime
+prepare_rav_runtime "required" "1" "1"
 
 SYNC_INTERVAL_SEC_VALUE="${SYNC_INTERVAL_SEC:-180}"
 JOB_COMMAND_VALUE="set -euo pipefail; \
