@@ -8,11 +8,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 # shellcheck disable=SC1090
 source "${REPO_ROOT}/scripts/gcp_runner_common.sh"
 
-if declare -F spot_runner_wrapper_apply_spot_config_path_override >/dev/null 2>&1; then
-  spot_runner_wrapper_apply_spot_config_path_override RAV_GCP_ENV
-elif [[ -n "${SPOT_CONFIG_PATH:-}" ]]; then
-  RAV_GCP_ENV="${SPOT_CONFIG_PATH}"
-fi
+spot_runner_wrapper_apply_spot_config_path_override_required RAV_GCP_ENV "${RUNNER_HINT_MESSAGE}"
 
 prepare_rav_runtime "optional" "0" "0"
 

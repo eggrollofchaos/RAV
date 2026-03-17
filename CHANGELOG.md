@@ -29,6 +29,9 @@ Changed:
 - `gcp/cloud_reconciler/deploy.sh` now prefers shared helper
   `spot_runner_wrapper_apply_spot_config_path_override` for `SPOT_CONFIG_PATH` override wiring
   (with fallback for older runner helper surfaces).
+- `gcp/cloud_reconciler/deploy.sh` now requires shared helper
+  `spot_runner_wrapper_apply_spot_config_path_override_required`, dropping wrapper-local helper
+  detection/fallback branches for `SPOT_CONFIG_PATH` override wiring.
 - `gcp/state_helpers.sh` now calls `apply_runner_defaults` before loading shared
   `state_helpers.sh`, ensuring `RUNNER_DIR` resolution flows through shared runner-default
   logic even when `RUNNER_DIR` is not pre-exported.
