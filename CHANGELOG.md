@@ -27,6 +27,10 @@ Changed:
 - `scripts/gcp_runner_common.sh` `prepare_rav_runtime` now requires shared helper
   `spot_runner_wrapper_setup_project_runtime_required` directly, removing wrapper-local
   runtime setup fallback branches.
+- Removed unused wrapper-local runtime shim functions from `scripts/gcp_runner_common.sh`
+  (`load_rav_spot_env`, `check_runner_install`, `configure_gcloud_runtime`,
+  `check_required_spot_vars`); runtime/env/install/gcloud validation remains centralized
+  in shared helper `spot_runner_wrapper_setup_project_runtime_required`.
 - `gcp/cloud_reconciler/deploy.sh` now also uses `prepare_rav_runtime` (optional-env, no
   spot-var/gcloud checks) before delegating reconciler deploy through the shared runner contract.
 - `gcp/cloud_reconciler/deploy.sh` now prefers shared helper

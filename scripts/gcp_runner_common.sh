@@ -50,16 +50,6 @@ load_rav_spot_env_optional() {
   spot_runner_wrapper_load_project_env_optional_compat "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH "${RUNNER_HINT_MESSAGE}"
 }
 
-load_rav_spot_env() {
-  spot_runner_wrapper_load_project_env_required_compat_or_exit \
-    "${RAV_ROOT}" \
-    "RAV_GCP_ENV" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    RAV_GCP_ENV_PATH \
-    "${RUNNER_HINT_MESSAGE}" \
-    "Copy gcp/rav_spot.env.example to gcp/rav_spot.env and fill it."
-}
-
 apply_runner_defaults() {
   spot_runner_wrapper_apply_project_runner_defaults_required \
     "${RAV_ROOT}" \
@@ -68,10 +58,6 @@ apply_runner_defaults() {
     "RUNNER_DIR" \
     "${RUNNER_PROFILE}" \
     "${RUNNER_HINT_MESSAGE}"
-}
-
-check_runner_install() {
-  spot_runner_wrapper_require_project_install_for_profile_compat_or_exit "${RUNNER_DIR}" "${RUNNER_PROFILE}" "${RUNNER_HINT_MESSAGE}"
 }
 
 prepare_rav_runtime() {
@@ -119,14 +105,6 @@ prepare_submit_shell() {
     "${RUNNER_HINT_MESSAGE}" \
     "${guard_alias_csv}" \
     "$@"
-}
-
-configure_gcloud_runtime() {
-  spot_runner_wrapper_configure_gcloud_runtime "${RUNNER_DIR}" "${RAV_ROOT}"
-}
-
-check_required_spot_vars() {
-  spot_runner_wrapper_check_required_spot_vars
 }
 
 run_spotctl_with_config() {
