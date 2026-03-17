@@ -797,6 +797,57 @@ spot_runner_wrapper_run_project_profile_command_with_paths_required() {
     "${command_name}" \
     "$@"
 }
+spot_runner_wrapper_run_project_standard_wrapper_defaults_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_dispatch_function_name="${3:-}"
+  local profile_name="${4:-}"
+  local callsite_depth="${5:-2}"
+  shift 5 || true
+  if [[ ! "${callsite_depth}" =~ ^[0-9]+$ ]]; then
+    echo "Invalid standard wrapper callsite depth '${callsite_depth}' (expected non-negative integer)." >&2
+    return 2
+  fi
+  local delegated_callsite_depth=$((callsite_depth + 1))
+
+  local script_path="${BASH_SOURCE[${delegated_callsite_depth}]:-$0}"
+  local script_name="${script_path##*/}"
+  local script_prefix=""
+  local script_suffix=".sh"
+  case "${profile_name}" in
+    ixqt)
+      script_suffix="_spot.sh"
+      ;;
+    rav)
+      script_prefix="gcp_"
+      script_suffix=".sh"
+      ;;
+  esac
+
+  local command_name="${script_name}"
+  if [[ -n "${script_prefix}" ]]; then
+    command_name="${command_name#${script_prefix}}"
+  fi
+  if [[ -n "${script_suffix}" ]]; then
+    command_name="${command_name%${script_suffix}}"
+  fi
+
+  local env_mode="required"
+  local require_spot_vars="1"
+  local configure_gcloud="1"
+  if [[ "${profile_name}" == "ixqt" ]]; then
+    env_mode="optional"
+    require_spot_vars="0"
+    configure_gcloud="0"
+  elif [[ "${profile_name}" == "rav" && "${command_name}" == "version" ]]; then
+    env_mode="optional"
+    require_spot_vars="0"
+    configure_gcloud="1"
+  fi
+
+  "${runtime_function_name}" "${env_mode}" "${require_spot_vars}" "${configure_gcloud}"
+  "${command_dispatch_function_name}" "${command_name}" "$@"
+}
 spot_runner_wrapper_run_project_command_entrypoint_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local runtime_function_name="${2:-}"

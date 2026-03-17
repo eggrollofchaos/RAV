@@ -23,6 +23,9 @@ Changed:
   behavior where `spot_runner_wrapper_run_project_reconciler_command_entrypoint_required`
   accepts an optional runtime callback (with `--`-split args preserved as reconciler
   deploy passthrough when runtime callback is omitted).
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior for `spot_runner_wrapper_run_project_standard_wrapper_defaults_required`,
+  keeping standard-wrapper test stubs aligned with shared naming/runtime defaults.
 - `scripts/gcp_build_image.sh` now delegates through shared helper
   `spot_runner_wrapper_run_project_build_command_entrypoint_required`, so build
   wrappers use the same command-dispatch build contract as other thin entrypoints.
@@ -56,6 +59,9 @@ Changed:
   so standard-command wrappers inherit profile/command runtime defaults from the shared
   runner contract (including version-path optional env loading) without wrapper-local
   runtime arg literals.
+- `scripts/gcp_runner_common.sh` now delegates standard wrapper entrypoint wiring through
+  shared helper `spot_runner_wrapper_run_project_standard_wrapper_defaults_required`, so
+  profile naming contract defaults (`gcp_*.sh`) stay single-sourced in runner.
 - `scripts/gcp_runner_common.sh` now exposes `run_rav_standard_command_wrapper`, and
   `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now call that one wrapper-common
   function (delegating through shared callsite entrypoint helper), removing repeated

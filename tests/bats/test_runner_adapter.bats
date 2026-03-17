@@ -608,6 +608,52 @@ spot_runner_wrapper_run_project_profile_named_command_for_callsite_entrypoint_re
     "\${profile_name}" \
     "\$@"
 }
+spot_runner_wrapper_standard_wrapper_naming_for_profile_required() {
+  local profile_name="\${1:-}"
+  local prefix_output_var="\${2:-}"
+  local suffix_output_var="\${3:-}"
+
+  local resolved_script_prefix=""
+  local resolved_script_suffix=".sh"
+  case "\${profile_name}" in
+    ixqt)
+      resolved_script_suffix="_spot.sh"
+      ;;
+    rav)
+      resolved_script_prefix="gcp_"
+      resolved_script_suffix=".sh"
+      ;;
+  esac
+
+  printf -v "\${prefix_output_var}" '%s' "\${resolved_script_prefix}"
+  printf -v "\${suffix_output_var}" '%s' "\${resolved_script_suffix}"
+}
+spot_runner_wrapper_run_project_standard_wrapper_defaults_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_dispatch_function_name="\${3:-}"
+  local profile_name="\${4:-}"
+  local callsite_depth="\${5:-2}"
+  shift 5 || true
+  local delegated_callsite_depth=\$((callsite_depth + 1))
+
+  local script_prefix=""
+  local script_suffix=""
+  spot_runner_wrapper_standard_wrapper_naming_for_profile_required \
+    "\${profile_name}" \
+    script_prefix \
+    script_suffix
+
+  spot_runner_wrapper_run_project_profile_named_command_for_callsite_entrypoint_required \
+    "\${_hint_message}" \
+    "\${runtime_function_name}" \
+    "\${command_dispatch_function_name}" \
+    "\${profile_name}" \
+    "\${script_prefix}" \
+    "\${script_suffix}" \
+    "\${delegated_callsite_depth}" \
+    "\$@"
+}
 spot_runner_wrapper_run_project_submit_entrypoint_required() {
   local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local submit_shell_function_name="\${2:-}"
@@ -724,13 +770,11 @@ run_project_command() {
   printf '%s\n' "\$@" >> "$log_path"
 }
 run_rav_standard_command_wrapper() {
-  spot_runner_wrapper_run_project_profile_named_command_for_callsite_entrypoint_required \
+  spot_runner_wrapper_run_project_standard_wrapper_defaults_required \
     "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
     "prepare_rav_runtime" \
     "run_project_command" \
     "rav" \
-    "gcp_" \
-    ".sh" \
     "2" \
     "\$@"
 }
