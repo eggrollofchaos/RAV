@@ -770,17 +770,28 @@ spot_runner_wrapper_run_project_command_entrypoint_required() {
   shift 3 || true
 
   local runtime_args=()
+  local command_args=()
+  local saw_delimiter=0
   while [[ $# -gt 0 ]]; do
     if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
       shift
       break
     fi
     runtime_args+=("$1")
     shift
   done
+  command_args=("$@")
 
-  "${runtime_function_name}" "${runtime_args[@]}"
-  "${command_function_name}" "$@"
+  if [[ -z "${runtime_function_name}" && "${saw_delimiter}" == "1" && "${#runtime_args[@]}" -gt 0 ]]; then
+    command_args=("${runtime_args[@]}" "${command_args[@]}")
+    runtime_args=()
+  fi
+
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
+  "${command_function_name}" "${command_args[@]}"
 }
 spot_runner_wrapper_run_project_build_command_entrypoint_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"

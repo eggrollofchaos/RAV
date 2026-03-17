@@ -15,6 +15,10 @@ Fixed:
 Changed:
 - `scripts/gcp_build_image.sh` now relies on the shared build-command entrypoint's
   optional runtime callback contract directly (removed wrapper-local no-op runtime shim).
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior where `spot_runner_wrapper_run_project_command_entrypoint_required` accepts
+  an optional runtime callback (with `--`-split args preserved as command passthrough
+  when runtime callback is omitted).
 - `scripts/gcp_build_image.sh` now delegates through shared helper
   `spot_runner_wrapper_run_project_build_command_entrypoint_required`, so build
   wrappers use the same command-dispatch build contract as other thin entrypoints.
