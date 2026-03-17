@@ -25,6 +25,9 @@ Changed:
 - `gcp/state_helpers.sh` now delegates wrapper entrypoint wiring through shared helper
   `spot_runner_wrapper_source_project_state_helpers_wrapper_entrypoint_required`, so
   runner default resolution + shared state-helper source contracts stay single-sourced.
+- `gcp/state_helpers.sh` now uses shared helper
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_required` so
+  standard runner hint/error + `RUNNER_DIR` var wiring stay single-sourced in runner.
 - `gcp/cloud_reconciler/deploy.sh` now delegates through shared helper
   `spot_runner_wrapper_run_project_reconciler_command_entrypoint_required`, so
   `SPOT_CONFIG_PATH` override wiring + runtime setup + `reconciler_deploy` dispatch
