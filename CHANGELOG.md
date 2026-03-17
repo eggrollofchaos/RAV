@@ -34,6 +34,11 @@ Changed:
 - `scripts/gcp_runner_common.sh` bootstrap preamble is now reduced to a single candidate-resolution
   loop plus required shared initializer call (`spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required`),
   removing the wrapper-local bootstrap helper function wrapper.
+- Removed unused wrapper-local shim functions `load_rav_spot_env_optional()` and
+  `run_spotctl_with_config()` from `scripts/gcp_runner_common.sh`; runtime env loading and
+  spotctl dispatch stay centralized behind shared required helper contracts.
+- `tests/bats/test_runner_adapter.bats` removed direct tests for the retired
+  `load_rav_spot_env_optional` and `run_spotctl_with_config` shims.
 - `gcp/cloud_reconciler/deploy.sh` now also uses `prepare_rav_runtime` (optional-env, no
   spot-var/gcloud checks) before delegating reconciler deploy through the shared runner contract.
 - `gcp/cloud_reconciler/deploy.sh` now prefers shared helper

@@ -194,60 +194,6 @@ _capture_stub() {
   RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
-@test "load_rav_spot_env_optional sources env vars without subshell loss" {
-  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
-
-  spot_runner_wrapper_load_project_env_optional() {
-    local root_dir="$1"
-    local env_var_name="$2"
-    local default_path="$3"
-    local output_var_name="$4"
-    local cfg="${!env_var_name:-${default_path}}"
-    if [[ "${cfg}" != /* ]]; then
-      cfg="${root_dir}/${cfg}"
-    fi
-    set -a
-    # shellcheck disable=SC1090
-    source "${cfg}"
-    set +a
-    printf -v "${output_var_name}" '%s' "${cfg}"
-  }
-
-  local env_file="$BATS_TEST_TMPDIR/rav_spot.env"
-  cat > "$env_file" <<'ENV_FILE'
-PROJECT="rav-env-loaded"
-ENV_FILE
-
-  export RAV_GCP_ENV="$env_file"
-  unset PROJECT
-  RAV_GCP_ENV_PATH=""
-
-  load_rav_spot_env_optional
-
-  [ "${PROJECT:-}" = "rav-env-loaded" ]
-  [ "$RAV_GCP_ENV_PATH" = "$env_file" ]
-}
-
-@test "run_spotctl_with_config delegates to shared compat helper" {
-  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
-  local captured="$BATS_TEST_TMPDIR/spotctl_compat_args.txt"
-
-  spot_runner_wrapper_run_project_spotctl_with_config() {
-    printf '%s\n' "$@" > "$captured"
-  }
-  RUNNER_DIR="/tmp/fake-runner"
-
-  run_spotctl_with_config "/tmp/rav_spot.env" version
-
-  run cat "$captured"
-  assert_success
-  assert_line --index 0 "/tmp/fake-runner"
-  assert_line --index 1 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
-  assert_line --index 2 "RUNNER_ADAPTER_LIB_LOADED"
-  assert_line --index 3 "/tmp/rav_spot.env"
-  assert_line --index 4 "version"
-}
-
 @test "run_ops_command delegates to shared profiled compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/profiled_compat_args.txt"

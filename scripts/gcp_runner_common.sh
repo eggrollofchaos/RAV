@@ -40,10 +40,6 @@ spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
   "${RUNNER_DIR_DEFAULT_PRIMARY}" \
   "${RUNNER_DIR_DEFAULT_WORKTREE}"
 
-load_rav_spot_env_optional() {
-  spot_runner_wrapper_load_project_env_optional_compat "${RAV_ROOT}" "RAV_GCP_ENV" "${RAV_GCP_ENV_DEFAULT}" RAV_GCP_ENV_PATH "${RUNNER_HINT_MESSAGE}"
-}
-
 apply_runner_defaults() {
   spot_runner_wrapper_apply_project_runner_defaults_required \
     "${RAV_ROOT}" \
@@ -99,12 +95,6 @@ prepare_submit_shell() {
     "${RUNNER_HINT_MESSAGE}" \
     "${guard_alias_csv}" \
     "$@"
-}
-
-run_spotctl_with_config() {
-  local config_path="$1"
-  shift
-  spot_runner_wrapper_run_project_spotctl_with_config "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "$@"
 }
 
 run_ops_command() {
