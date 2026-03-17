@@ -438,6 +438,37 @@ spot_runner_wrapper_run_project_command_entrypoint_required() {
   "\${runtime_function_name}" "\${runtime_args[@]}"
   "\${command_function_name}" "\$@"
 }
+spot_runner_wrapper_run_project_submit_entrypoint_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local submit_shell_function_name="\${2:-}"
+  local runtime_function_name="\${3:-}"
+  local submit_function_name="\${4:-}"
+  local job_command="\${5:-}"
+  shift 5 || true
+
+  local runtime_args=()
+  local submit_args=()
+  local saw_delimiter=0
+  while [[ \$# -gt 0 ]]; do
+    if [[ "\$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    runtime_args+=("\$1")
+    shift
+  done
+  if [[ "\${saw_delimiter}" == "1" ]]; then
+    submit_args=("\$@")
+  else
+    submit_args=("\${runtime_args[@]}")
+    runtime_args=()
+  fi
+
+  "\${submit_shell_function_name}" "\${submit_args[@]}"
+  "\${runtime_function_name}" "\${runtime_args[@]}"
+  "\${submit_function_name}" "\${job_command}" "\${submit_args[@]}"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="\${1:-_SPOT_CAFFEINATED}"
   shift 2 || true

@@ -13,6 +13,10 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/{gcp_submit_primary.sh,gcp_submit_poc.sh,gcp_submit_chexpert_experiment.sh}` now
+  delegate submit-shell + submit dispatch through shared helper
+  `spot_runner_wrapper_run_project_submit_entrypoint_required`, reducing repeated
+  wrapper-local submit-entrypoint wiring.
 - `scripts/gcp_build_image.sh` now delegates build-arg composition through shared helper
   `spot_runner_wrapper_run_project_build_entrypoint_required`, reducing wrapper-local
   `--source` / `--cloudbuild-config` / optional `--image` wiring.

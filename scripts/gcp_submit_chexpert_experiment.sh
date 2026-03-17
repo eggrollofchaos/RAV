@@ -4,9 +4,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/gcp_runner_common.sh"
 
-# Prevent macOS idle sleep and survive terminal close.
-prepare_submit_shell "$@"
-
 set -euo pipefail
 
 usage() {
@@ -60,6 +57,9 @@ fi
 
 prepare_rav_runtime "required" "1" "1"
 
+# Runtime is already prepared above; submit entrypoint helper handles submit-shell + submit call.
+_rav_runtime_already_prepared() { :; }
+
 SYNC_INTERVAL_SEC_VALUE="${SYNC_INTERVAL_SEC:-180}"
 JOB_COMMAND_VALUE="set -euo pipefail; \
   bash scripts/gcp_sync_chexpert_cache.sh --raw-uri gs://${BUCKET}/datasets/chexpert/raw --processed-uri gs://${BUCKET}/datasets/chexpert/processed --cache-root data; \
@@ -74,4 +74,11 @@ if [[ -n "${CLOUDSDK_PYTHON:-}" ]]; then
   echo "gcloud Python: ${CLOUDSDK_PYTHON}"
 fi
 
-run_submit_with_job "$JOB_COMMAND_VALUE" "${FORWARD_ARGS[@]}"
+spot_runner_wrapper_run_project_submit_entrypoint_required \
+  "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+  "prepare_submit_shell" \
+  "_rav_runtime_already_prepared" \
+  "run_submit_with_job" \
+  "${JOB_COMMAND_VALUE}" \
+  -- \
+  "${FORWARD_ARGS[@]}"
