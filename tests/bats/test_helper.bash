@@ -569,6 +569,51 @@ spot_runner_wrapper_run_project_command_with_mode_required() {
 spot_runner_wrapper_run_project_standard_command_required() {
   spot_runner_wrapper_run_project_command_with_mode_required "$@"
 }
+spot_runner_wrapper_run_project_standard_command_compat_required() {
+  spot_runner_wrapper_run_project_standard_command_required "$@"
+}
+spot_runner_wrapper_run_project_standard_command_active_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "active" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_standard_command_loaded_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "loaded" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="${1:-_SPOT_CAFFEINATED}"
   shift 2 || true

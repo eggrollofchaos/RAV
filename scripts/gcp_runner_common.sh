@@ -13,6 +13,7 @@ RUNNER_PROFILE="rav"
 RUNNER_BOOTSTRAP_DIR_DEFAULT="${RUNNER_DIR_DEFAULT_PRIMARY}"
 RUNNER_HINT_DEFAULT="Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
 RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
+RUNNER_SUBMIT_GUARD_ALIASES="_IXQT_CAFFEINATED"
 
 RUNNER_BOOTSTRAP_ENV_CANDIDATE="${RUNNER_DIR:-}"
 if [[ -n "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" && "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" != /* ]]; then
@@ -40,6 +41,13 @@ spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
   "${RUNNER_DIR_DEFAULT_PRIMARY}" \
   "${RUNNER_DIR_DEFAULT_WORKTREE}"
 
+if declare -F spot_runner_wrapper_profile_submit_guard_aliases >/dev/null 2>&1; then
+  RUNNER_SUBMIT_GUARD_ALIASES="$(spot_runner_wrapper_profile_submit_guard_aliases "${RUNNER_PROFILE}")"
+  if [[ -z "${RUNNER_SUBMIT_GUARD_ALIASES}" ]]; then
+    RUNNER_SUBMIT_GUARD_ALIASES="_IXQT_CAFFEINATED"
+  fi
+fi
+
 prepare_rav_runtime() {
   local env_mode="${1:-required}"
   local require_spot_vars="${2:-1}"
@@ -64,7 +72,7 @@ prepare_rav_runtime() {
 }
 
 prepare_submit_shell() {
-  local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
+  local guard_alias_csv="${1:-${RUNNER_SUBMIT_GUARD_ALIASES}}"
   shift || true
   spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required \
     "${RUNNER_HINT_MESSAGE}" \
@@ -73,52 +81,51 @@ prepare_submit_shell() {
 }
 
 run_ops_command() {
-  run_project_command "active" "ops" "$@"
+  run_project_command_active "ops" "$@"
 }
 
 run_submit_with_job() {
   local job_command="$1"
   shift
 
-  run_project_command "active" "submit_with_job" "${job_command}" "$@"
+  run_project_command_active "submit_with_job" "${job_command}" "$@"
 }
 
 run_build_command() {
-  run_project_command "active" "build" "$@"
+  run_project_command_active "build" "$@"
 }
 
 run_monitor_command() {
-  run_project_command "active" "monitor" "$@"
+  run_project_command_active "monitor" "$@"
 }
 
 run_version_command() {
-  run_project_command "loaded" "version" "$@"
+  run_project_command_loaded "version" "$@"
 }
 
-run_project_command() {
-  local config_mode="$1"
-  local command_name="$2"
-  shift 2 || true
+run_project_command_active() {
+  local command_name="$1"
+  shift || true
 
-  if declare -F spot_runner_wrapper_run_project_standard_command_required >/dev/null 2>&1; then
-    spot_runner_wrapper_run_project_standard_command_required \
-      "${RUNNER_DIR}" \
-      "${RUNNER_HINT_MESSAGE}" \
-      "RUNNER_ADAPTER_LIB_LOADED" \
-      "${config_mode}" \
-      "${RAV_GCP_ENV_PATH:-}" \
-      "${RAV_GCP_ENV_DEFAULT}" \
-      "${RUNNER_PROFILE}" \
-      "${command_name}" \
-      "$@"
-    return "$?"
-  fi
-
-  spot_runner_wrapper_run_project_command_with_mode_required \
+  spot_runner_wrapper_run_project_standard_command_active_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
-    "${config_mode}" \
+    "${RAV_GCP_ENV_PATH:-}" \
+    "${RAV_GCP_ENV_DEFAULT}" \
+    "${RUNNER_PROFILE}" \
+    "${command_name}" \
+    "$@"
+}
+
+run_project_command_loaded() {
+  local command_name="$1"
+  shift || true
+
+  spot_runner_wrapper_run_project_standard_command_loaded_required \
+    "${RUNNER_DIR}" \
+    "${RUNNER_HINT_MESSAGE}" \
+    "RUNNER_ADAPTER_LIB_LOADED" \
     "${RAV_GCP_ENV_PATH:-}" \
     "${RAV_GCP_ENV_DEFAULT}" \
     "${RUNNER_PROFILE}" \
@@ -127,18 +134,5 @@ run_project_command() {
 }
 
 run_reconciler_deploy() {
-  if declare -F spot_runner_wrapper_run_project_standard_command_required >/dev/null 2>&1 || \
-    declare -F spot_runner_wrapper_run_project_command_with_mode_required >/dev/null 2>&1; then
-    run_project_command "loaded" "reconciler_deploy" "$@"
-    return "$?"
-  fi
-
-  spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_PROFILE}" \
-    "$@"
+  run_project_command_loaded "reconciler_deploy" "$@"
 }

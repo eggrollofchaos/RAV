@@ -1058,6 +1058,89 @@ spot_runner_wrapper_profile_reconciler_defaults() {
 spot_runner_wrapper_profile_reconciler_defaults_required() {
   spot_runner_wrapper_profile_reconciler_defaults "$@"
 }
+spot_runner_wrapper_run_project_standard_command_compat_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local config_mode="${4:-active}"
+  local current_config_path="${5:-}"
+  local default_config_path="${6:-}"
+  local profile_name="${7:-default}"
+  local command_name="${8:-}"
+  shift 8 || true
+
+  local config_path=""
+  case "${config_mode}" in
+    active)
+      config_path="$(spot_runner_wrapper_resolve_active_config_path_required "${current_config_path}" "${default_config_path}" "${hint_message}")"
+      ;;
+    loaded)
+      config_path="$(spot_runner_wrapper_resolve_loaded_config_path_required "${current_config_path}" "${default_config_path}" "${hint_message}")"
+      ;;
+    *)
+      echo "Unsupported config-path mode: ${config_mode}" >&2
+      return 1
+      ;;
+  esac
+
+  case "${command_name}" in
+    reconciler_deploy)
+      spot_runner_wrapper_run_project_reconciler_deploy_with_profile_defaults_required \
+        "${runner_dir}" \
+        "${hint_message}" \
+        "${loaded_var_name}" \
+        "${config_path}" \
+        "${profile_name}" \
+        "$@"
+      ;;
+    *)
+      echo "Unsupported project command with mode: ${command_name}" >&2
+      return 1
+      ;;
+  esac
+}
+spot_runner_wrapper_run_project_standard_command_active_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "active" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_standard_command_loaded_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "loaded" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
 spot_runner_wrapper_apply_rav_defaults() {
   : "${DATA_DISK_ENABLED:=true}"
   : "${DATA_DISK_MOUNT_PATH:=/var/lib/spot-data}"

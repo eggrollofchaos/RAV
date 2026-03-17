@@ -15,14 +15,30 @@ Fixed:
 Changed:
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`, `reconciler_deploy`) through one
-  wrapper-local helper `run_project_command`, which prefers shared required helper
-  `spot_runner_wrapper_run_project_standard_command_required` with fallback to
-  `spot_runner_wrapper_run_project_command_with_mode_required`; `reconciler_deploy`
-  additionally falls back to dedicated helper
-  `spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required`
-  when command-dispatch helpers are unavailable. This removes repeated per-command
-  dispatch argument blocks while preserving compatibility with older/fake runner
-  helper surfaces.
+  wrapper-local helper `run_project_command`, which now directly requires shared
+  mode-specific dispatch helpers
+  `spot_runner_wrapper_run_project_standard_command_active_required` and
+  `spot_runner_wrapper_run_project_standard_command_loaded_required`; shared runner
+  helper ownership now handles mode selection plus fallback dispatch sequencing
+  internally. `reconciler_deploy` now routes through the same shared dispatch path,
+  removing the remaining wrapper-local fallback branch for dedicated reconciler
+  deploy wiring.
+- `scripts/gcp_runner_common.sh` now splits command dispatch into explicit
+  `run_project_command_active` and `run_project_command_loaded` helpers, removing the
+  wrapper-local config-mode switch branch while keeping mode routing single-sourced.
+- `tests/bats/test_runner_adapter.bats` fake runner adapter now stubs
+  `spot_runner_wrapper_run_project_standard_command_compat_required`, keeping
+  reconciler wrapper contract tests aligned with the shared dispatch-helper requirement.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now also stub
+  `spot_runner_wrapper_run_project_standard_command_active_required` and
+  `spot_runner_wrapper_run_project_standard_command_loaded_required`, keeping RAV
+  adapter tests aligned with the new shared mode-specific dispatch entrypoints.
+- `scripts/gcp_runner_common.sh` now resolves submit-shell guard aliases from shared helper
+  `spot_runner_wrapper_profile_submit_guard_aliases` (with safe fallback), and submit
+  wrappers (`gcp_submit_primary.sh`, `gcp_submit_poc.sh`,
+  `gcp_submit_chexpert_experiment.sh`) now pass
+  `${RUNNER_SUBMIT_GUARD_ALIASES:-_IXQT_CAFFEINATED}` instead of hardcoded alias
+  literals.
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`) through shared helper
   `spot_runner_wrapper_run_project_command_with_mode_required`, reducing repeated
