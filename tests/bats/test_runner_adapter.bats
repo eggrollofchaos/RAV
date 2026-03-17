@@ -248,7 +248,7 @@ _capture_stub() {
   RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
-@test "run_ops_command delegates to shared profiled compat helper" {
+@test "run_project_command ops delegates to shared profiled compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/profiled_compat_args.txt"
 
@@ -258,7 +258,7 @@ _capture_stub() {
   RUNNER_DIR="/tmp/fake-runner"
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
 
-  run_ops_command watch 20 --json
+  run_project_command ops watch 20 --json
 
   run cat "$captured"
   assert_success
@@ -438,6 +438,35 @@ spot_runner_wrapper_run_project_command_entrypoint_required() {
   "\${runtime_function_name}" "\${runtime_args[@]}"
   "\${command_function_name}" "\$@"
 }
+spot_runner_wrapper_run_project_named_command_entrypoint_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_dispatch_function_name="\${3:-}"
+  local command_name="\${4:-}"
+  shift 4 || true
+
+  local runtime_args=()
+  local command_args=()
+  local saw_delimiter=0
+  while [[ \$# -gt 0 ]]; do
+    if [[ "\$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    runtime_args+=("\$1")
+    shift
+  done
+  if [[ "\${saw_delimiter}" == "1" ]]; then
+    command_args=("\$@")
+  else
+    command_args=("\${runtime_args[@]}")
+    runtime_args=()
+  fi
+
+  "\${runtime_function_name}" "\${runtime_args[@]}"
+  "\${command_dispatch_function_name}" "\${command_name}" "\${command_args[@]}"
+}
 spot_runner_wrapper_run_project_submit_entrypoint_required() {
   local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local submit_shell_function_name="\${2:-}"
@@ -534,16 +563,23 @@ run_build_command() {
   printf 'BUILD\n' > "$log_path"
   printf '%s\n' "\$@" >> "$log_path"
 }
-run_monitor_command() {
-  printf 'MONITOR\n' > "$log_path"
-  printf '%s\n' "\$@" >> "$log_path"
-}
-run_version_command() {
-  printf 'VERSION\n' > "$log_path"
-  printf '%s\n' "\$@" >> "$log_path"
-}
-run_ops_command() {
-  printf 'OPS\n' > "$log_path"
+run_project_command() {
+  local command_name="\$1"
+  shift || true
+  case "\${command_name}" in
+    ops)
+      printf 'OPS\n' > "$log_path"
+      ;;
+    monitor)
+      printf 'MONITOR\n' > "$log_path"
+      ;;
+    version)
+      printf 'VERSION\n' > "$log_path"
+      ;;
+    *)
+      printf '%s\n' "\${command_name^^}" > "$log_path"
+      ;;
+  esac
   printf '%s\n' "\$@" >> "$log_path"
 }
 SCRIPT
@@ -600,13 +636,13 @@ SCRIPT
   [ "$skip_count" -eq 1 ]
 }
 
-@test "run_ops_command defaults to status with rav profile + config" {
+@test "run_project_command ops defaults to status with rav profile + config" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/ops_default_args.txt"
   _capture_stub "$captured"
 
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
-  run_ops_command
+  run_project_command ops
 
   run cat "$captured"
   assert_success
@@ -619,13 +655,13 @@ SCRIPT
   assert_line --index 6 "status"
 }
 
-@test "run_ops_command forwards explicit ops args unchanged" {
+@test "run_project_command ops forwards explicit ops args unchanged" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/ops_passthrough_args.txt"
   _capture_stub "$captured"
 
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
-  run_ops_command delete --run-id rav-999 --yes
+  run_project_command ops delete --run-id rav-999 --yes
 
   run cat "$captured"
   assert_success
@@ -635,13 +671,13 @@ SCRIPT
   assert_line --index 9 "--yes"
 }
 
-@test "run_ops_command forwards watch json args unchanged" {
+@test "run_project_command ops forwards watch json args unchanged" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/ops_watch_json_args.txt"
   _capture_stub "$captured"
 
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
-  run_ops_command watch 20 --json
+  run_project_command ops watch 20 --json
 
   run cat "$captured"
   assert_success
@@ -673,13 +709,13 @@ SCRIPT
   assert_line --index 10 "--dry-run"
 }
 
-@test "run_monitor_command delegates to spotctl monitor with rav profile + config" {
+@test "run_project_command monitor delegates to spotctl monitor with rav profile + config" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/monitor_args.txt"
   _capture_stub "$captured"
 
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
-  run_monitor_command --single --no-attach
+  run_project_command monitor --single --no-attach
 
   run cat "$captured"
   assert_success
@@ -693,13 +729,13 @@ SCRIPT
   assert_line --index 7 "--no-attach"
 }
 
-@test "run_version_command delegates to spotctl version" {
+@test "run_project_command version delegates to spotctl version" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/version_args.txt"
   _capture_stub "$captured"
 
   RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
-  run_version_command
+  run_project_command version
 
   run cat "$captured"
   assert_success
@@ -707,13 +743,13 @@ SCRIPT
   assert_line --index 1 "version"
 }
 
-@test "run_version_command omits config when no env file is loaded" {
+@test "run_project_command version omits config when no env file is loaded" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/version_args_no_config.txt"
   _capture_stub "$captured"
 
   RAV_GCP_ENV_PATH=""
-  run_version_command
+  run_project_command version
 
   run cat "$captured"
   assert_success
@@ -790,7 +826,7 @@ SCRIPT
   assert_line --index 9 "--dry-run"
 }
 
-@test "gcp_monitor wrapper delegates to shared run_monitor_command" {
+@test "gcp_monitor wrapper delegates to shared run_project_command monitor dispatch" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/monitor_wrapper.log"
   _write_fake_runner_common "$call_log"
@@ -805,7 +841,7 @@ SCRIPT
   assert_line --index 2 "--json"
 }
 
-@test "gcp_version wrapper delegates to shared run_version_command" {
+@test "gcp_version wrapper delegates to shared run_project_command version dispatch" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/version_wrapper.log"
   _write_fake_runner_common "$call_log"

@@ -99,10 +99,6 @@ prepare_rav_submit_runtime_and_print_context() {
   fi
 }
 
-run_ops_command() {
-  run_project_command "ops" "$@"
-}
-
 run_submit_with_job() {
   local job_command="$1"
   shift
@@ -112,14 +108,6 @@ run_submit_with_job() {
 
 run_build_command() {
   run_project_command "build" "$@"
-}
-
-run_monitor_command() {
-  run_project_command "monitor" "$@"
-}
-
-run_version_command() {
-  run_project_command "version" "$@"
 }
 
 run_project_command() {
