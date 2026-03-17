@@ -12,8 +12,6 @@ if [[ -n "${SPOT_CONFIG_PATH:-}" ]]; then
   RAV_GCP_ENV="${SPOT_CONFIG_PATH}"
 fi
 
-load_rav_spot_env_optional
-apply_runner_defaults
-check_runner_install
+prepare_rav_runtime "optional" "0" "0"
 
 run_reconciler_deploy "$@"

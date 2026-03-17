@@ -24,6 +24,8 @@ Changed:
   (`gcp_submit_*`, `gcp_build_image.sh`, `gcp_ops.sh`, `gcp_monitor.sh`, `gcp_version.sh`,
   `gcp_iterate_chexpert.sh`) now call that shared setup path instead of repeating
   load/defaults/check/install/gcloud boilerplate per script.
+- `gcp/cloud_reconciler/deploy.sh` now also uses `prepare_rav_runtime` (optional-env, no
+  spot-var/gcloud checks) before delegating reconciler deploy through the shared runner contract.
 - `scripts/gcp_runner_common.sh` now delegates direct `spotctl`, profiled dispatch, ops/build/monitor,
   and version command wiring through shared project-wrapper command helpers in
   `gcp-spot-runner/adapters/spot_runner_common.sh`.
