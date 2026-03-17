@@ -14,6 +14,11 @@ Fixed:
 
 Changed:
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
+  `submit_with_job`, `build`, `monitor`, `version`) through one wrapper-local helper
+  `run_project_command`, which delegates to shared required helper
+  `spot_runner_wrapper_run_project_standard_command_required`; this removes repeated
+  per-command dispatch argument blocks from the thin wrapper.
+- `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`) through shared helper
   `spot_runner_wrapper_run_project_command_with_mode_required`, reducing repeated
   wrapper-local config-path + dispatch glue.
@@ -28,6 +33,7 @@ Changed:
   glue and keeping state-wrapper initialization single-sourced in `gcp-spot-runner`.
 - `tests/bats/test_helper.bash` fallback adapter stubs now include
   `spot_runner_wrapper_run_project_command_with_mode` (+ required variant),
+  `spot_runner_wrapper_run_project_standard_command_required`,
   `spot_runner_wrapper_source_project_state_helpers_required_or_fail`, and
   `spot_runner_wrapper_ensure_project_runner_defaults_if_unset` (+ required variant), plus
   `spot_runner_wrapper_init_project_state_helpers_wrapper_required`, for parity with the

@@ -519,6 +519,9 @@ spot_runner_wrapper_run_project_command_with_mode() {
 spot_runner_wrapper_run_project_command_with_mode_required() {
   spot_runner_wrapper_run_project_command_with_mode "$@"
 }
+spot_runner_wrapper_run_project_standard_command_required() {
+  spot_runner_wrapper_run_project_command_with_mode_required "$@"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="${1:-_SPOT_CAFFEINATED}"
   shift 2 || true

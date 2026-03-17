@@ -73,71 +73,42 @@ prepare_submit_shell() {
 }
 
 run_ops_command() {
-  spot_runner_wrapper_run_project_command_with_mode_required \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "active" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_PROFILE}" \
-    "ops" \
-    "$@"
+  run_project_command "active" "ops" "$@"
 }
 
 run_submit_with_job() {
   local job_command="$1"
   shift
 
-  spot_runner_wrapper_run_project_command_with_mode_required \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "active" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_PROFILE}" \
-    "submit_with_job" \
-    "${job_command}" \
-    "$@"
+  run_project_command "active" "submit_with_job" "${job_command}" "$@"
 }
 
 run_build_command() {
-  spot_runner_wrapper_run_project_command_with_mode_required \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "active" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_PROFILE}" \
-    "build" \
-    "$@"
+  run_project_command "active" "build" "$@"
 }
 
 run_monitor_command() {
-  spot_runner_wrapper_run_project_command_with_mode_required \
-    "${RUNNER_DIR}" \
-    "${RUNNER_HINT_MESSAGE}" \
-    "RUNNER_ADAPTER_LIB_LOADED" \
-    "active" \
-    "${RAV_GCP_ENV_PATH:-}" \
-    "${RAV_GCP_ENV_DEFAULT}" \
-    "${RUNNER_PROFILE}" \
-    "monitor" \
-    "$@"
+  run_project_command "active" "monitor" "$@"
 }
 
 run_version_command() {
-  spot_runner_wrapper_run_project_command_with_mode_required \
+  run_project_command "loaded" "version" "$@"
+}
+
+run_project_command() {
+  local config_mode="$1"
+  local command_name="$2"
+  shift 2 || true
+
+  spot_runner_wrapper_run_project_standard_command_required \
     "${RUNNER_DIR}" \
     "${RUNNER_HINT_MESSAGE}" \
     "RUNNER_ADAPTER_LIB_LOADED" \
-    "loaded" \
+    "${config_mode}" \
     "${RAV_GCP_ENV_PATH:-}" \
     "${RAV_GCP_ENV_DEFAULT}" \
     "${RUNNER_PROFILE}" \
-    "version" \
+    "${command_name}" \
     "$@"
 }
 
