@@ -13,6 +13,9 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_build_image.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_build_command_entrypoint_required`, so build
+  wrappers use the same command-dispatch build contract as other thin entrypoints.
 - `gcp/state_helpers.sh` now delegates wrapper entrypoint wiring through shared helper
   `spot_runner_wrapper_source_project_state_helpers_wrapper_entrypoint_required`, so
   runner default resolution + shared state-helper source contracts stay single-sourced.

@@ -18,10 +18,10 @@ fi
 SOURCE_STAGING_DIR="${GCS_SOURCE_STAGING_DIR:-gs://${BUCKET}/cloudbuild/source}"
 echo "Source staging dir: ${SOURCE_STAGING_DIR}"
 
-spot_runner_wrapper_run_project_build_entrypoint_required \
+spot_runner_wrapper_run_project_build_command_entrypoint_required \
   "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
   "_rav_runtime_already_prepared" \
-  "run_build_command" \
+  "run_project_command" \
   "${RAV_ROOT}" \
   "${RAV_ROOT}/gcp/cloudbuild.rav.yaml" \
   "${IMAGE}" \
