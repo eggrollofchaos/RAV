@@ -26,9 +26,12 @@ Changed:
 - `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
   behavior for `spot_runner_wrapper_run_project_standard_wrapper_defaults_required`,
   keeping standard-wrapper test stubs aligned with shared naming/runtime defaults.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior for `spot_runner_wrapper_run_project_build_wrapper_defaults_required`,
+  keeping build-wrapper test stubs aligned with shared defaults wiring.
 - `scripts/gcp_build_image.sh` now delegates through shared helper
-  `spot_runner_wrapper_run_project_build_command_entrypoint_required`, so build
-  wrappers use the same command-dispatch build contract as other thin entrypoints.
+  `spot_runner_wrapper_run_project_build_wrapper_defaults_required`, so build-wrapper
+  defaults wiring stays single-sourced before command-dispatch build entrypoint handling.
 - `gcp/state_helpers.sh` now delegates wrapper entrypoint wiring through shared helper
   `spot_runner_wrapper_source_project_state_helpers_wrapper_entrypoint_required`, so
   runner default resolution + shared state-helper source contracts stay single-sourced.

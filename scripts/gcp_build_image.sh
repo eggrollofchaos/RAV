@@ -15,7 +15,7 @@ fi
 SOURCE_STAGING_DIR="${GCS_SOURCE_STAGING_DIR:-gs://${BUCKET}/cloudbuild/source}"
 echo "Source staging dir: ${SOURCE_STAGING_DIR}"
 
-spot_runner_wrapper_run_project_build_command_entrypoint_required \
+spot_runner_wrapper_run_project_build_wrapper_defaults_required \
   "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
   "" \
   "run_project_command" \
