@@ -539,6 +539,20 @@ SCRIPT
   assert_line --index 1 "version"
 }
 
+@test "run_version_command omits config when no env file is loaded" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/version_args_no_config.txt"
+  _capture_stub "$captured"
+
+  RAV_GCP_ENV_PATH=""
+  run_version_command
+
+  run cat "$captured"
+  assert_success
+  [ "${#lines[@]}" -eq 1 ]
+  assert_line --index 0 "version"
+}
+
 @test "gcp_submit_primary default job command uses checkpoint sync wrapper" {
   _setup_temp_submit_wrappers
   local call_log="$BATS_TEST_TMPDIR/submit_primary_default.log"

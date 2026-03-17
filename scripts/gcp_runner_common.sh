@@ -84,6 +84,14 @@ _active_config_path() {
   printf '%s\n' "${RAV_GCP_ENV_PATH:-${RAV_GCP_ENV_DEFAULT}}"
 }
 
+_loaded_config_path() {
+  if declare -F spot_runner_wrapper_resolve_active_config_path >/dev/null 2>&1; then
+    spot_runner_wrapper_resolve_active_config_path "${RAV_GCP_ENV_PATH:-}" "${RAV_GCP_ENV_DEFAULT}" "0"
+    return 0
+  fi
+  printf '%s\n' "${RAV_GCP_ENV_PATH:-}"
+}
+
 prepare_submit_shell() {
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
@@ -155,10 +163,6 @@ run_monitor_command() {
 
 run_version_command() {
   local config_path
-  if declare -F spot_runner_wrapper_resolve_active_config_path >/dev/null 2>&1; then
-    config_path="$(spot_runner_wrapper_resolve_active_config_path "${RAV_GCP_ENV_PATH:-}" "${RAV_GCP_ENV_DEFAULT}" "0")"
-  else
-    config_path="${RAV_GCP_ENV_PATH:-}"
-  fi
+  config_path="$(_loaded_config_path)"
   spot_runner_wrapper_run_project_version "${RUNNER_DIR}" "${RUNNER_HINT_MESSAGE}" "RUNNER_ADAPTER_LIB_LOADED" "${config_path}" "$@"
 }

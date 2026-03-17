@@ -88,6 +88,10 @@ Changed:
 - `scripts/gcp_runner_common.sh` now resolves active/version config paths through shared helper
   `spot_runner_wrapper_resolve_active_config_path` (with local fallback for older runner
   checkouts), reducing wrapper-local config-path fallback logic.
+- `scripts/gcp_runner_common.sh` now centralizes loaded-config-only resolution through
+  `_loaded_config_path`; `run_version_command` and `gcp/cloud_reconciler/deploy.sh` now consume
+  that helper so non-submit command paths consistently avoid default-config fallback unless a
+  config file is actually loaded.
 - `scripts/gcp_runner_common.sh` now uses shared helper
   `spot_runner_wrapper_require_function_or_hint` directly for required-helper checks in
   `apply_runner_defaults`, dropping wrapper-local required-function check glue.

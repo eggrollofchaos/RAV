@@ -16,7 +16,7 @@ load_rav_spot_env_optional
 apply_runner_defaults
 check_runner_install
 
-CONFIG_PATH="${RAV_GCP_ENV_PATH:-}"
+CONFIG_PATH="$(_loaded_config_path)"
 DEFAULT_FUNCTION_NAME="rav-reconciler"
 DEFAULT_SCHEDULER_NAME="rav-reconciler-trigger"
 
