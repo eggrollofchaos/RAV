@@ -30,7 +30,7 @@ for RUNNER_BOOTSTRAP_CANDIDATE in "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" "${RUNNER_
   fi
 done
 
-spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
+spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required \
   "${RAV_ROOT}" \
   "${RUNNER_PROFILE}" \
   "${RUNNER_HINT_DEFAULT}" \

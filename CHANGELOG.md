@@ -80,6 +80,10 @@ Changed:
 - `scripts/gcp_runner_common.sh` bootstrap preamble is now reduced to a single candidate-resolution
   loop plus required shared initializer call (`spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required`),
   removing the wrapper-local bootstrap helper function wrapper.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now delegates default candidate
+  initializer wiring through shared helper
+  `spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required`,
+  reducing duplicated bootstrap argument plumbing in thin wrappers.
 - Removed unused wrapper-local shim functions `load_rav_spot_env_optional()` and
   `run_spotctl_with_config()` from `scripts/gcp_runner_common.sh`; runtime env loading and
   spotctl dispatch stay centralized behind shared required helper contracts.
