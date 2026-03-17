@@ -67,6 +67,40 @@ prepare_submit_shell() {
     "$@"
 }
 
+_rav_runtime_already_prepared() { :; }
+
+run_submit_entrypoint_with_job() {
+  local job_command="$1"
+  shift || true
+
+  spot_runner_wrapper_run_project_submit_entrypoint_required \
+    "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+    "prepare_submit_shell" \
+    "_rav_runtime_already_prepared" \
+    "run_submit_with_job" \
+    "${job_command}" \
+    -- \
+    "$@"
+}
+
+prepare_rav_submit_runtime_and_print_context() {
+  local submit_label="$1"
+  local config_path="${2:-}"
+
+  prepare_rav_runtime "required" "1" "1"
+
+  echo "Submitting ${submit_label} via spot runner..."
+  if [[ -n "${config_path}" ]]; then
+    echo "Config: ${config_path}"
+  fi
+  echo "Runner: ${RUNNER_DIR}"
+  echo "Image:  ${IMAGE}"
+  echo "Bucket: ${BUCKET}"
+  if [[ -n "${CLOUDSDK_PYTHON:-}" ]]; then
+    echo "gcloud Python: ${CLOUDSDK_PYTHON}"
+  fi
+}
+
 run_ops_command() {
   run_project_command "ops" "$@"
 }

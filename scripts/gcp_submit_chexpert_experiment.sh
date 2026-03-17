@@ -55,30 +55,11 @@ if [[ ! -f "${RAV_ROOT}/${CONFIG_PATH}" ]]; then
   exit 2
 fi
 
-prepare_rav_runtime "required" "1" "1"
-
-# Runtime is already prepared above; submit entrypoint helper handles submit-shell + submit call.
-_rav_runtime_already_prepared() { :; }
+prepare_rav_submit_runtime_and_print_context "CheXpert experiment" "${CONFIG_PATH}"
 
 SYNC_INTERVAL_SEC_VALUE="${SYNC_INTERVAL_SEC:-180}"
 JOB_COMMAND_VALUE="set -euo pipefail; \
   bash scripts/gcp_sync_chexpert_cache.sh --raw-uri gs://${BUCKET}/datasets/chexpert/raw --processed-uri gs://${BUCKET}/datasets/chexpert/processed --cache-root data; \
   bash scripts/gcp_train_with_checkpoint_sync.sh --config ${CONFIG_PATH} --eval-split val --sync-interval-sec ${SYNC_INTERVAL_SEC_VALUE}"
 
-echo "Submitting CheXpert experiment via spot runner..."
-echo "Config: ${CONFIG_PATH}"
-echo "Runner: ${RUNNER_DIR}"
-echo "Image:  ${IMAGE}"
-echo "Bucket: ${BUCKET}"
-if [[ -n "${CLOUDSDK_PYTHON:-}" ]]; then
-  echo "gcloud Python: ${CLOUDSDK_PYTHON}"
-fi
-
-spot_runner_wrapper_run_project_submit_entrypoint_required \
-  "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
-  "prepare_submit_shell" \
-  "_rav_runtime_already_prepared" \
-  "run_submit_with_job" \
-  "${JOB_COMMAND_VALUE}" \
-  -- \
-  "${FORWARD_ARGS[@]}"
+run_submit_entrypoint_with_job "${JOB_COMMAND_VALUE}" "${FORWARD_ARGS[@]}"

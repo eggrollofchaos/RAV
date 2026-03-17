@@ -13,6 +13,12 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` now centralizes shared submit-wrapper runtime prep, context
+  logging, and submit-entrypoint invocation through
+  `prepare_rav_submit_runtime_and_print_context` +
+  `run_submit_entrypoint_with_job`; `gcp_submit_primary.sh`,
+  `gcp_submit_poc.sh`, and `gcp_submit_chexpert_experiment.sh` now only define
+  mode-specific job commands.
 - `scripts/{gcp_submit_primary.sh,gcp_submit_poc.sh,gcp_submit_chexpert_experiment.sh}` now
   delegate submit-shell + submit dispatch through shared helper
   `spot_runner_wrapper_run_project_submit_entrypoint_required`, reducing repeated

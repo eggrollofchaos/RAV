@@ -495,6 +495,34 @@ prepare_submit_shell() {
   fi
   spot_runner_prepare_submit_shell_compat "_SPOT_CAFFEINATED" "\${guard_alias_csv}" "\$@"
 }
+_rav_runtime_already_prepared() { :; }
+run_submit_entrypoint_with_job() {
+  local job_command="\$1"
+  shift || true
+  spot_runner_wrapper_run_project_submit_entrypoint_required \
+    "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+    "prepare_submit_shell" \
+    "_rav_runtime_already_prepared" \
+    "run_submit_with_job" \
+    "\${job_command}" \
+    -- \
+    "\$@"
+}
+prepare_rav_submit_runtime_and_print_context() {
+  local _submit_label="\$1"
+  local _config_path="\${2:-}"
+  prepare_rav_runtime "required" "1" "1"
+  echo "Submitting \${_submit_label} via spot runner..."
+  if [[ -n "\${_config_path}" ]]; then
+    echo "Config: \${_config_path}"
+  fi
+  echo "Runner: \${RUNNER_DIR}"
+  echo "Image:  \${IMAGE}"
+  echo "Bucket: \${BUCKET}"
+  if [[ -n "\${CLOUDSDK_PYTHON:-}" ]]; then
+    echo "gcloud Python: \${CLOUDSDK_PYTHON}"
+  fi
+}
 run_submit_with_job() {
   local job_command="\$1"
   shift
