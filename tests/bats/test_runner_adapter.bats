@@ -1468,9 +1468,15 @@ spot_runner_wrapper_run_project_reconciler_command_entrypoint_required() {
     runtime_args=("${command_args[@]}")
     command_args=("$@")
   fi
+  if [[ -z "${runtime_function_name}" && "${saw_delimiter}" == "1" && "${#runtime_args[@]}" -gt 0 ]]; then
+    command_args=("${runtime_args[@]}" "${command_args[@]}")
+    runtime_args=()
+  fi
 
   spot_runner_wrapper_apply_spot_config_path_override_required "${config_env_var_name}"
-  "${runtime_function_name}" "${runtime_args[@]}"
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
   "${command_function_name}" "reconciler_deploy" "${command_args[@]}"
 }
 spot_runner_wrapper_profile_reconciler_defaults() {

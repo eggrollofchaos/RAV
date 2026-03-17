@@ -19,6 +19,10 @@ Changed:
   behavior where `spot_runner_wrapper_run_project_command_entrypoint_required` accepts
   an optional runtime callback (with `--`-split args preserved as command passthrough
   when runtime callback is omitted).
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior where `spot_runner_wrapper_run_project_reconciler_command_entrypoint_required`
+  accepts an optional runtime callback (with `--`-split args preserved as reconciler
+  deploy passthrough when runtime callback is omitted).
 - `scripts/gcp_build_image.sh` now delegates through shared helper
   `spot_runner_wrapper_run_project_build_command_entrypoint_required`, so build
   wrappers use the same command-dispatch build contract as other thin entrypoints.
@@ -32,6 +36,9 @@ Changed:
   `spot_runner_wrapper_run_project_reconciler_command_entrypoint_required`, so
   `SPOT_CONFIG_PATH` override wiring + runtime setup + `reconciler_deploy` dispatch
   are enforced by one runner entrypoint contract (using optional runtime args for RAV).
+- `gcp/cloud_reconciler/deploy.sh` now applies `SPOT_CONFIG_PATH` override before
+  explicit optional reconciler runtime preparation, then uses the shared reconciler
+  command entrypoint contract with runtime callback omitted.
 - `gcp/cloud_reconciler/deploy.sh` now calls
   `run_project_command "reconciler_deploy"` directly; removed wrapper-local
   `run_reconciler_deploy` alias from `scripts/gcp_runner_common.sh`.
