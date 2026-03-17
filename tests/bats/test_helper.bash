@@ -52,6 +52,18 @@ spot_runner_resolve_runner_dir_compat() {
   local env_var_name="$3"
   printf '%s\n' "${!env_var_name:-${bootstrap_dir}}"
 }
+spot_runner_wrapper_resolve_active_config_path() {
+  local current_config_path="${1:-}"
+  local default_config_path="${2:-}"
+  local use_default_when_empty="${3:-1}"
+  if [[ -n "${current_config_path}" ]]; then
+    printf '%s\n' "${current_config_path}"
+    return 0
+  fi
+  if [[ "${use_default_when_empty}" == "1" && -n "${default_config_path}" ]]; then
+    printf '%s\n' "${default_config_path}"
+  fi
+}
 spot_runner_bootstrap_initialize_project_wrapper() {
   local project_root="$1"
   local _profile_name="${2:-default}"

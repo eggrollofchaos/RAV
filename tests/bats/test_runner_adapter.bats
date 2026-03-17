@@ -928,6 +928,18 @@ spot_runner_wrapper_resolve_project_runner_dir_or_exit() {
 spot_runner_wrapper_resolve_project_runner_dir_compat_or_exit() {
   spot_runner_wrapper_resolve_project_runner_dir_or_exit "$@"
 }
+spot_runner_wrapper_resolve_active_config_path() {
+  local current_config_path="${1:-}"
+  local default_config_path="${2:-}"
+  local use_default_when_empty="${3:-1}"
+  if [[ -n "${current_config_path}" ]]; then
+    printf '%s\n' "${current_config_path}"
+    return 0
+  fi
+  if [[ "${use_default_when_empty}" == "1" && -n "${default_config_path}" ]]; then
+    printf '%s\n' "${default_config_path}"
+  fi
+}
 spot_runner_require_wrapper_runtime_or_exit() { :; }
 spot_runner_wrapper_require_project_runtime_or_exit() {
   local _runner_dir="$1"
