@@ -15,30 +15,31 @@ RUNNER_HINT_DEFAULT="Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner 
 RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
 
 _bootstrap_runner_adapter_lib() {
-  local candidate=""
   local bootstrap_lib=""
-  local candidates=()
+  local env_candidate="${RUNNER_DIR:-}"
+  local env_bootstrap_lib=""
 
-  if [[ -n "${RUNNER_DIR:-}" ]]; then
-    candidates+=("${RUNNER_DIR}")
+  if [[ -n "${env_candidate}" ]]; then
+    if [[ "${env_candidate}" != /* ]]; then
+      env_candidate="${RAV_ROOT}/${env_candidate}"
+    fi
+    env_bootstrap_lib="${env_candidate}/adapters/spot_runner_bootstrap.sh"
   fi
-  candidates+=("${RUNNER_DIR_DEFAULT_PRIMARY}" "${RUNNER_DIR_DEFAULT_WORKTREE}")
 
-  for candidate in "${candidates[@]}"; do
-    [[ -n "${candidate}" ]] || continue
-    if [[ "${candidate}" != /* ]]; then
-      candidate="${RAV_ROOT}/${candidate}"
-    fi
-    bootstrap_lib="${candidate}/adapters/spot_runner_bootstrap.sh"
-    if [[ ! -f "${bootstrap_lib}" ]]; then
-      continue
-    fi
+  if [[ -n "${env_bootstrap_lib}" && -f "${env_bootstrap_lib}" ]]; then
+    bootstrap_lib="${env_bootstrap_lib}"
+  elif [[ -f "${RUNNER_DIR_DEFAULT_PRIMARY}/adapters/spot_runner_bootstrap.sh" ]]; then
+    bootstrap_lib="${RUNNER_DIR_DEFAULT_PRIMARY}/adapters/spot_runner_bootstrap.sh"
+  elif [[ -f "${RUNNER_DIR_DEFAULT_WORKTREE}/adapters/spot_runner_bootstrap.sh" ]]; then
+    bootstrap_lib="${RUNNER_DIR_DEFAULT_WORKTREE}/adapters/spot_runner_bootstrap.sh"
+  fi
+
+  if [[ -n "${bootstrap_lib}" && -f "${bootstrap_lib}" ]]; then
     # shellcheck disable=SC1090
     source "${bootstrap_lib}"
-    break
-  done
+  fi
 
-  spot_runner_bootstrap_initialize_project_wrapper_required \
+  spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required \
     "${RAV_ROOT}" \
     "${RUNNER_PROFILE}" \
     "${RUNNER_HINT_DEFAULT}" \

@@ -43,6 +43,9 @@ Changed:
   fallback paths.
 - `scripts/gcp_runner_common.sh` bootstrap preamble now uses a simplified candidate loop and
   initializer call path while preserving shared bootstrap helper behavior.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now routes through shared helper
+  `spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required`, centralizing
+  candidate-list bootstrap initialization under one required entrypoint.
 - `scripts/gcp_runner_common.sh` now delegates RAV runtime/env default initialization through
   shared helper `spot_runner_wrapper_apply_rav_defaults`, reducing wrapper-local default
   assignment logic.
@@ -149,6 +152,9 @@ Changed:
 - `tests/bats/test_helper.bash` and `tests/bats/test_runner_adapter.bats` now stub
   `spot_runner_wrapper_apply_rav_defaults_required`, keeping RAV adapter tests hermetic with
   the updated required-helper contract surface.
+- `tests/bats/test_helper.bash` now stubs
+  `spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required`, keeping RAV
+  bootstrap adapter tests hermetic with the updated required-helper contract surface.
 - `gcp/cloud_reconciler/deploy.sh` now routes through shared required-helper
   `spot_runner_wrapper_run_project_reconciler_deploy_from_env_required`, reducing wrapper-local
   reconciler helper contract enforcement boilerplate.

@@ -70,6 +70,9 @@ spot_runner_bootstrap_initialize_project_wrapper() {
 spot_runner_bootstrap_initialize_project_wrapper_required() {
   spot_runner_bootstrap_initialize_project_wrapper "$@"
 }
+spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required() {
+  spot_runner_bootstrap_initialize_project_wrapper_required "$@"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"
