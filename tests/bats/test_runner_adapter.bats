@@ -379,6 +379,46 @@ prepare_rav_runtime() {
     configure_gcloud_runtime
   fi
 }
+spot_runner_wrapper_run_project_build_entrypoint_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local build_function_name="\${3:-}"
+  local source_path="\${4:-}"
+  local cloudbuild_config_path="\${5:-}"
+  local image_value="\${6:-}"
+  shift 6 || true
+
+  local runtime_args=()
+  local build_passthrough_args=()
+  local saw_delimiter=0
+  while [[ \$# -gt 0 ]]; do
+    if [[ "\$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    runtime_args+=("\$1")
+    shift
+  done
+  if [[ "\${saw_delimiter}" == "1" ]]; then
+    build_passthrough_args=("\$@")
+  else
+    build_passthrough_args=("\${runtime_args[@]}")
+    runtime_args=()
+  fi
+
+  local build_args=(
+    --source "\${source_path}"
+    --cloudbuild-config "\${cloudbuild_config_path}"
+  )
+  if [[ -n "\${image_value}" ]]; then
+    build_args+=(--image "\${image_value}")
+  fi
+  build_args+=("\${build_passthrough_args[@]}")
+
+  "\${runtime_function_name}" "\${runtime_args[@]}"
+  "\${build_function_name}" "\${build_args[@]}"
+}
 spot_runner_wrapper_run_project_command_entrypoint_required() {
   local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local runtime_function_name="\${2:-}"

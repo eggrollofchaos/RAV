@@ -13,6 +13,9 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_build_image.sh` now delegates build-arg composition through shared helper
+  `spot_runner_wrapper_run_project_build_entrypoint_required`, reducing wrapper-local
+  `--source` / `--cloudbuild-config` / optional `--image` wiring.
 - `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now delegate through shared helper
   `spot_runner_wrapper_run_project_command_entrypoint_required`, reducing repeated
   runtime+command entrypoint boilerplate in thin wrappers.
