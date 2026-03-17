@@ -676,6 +676,23 @@ spot_runner_wrapper_prepare_project_submit_shell_for_profile_required() {
     "${guard_alias_csv_override}" \
     "$@"
 }
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  shift 2 || true
+
+  local guard_alias_csv_override=""
+  if [[ "${1:-}" == _*CAFFEINATED* ]]; then
+    guard_alias_csv_override="$1"
+    shift || true
+  fi
+
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_required \
+    "${hint_message}" \
+    "${profile_name}" \
+    "${guard_alias_csv_override}" \
+    "$@"
+}
 
 setup() {
     : > "$SHIM_LOG"

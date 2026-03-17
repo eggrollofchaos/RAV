@@ -64,16 +64,9 @@ prepare_rav_runtime() {
 }
 
 prepare_submit_shell() {
-  local guard_alias_csv_override=""
-  if [[ "${1:-}" == _*CAFFEINATED* ]]; then
-    guard_alias_csv_override="$1"
-    shift || true
-  fi
-
-  spot_runner_wrapper_prepare_project_submit_shell_for_profile_required \
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required \
     "${RUNNER_HINT_MESSAGE}" \
     "${RUNNER_PROFILE}" \
-    "${guard_alias_csv_override}" \
     "$@"
 }
 

@@ -35,7 +35,7 @@ Changed:
   adapter tests aligned with the new shared mode-specific dispatch entrypoints.
 - `scripts/gcp_runner_common.sh` now delegates submit-shell/caffeinate setup through shared
   profile-aware helper
-  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_required`, and submit
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required`, and submit
   wrappers (`gcp_submit_primary.sh`, `gcp_submit_poc.sh`,
   `gcp_submit_chexpert_experiment.sh`) now forward `"$@"` directly to
   `prepare_submit_shell` (no wrapper-local submit-guard alias state required).
