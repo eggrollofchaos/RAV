@@ -13,6 +13,9 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now uses the shared
+  optional-runtime submit-entrypoint contract directly (no wrapper-local no-op runtime
+  callback needed).
 - `scripts/gcp_runner_common.sh` now centralizes shared submit-wrapper runtime prep, context
   logging, and submit-entrypoint invocation through
   `prepare_rav_submit_runtime_and_print_context` +

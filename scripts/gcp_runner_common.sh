@@ -67,8 +67,6 @@ prepare_submit_shell() {
     "$@"
 }
 
-_rav_runtime_already_prepared() { :; }
-
 run_submit_entrypoint_with_job() {
   local job_command="$1"
   shift || true
@@ -76,7 +74,7 @@ run_submit_entrypoint_with_job() {
   spot_runner_wrapper_run_project_submit_entrypoint_required \
     "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
     "prepare_submit_shell" \
-    "_rav_runtime_already_prepared" \
+    "" \
     "run_submit_with_job" \
     "${job_command}" \
     -- \

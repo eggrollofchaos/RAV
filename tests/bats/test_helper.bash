@@ -804,7 +804,9 @@ spot_runner_wrapper_run_project_submit_entrypoint_required() {
   fi
 
   "${submit_shell_function_name}" "${submit_args[@]}"
-  "${runtime_function_name}" "${runtime_args[@]}"
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
   "${submit_function_name}" "${job_command}" "${submit_args[@]}"
 }
 spot_runner_maybe_reexec_caffeinate_compat() {
