@@ -26,6 +26,9 @@ Changed:
   load/defaults/check/install/gcloud boilerplate per script.
 - `gcp/cloud_reconciler/deploy.sh` now also uses `prepare_rav_runtime` (optional-env, no
   spot-var/gcloud checks) before delegating reconciler deploy through the shared runner contract.
+- `gcp/state_helpers.sh` now calls `apply_runner_defaults` before loading shared
+  `state_helpers.sh`, ensuring `RUNNER_DIR` resolution flows through shared runner-default
+  logic even when `RUNNER_DIR` is not pre-exported.
 - `scripts/gcp_runner_common.sh` now delegates direct `spotctl`, profiled dispatch, ops/build/monitor,
   and version command wiring through shared project-wrapper command helpers in
   `gcp-spot-runner/adapters/spot_runner_common.sh`.

@@ -14,6 +14,11 @@ _state_helpers_fail() {
 # shellcheck disable=SC1090
 source "${_STATE_HELPERS_PROJECT_ROOT}/scripts/gcp_runner_common.sh"
 
+# Ensure RUNNER_DIR is resolved via shared runner-default logic when not pre-exported.
+if [[ -z "${RUNNER_DIR:-}" ]]; then
+  apply_runner_defaults
+fi
+
 if ! spot_runner_wrapper_source_project_state_helpers_required \
   "${RUNNER_DIR}" \
   "${_STATE_HELPERS_PROJECT_ROOT}" \
