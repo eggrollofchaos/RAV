@@ -24,6 +24,11 @@ Changed:
   script names (`gcp_*.sh`) via shared helper
   `spot_runner_wrapper_run_project_named_command_from_script_entrypoint_required`, removing
   repeated hard-coded command strings in thin wrappers while preserving runtime-arg behavior.
+- `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now route through shared helper
+  `spot_runner_wrapper_run_project_profile_named_command_from_script_entrypoint_required`,
+  so standard-command wrappers inherit profile/command runtime defaults from the shared
+  runner contract (including version-path optional env loading) without wrapper-local
+  runtime arg literals.
 - `gcp/GETTING_STARTED.md` and `docs/INDEX.md` now document the standard-wrapper naming
   contract (`gcp_*.sh` -> derived command name) for thin operator wrappers.
 - `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now uses the shared
