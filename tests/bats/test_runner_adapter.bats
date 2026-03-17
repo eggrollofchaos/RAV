@@ -1386,6 +1386,38 @@ spot_runner_wrapper_apply_spot_config_path_override_required() {
   spot_runner_wrapper_require_function_or_hint "spot_runner_wrapper_apply_spot_config_path_override" "${hint_message}"
   spot_runner_wrapper_apply_spot_config_path_override "${output_var_name}"
 }
+spot_runner_wrapper_run_project_reconciler_command_entrypoint_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local config_env_var_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  if [[ $# -gt 4 ]]; then
+    shift 4
+  else
+    set --
+  fi
+
+  local runtime_args=()
+  local command_args=()
+  local saw_delimiter=0
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    command_args+=("$1")
+    shift
+  done
+  if [[ "${saw_delimiter}" == "1" ]]; then
+    runtime_args=("${command_args[@]}")
+    command_args=("$@")
+  fi
+
+  spot_runner_wrapper_apply_spot_config_path_override_required "${config_env_var_name}"
+  "${runtime_function_name}" "${runtime_args[@]}"
+  "${command_function_name}" "reconciler_deploy" "${command_args[@]}"
+}
 spot_runner_wrapper_profile_reconciler_defaults() {
   local profile_name="${1:-default}"
   local function_name_var="${2:-}"
