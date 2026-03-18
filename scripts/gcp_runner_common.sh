@@ -61,7 +61,7 @@ prepare_rav_runtime() {
 }
 
 prepare_submit_shell() {
-  spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required \
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required \
     "${RUNNER_HINT_MESSAGE}" \
     "${RUNNER_PROFILE}" \
     "$@"

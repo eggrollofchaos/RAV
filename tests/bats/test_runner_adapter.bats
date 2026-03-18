@@ -394,6 +394,26 @@ _capture_stub() {
   assert_line --index 3 "--dry-run"
 }
 
+@test "prepare_submit_shell delegates through shared submit-shell profile common defaults helper" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/prepare_submit_profile_common_defaults_args.txt"
+
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required() {
+    printf '%s\n' "$@" > "$captured"
+  }
+
+  prepare_submit_shell "_RAV_ITER_CAFFEINATED,_IXQT_CAFFEINATED" --run-id rav-caf-3b --dry-run
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+  assert_line --index 1 "rav"
+  assert_line --index 2 "_RAV_ITER_CAFFEINATED,_IXQT_CAFFEINATED"
+  assert_line --index 3 "--run-id"
+  assert_line --index 4 "rav-caf-3b"
+  assert_line --index 5 "--dry-run"
+}
+
 @test "prepare_submit_shell resolves rav default guard alias when none is provided" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/prepare_project_submit_default_alias_args.txt"

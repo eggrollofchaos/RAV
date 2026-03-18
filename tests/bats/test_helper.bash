@@ -1230,6 +1230,15 @@ spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required(
     "${guard_alias_csv_override}" \
     "$@"
 }
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  shift 2 || true
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required \
+    "${hint_message}" \
+    "${profile_name}" \
+    "$@"
+}
 
 setup() {
     : > "$SHIM_LOG"

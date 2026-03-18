@@ -13,6 +13,16 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now delegates through
+  shared helper
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required`,
+  so submit-shell profile defaults stay single-sourced for wrapper-common
+  callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required`,
+  keeping RAV submit-shell wrapper common stubs/tests aligned with shared
+  defaults wiring.
 - `scripts/gcp_runner_common.sh` `prepare_rav_runtime` now delegates through
   shared helper
   `spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required`,
