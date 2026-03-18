@@ -267,6 +267,32 @@ _capture_stub() {
   RUNNER_DIR="${RUNNER_DIR:-/tmp/fake-runner}"
 }
 
+@test "run_project_command delegates through shared profile-command common defaults helper" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/profile_command_wrapper_common_args.txt"
+
+  spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required() {
+    printf '%s\n' "$@" > "$captured"
+  }
+  RUNNER_DIR="/tmp/fake-runner"
+  RAV_GCP_ENV_PATH="/tmp/rav_spot.env"
+
+  run_project_command ops watch 20 --json
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "/tmp/fake-runner"
+  assert_line --index 1 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+  assert_line --index 2 "RUNNER_ADAPTER_LIB_LOADED"
+  assert_line --index 3 "rav"
+  assert_line --index 4 "ops"
+  assert_line --index 5 "/tmp/rav_spot.env"
+  assert_line --index 6 "$REPO_ROOT/gcp/rav_spot.env"
+  assert_line --index 7 "watch"
+  assert_line --index 8 "20"
+  assert_line --index 9 "--json"
+}
+
 @test "run_project_command ops delegates to shared profiled compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/profiled_compat_args.txt"
@@ -1918,6 +1944,26 @@ spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required() {
   shift 7 || true
 
   spot_runner_wrapper_run_project_profile_command_with_paths_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local profile_name="${4:-default}"
+  local command_name="${5:-}"
+  local current_config_path="${6:-}"
+  local default_config_path="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required \
     "${runner_dir}" \
     "${hint_message}" \
     "${loaded_var_name}" \

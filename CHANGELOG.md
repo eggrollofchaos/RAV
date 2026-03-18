@@ -13,6 +13,16 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` `run_project_command` now delegates through
+  shared helper
+  `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required`,
+  keeping profile-command wrapper defaults single-sourced for wrapper-common
+  callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required`,
+  keeping RAV command-wrapper common stubs/tests aligned with shared defaults
+  wiring.
 - `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now delegates
   through shared helper
   `spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required`,
