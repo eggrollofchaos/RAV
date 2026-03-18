@@ -185,6 +185,74 @@ spot_runner_wrapper_setup_project_runtime_required() {
     spot_runner_wrapper_configure_gcloud_runtime "${runner_dir}" "${gcloud_project_root}" "${hint_message}"
   fi
 }
+spot_runner_wrapper_setup_project_profile_runtime_required() {
+  local root_dir="$1"
+  local default_runner_dir="$2"
+  local hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${4:-default}"
+  local env_var_name="${5:-}"
+  local env_default_path="${6:-}"
+  local env_output_var_name="${7:-PROJECT_GCP_ENV_PATH}"
+  local env_mode="${8:-optional}"
+  local missing_env_message="${9:-Missing required project environment file.}"
+  local require_spot_vars="${10:-0}"
+  local configure_gcloud="${11:-0}"
+  local gcloud_project_root="${12:-${root_dir}}"
+  if [[ $# -gt 12 ]]; then
+    shift 12
+  else
+    set --
+  fi
+  spot_runner_wrapper_setup_project_runtime_required \
+    "${root_dir}" \
+    "${default_runner_dir}" \
+    "RUNNER_DIR" \
+    "RUNNER_DIR" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "${env_mode}" \
+    "${env_var_name}" \
+    "${env_default_path}" \
+    "${env_output_var_name}" \
+    "${missing_env_message}" \
+    "${require_spot_vars}" \
+    "${configure_gcloud}" \
+    "${gcloud_project_root}" \
+    "$@"
+}
+spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local root_dir="$2"
+  local default_runner_dir="$3"
+  local profile_name="${4:-default}"
+  local env_var_name="${5:-}"
+  local env_default_path="${6:-}"
+  local env_output_var_name="${7:-PROJECT_GCP_ENV_PATH}"
+  local env_mode="${8:-optional}"
+  local missing_env_message="${9:-Missing required project environment file.}"
+  local require_spot_vars="${10:-0}"
+  local configure_gcloud="${11:-0}"
+  local gcloud_project_root="${12:-${root_dir}}"
+  if [[ $# -gt 12 ]]; then
+    shift 12
+  else
+    set --
+  fi
+  spot_runner_wrapper_setup_project_profile_runtime_required \
+    "${root_dir}" \
+    "${default_runner_dir}" \
+    "${hint_message}" \
+    "${profile_name}" \
+    "${env_var_name}" \
+    "${env_default_path}" \
+    "${env_output_var_name}" \
+    "${env_mode}" \
+    "${missing_env_message}" \
+    "${require_spot_vars}" \
+    "${configure_gcloud}" \
+    "${gcloud_project_root}" \
+    "$@"
+}
 spot_runner_wrapper_resolve_active_config_path() {
   local current_config_path="${1:-}"
   local default_config_path="${2:-}"
@@ -249,6 +317,89 @@ spot_runner_bootstrap_initialize_project_wrapper_required() {
 spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required() {
   spot_runner_bootstrap_initialize_project_wrapper_required "$@"
 }
+spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required() {
+  spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required "$@"
+}
+spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required() {
+  local default_hint="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="$2"
+  local profile_name="${3:-default}"
+  local default_primary_runner_dir="${4:-${project_root}/../gcp-spot-runner}"
+  local default_worktree_runner_dir="${5:-${project_root}/../gcp-spot-runner-codex}"
+  if [[ $# -gt 5 ]]; then
+    shift 5
+  else
+    set --
+  fi
+  spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required \
+    "${project_root}" \
+    "${profile_name}" \
+    "${default_hint}" \
+    "RUNNER_BOOTSTRAP_DIR_DEFAULT" \
+    "RUNNER_DIR" \
+    "RUNNER_HINT_MESSAGE" \
+    "${default_primary_runner_dir}" \
+    "${default_worktree_runner_dir}" \
+    "$@"
+}
+spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local _runner_dir="${2:-}"
+  local _minimum_version="${3:-}"
+  local _feature_label="${4:-This wrapper}"
+}
+spot_runner_bootstrap_initialize_project_wrapper_runtime_required() {
+  local project_root="$1"
+  local profile_name="${2:-default}"
+  local hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local minimum_version="${4:-}"
+  local feature_label="${5:-This wrapper}"
+  local default_primary_runner_dir="${6:-${project_root}/../gcp-spot-runner}"
+  local default_worktree_runner_dir="${7:-${project_root}/../gcp-spot-runner-codex}"
+  if [[ $# -gt 7 ]]; then
+    shift 7
+  else
+    set --
+  fi
+  spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required \
+    "${project_root}" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "RUNNER_BOOTSTRAP_DIR_DEFAULT" \
+    "RUNNER_DIR" \
+    "RUNNER_HINT_MESSAGE" \
+    "${default_primary_runner_dir}" \
+    "${default_worktree_runner_dir}" \
+    "$@"
+  spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required \
+    "${RUNNER_HINT_MESSAGE:-${hint_message}}" \
+    "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
+    "${minimum_version}" \
+    "${feature_label}"
+}
+spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="${2:-}"
+  local profile_name="${3:-default}"
+  local minimum_version="${4:-}"
+  local feature_label="${5:-This wrapper}"
+  local default_primary_runner_dir="${6:-${project_root}/../gcp-spot-runner}"
+  local default_worktree_runner_dir="${7:-${project_root}/../gcp-spot-runner-codex}"
+  if [[ $# -gt 7 ]]; then
+    shift 7
+  else
+    set --
+  fi
+  spot_runner_bootstrap_initialize_project_wrapper_runtime_required \
+    "${project_root}" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "${minimum_version}" \
+    "${feature_label}" \
+    "${default_primary_runner_dir}" \
+    "${default_worktree_runner_dir}" \
+    "$@"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"
@@ -264,6 +415,129 @@ spot_runner_wrapper_require_function_or_hint() {
   echo "Runner helper missing required function: ${function_name}" >&2
   echo "${hint_message}" >&2
   return 1
+}
+spot_runner_wrapper_apply_spot_config_path_override() {
+  local output_var_name="$1"
+  if [[ -n "${SPOT_CONFIG_PATH:-}" ]]; then
+    printf -v "${output_var_name}" '%s' "${SPOT_CONFIG_PATH}"
+  fi
+}
+spot_runner_wrapper_apply_spot_config_path_override_required() {
+  local output_var_name="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  if ! spot_runner_wrapper_require_function_or_hint "spot_runner_wrapper_apply_spot_config_path_override" "${hint_message}"; then
+    return 1
+  fi
+  spot_runner_wrapper_apply_spot_config_path_override "${output_var_name}"
+}
+spot_runner_wrapper_run_project_reconciler_command_entrypoint_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local config_env_var_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  if [[ $# -gt 4 ]]; then
+    shift 4
+  else
+    set --
+  fi
+
+  local runtime_args=()
+  local command_args=()
+  local saw_delimiter=0
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    command_args+=("$1")
+    shift
+  done
+  if [[ "${saw_delimiter}" == "1" ]]; then
+    runtime_args=("${command_args[@]}")
+    command_args=("$@")
+  fi
+  if [[ -z "${runtime_function_name}" && "${saw_delimiter}" == "1" && "${#runtime_args[@]}" -gt 0 ]]; then
+    command_args=("${runtime_args[@]}" "${command_args[@]}")
+    runtime_args=()
+  fi
+
+  spot_runner_wrapper_apply_spot_config_path_override_required "${config_env_var_name}" "${hint_message}"
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
+  "${command_function_name}" "reconciler_deploy" "${command_args[@]}"
+}
+spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local config_env_var_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  shift 4 || true
+
+  if [[ -n "${runtime_function_name}" ]]; then
+    spot_runner_wrapper_run_project_reconciler_command_entrypoint_required \
+      "${hint_message}" \
+      "${config_env_var_name}" \
+      "${runtime_function_name}" \
+      "${command_function_name}" \
+      "optional" \
+      "0" \
+      "0" \
+      -- \
+      "$@"
+    return "$?"
+  fi
+
+  spot_runner_wrapper_run_project_reconciler_command_entrypoint_required \
+    "${hint_message}" \
+    "${config_env_var_name}" \
+    "" \
+    "${command_function_name}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local config_env_var_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  shift 4 || true
+  spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required \
+    "${hint_message}" \
+    "${config_env_var_name}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "$@"
+}
+spot_runner_wrapper_profile_config_env_var_required() {
+  local profile_name="${1:-default}"
+  local output_var_name="${2:-}"
+  local _hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local resolved_env_var_name="SPOT_CONFIG_PATH"
+  case "${profile_name}" in
+    ixqt) resolved_env_var_name="IXQT_GCP_ENV" ;;
+    rav) resolved_env_var_name="RAV_GCP_ENV" ;;
+  esac
+  if [[ -n "${output_var_name}" ]]; then
+    printf -v "${output_var_name}" '%s' "${resolved_env_var_name}"
+  else
+    printf '%s\n' "${resolved_env_var_name}"
+  fi
+}
+spot_runner_wrapper_run_project_reconciler_wrapper_profile_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  shift 4 || true
+  local config_env_var_name=""
+  spot_runner_wrapper_profile_config_env_var_required "${profile_name}" config_env_var_name "${hint_message}"
+  spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required \
+    "${hint_message}" \
+    "${config_env_var_name}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "$@"
 }
 spot_runner_wrapper_source_project_state_helpers_or_fail() {
   local runner_dir="$1"
@@ -315,6 +589,27 @@ spot_runner_wrapper_init_project_state_helpers_wrapper_required() {
     "${project_root}" \
     "${hint_message}" \
     "${error_message}"
+}
+spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="$2"
+  local default_runner_dir="$3"
+  local profile_name="${4:-default}"
+  local error_message="${5:-Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR.}"
+  if [[ $# -gt 5 ]]; then
+    shift 5
+  else
+    set --
+  fi
+  spot_runner_wrapper_init_project_state_helpers_wrapper_required \
+    "${project_root}" \
+    "${default_runner_dir}" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "${error_message}" \
+    "RUNNER_DIR" \
+    "RUNNER_DIR" \
+    "$@"
 }
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
@@ -569,6 +864,437 @@ spot_runner_wrapper_run_project_command_with_mode_required() {
 spot_runner_wrapper_run_project_standard_command_required() {
   spot_runner_wrapper_run_project_command_with_mode_required "$@"
 }
+spot_runner_wrapper_run_project_standard_command_compat_required() {
+  spot_runner_wrapper_run_project_standard_command_required "$@"
+}
+spot_runner_wrapper_run_project_standard_command_active_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "active" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_standard_command_loaded_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "loaded" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
+spot_runner_wrapper_project_command_config_mode() {
+  local profile_name="${1:-default}"
+  local command_name="${2:-}"
+  case "${profile_name}:${command_name}" in
+    ixqt:*)
+      printf '%s\n' "loaded"
+      ;;
+    rav:version|rav:reconciler_deploy)
+      printf '%s\n' "loaded"
+      ;;
+    rav:ops|rav:build|rav:monitor|rav:submit_with_job)
+      printf '%s\n' "active"
+      ;;
+    *:version|*:reconciler_deploy)
+      printf '%s\n' "loaded"
+      ;;
+    *)
+      printf '%s\n' "active"
+      ;;
+  esac
+}
+spot_runner_wrapper_run_project_profile_command_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local current_config_path="${4:-}"
+  local default_config_path="${5:-}"
+  local profile_name="${6:-default}"
+  local command_name="${7:-}"
+  shift 7 || true
+
+  local config_mode=""
+  config_mode="$(spot_runner_wrapper_project_command_config_mode "${profile_name}" "${command_name}")"
+
+  spot_runner_wrapper_run_project_standard_command_compat_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${config_mode}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_profile_command_with_paths_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local profile_name="${4:-default}"
+  local command_name="${5:-}"
+  local current_config_path="${6:-}"
+  local default_config_path="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_profile_command_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local profile_name="${4:-default}"
+  local command_name="${5:-}"
+  local current_config_path="${6:-}"
+  local default_config_path="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_profile_command_with_paths_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required() {
+  local runner_dir="$1"
+  local hint_message="${2:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local loaded_var_name="${3:-RUNNER_ADAPTER_LIB_LOADED}"
+  local profile_name="${4:-default}"
+  local command_name="${5:-}"
+  local current_config_path="${6:-}"
+  local default_config_path="${7:-}"
+  shift 7 || true
+
+  spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required \
+    "${runner_dir}" \
+    "${hint_message}" \
+    "${loaded_var_name}" \
+    "${profile_name}" \
+    "${command_name}" \
+    "${current_config_path}" \
+    "${default_config_path}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_standard_wrapper_defaults_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_dispatch_function_name="${3:-}"
+  local profile_name="${4:-}"
+  local callsite_depth="${5:-2}"
+  shift 5 || true
+  if [[ ! "${callsite_depth}" =~ ^[0-9]+$ ]]; then
+    echo "Invalid standard wrapper callsite depth '${callsite_depth}' (expected non-negative integer)." >&2
+    return 2
+  fi
+  local delegated_callsite_depth=$((callsite_depth + 1))
+
+  local script_path="${BASH_SOURCE[${delegated_callsite_depth}]:-$0}"
+  local script_name="${script_path##*/}"
+  local script_prefix=""
+  local script_suffix=".sh"
+  case "${profile_name}" in
+    ixqt)
+      script_suffix="_spot.sh"
+      ;;
+    rav)
+      script_prefix="gcp_"
+      script_suffix=".sh"
+      ;;
+  esac
+
+  local command_name="${script_name}"
+  if [[ -n "${script_prefix}" ]]; then
+    command_name="${command_name#${script_prefix}}"
+  fi
+  if [[ -n "${script_suffix}" ]]; then
+    command_name="${command_name%${script_suffix}}"
+  fi
+
+  local env_mode="required"
+  local require_spot_vars="1"
+  local configure_gcloud="1"
+  if [[ "${profile_name}" == "ixqt" ]]; then
+    env_mode="optional"
+    require_spot_vars="0"
+    configure_gcloud="0"
+  elif [[ "${profile_name}" == "rav" && "${command_name}" == "version" ]]; then
+    env_mode="optional"
+    require_spot_vars="0"
+    configure_gcloud="1"
+  fi
+
+  "${runtime_function_name}" "${env_mode}" "${require_spot_vars}" "${configure_gcloud}"
+  "${command_dispatch_function_name}" "${command_name}" "$@"
+}
+spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_dispatch_function_name="${3:-}"
+  local profile_name="${4:-}"
+  shift 4 || true
+
+  spot_runner_wrapper_run_project_standard_wrapper_defaults_required \
+    "${_hint_message}" \
+    "${runtime_function_name}" \
+    "${command_dispatch_function_name}" \
+    "${profile_name}" \
+    "3" \
+    "$@"
+}
+spot_runner_wrapper_run_project_command_entrypoint_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_function_name="${3:-}"
+  shift 3 || true
+
+  local runtime_args=()
+  local command_args=()
+  local saw_delimiter=0
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    runtime_args+=("$1")
+    shift
+  done
+  command_args=("$@")
+
+  if [[ -z "${runtime_function_name}" && "${saw_delimiter}" == "1" && "${#runtime_args[@]}" -gt 0 ]]; then
+    command_args=("${runtime_args[@]}" "${command_args[@]}")
+    runtime_args=()
+  fi
+
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
+  "${command_function_name}" "${command_args[@]}"
+}
+spot_runner_wrapper_run_project_build_command_entrypoint_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_function_name="${3:-}"
+  local source_path="${4:-}"
+  local cloudbuild_config_path="${5:-}"
+  local image_value="${6:-}"
+  shift 6 || true
+
+  local runtime_args=()
+  local build_passthrough_args=()
+  local saw_delimiter=0
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    build_passthrough_args+=("$1")
+    shift
+  done
+  if [[ "${saw_delimiter}" == "1" ]]; then
+    runtime_args=("${build_passthrough_args[@]}")
+    build_passthrough_args=("$@")
+  fi
+  if [[ -z "${runtime_function_name}" && "${saw_delimiter}" == "1" && "${#runtime_args[@]}" -gt 0 ]]; then
+    build_passthrough_args=("${runtime_args[@]}" "${build_passthrough_args[@]}")
+    runtime_args=()
+  fi
+
+  local build_args=(
+    --source "${source_path}"
+    --cloudbuild-config "${cloudbuild_config_path}"
+  )
+  if [[ -n "${image_value}" ]]; then
+    build_args+=(--image "${image_value}")
+  fi
+  build_args+=("${build_passthrough_args[@]}")
+
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
+  "${command_function_name}" "build" "${build_args[@]}"
+}
+spot_runner_wrapper_run_project_build_wrapper_defaults_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_function_name="${3:-}"
+  local source_path="${4:-}"
+  local cloudbuild_config_path="${5:-}"
+  local image_value="${6:-}"
+  shift 6 || true
+
+  spot_runner_wrapper_run_project_build_command_entrypoint_required \
+    "${_hint_message}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "${source_path}" \
+    "${cloudbuild_config_path}" \
+    "${image_value}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_function_name="${3:-}"
+  local source_path="${4:-}"
+  local cloudbuild_config_path="${5:-}"
+  local image_value="${6:-}"
+  shift 6 || true
+
+  spot_runner_wrapper_run_project_build_wrapper_defaults_required \
+    "${_hint_message}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "${source_path}" \
+    "${cloudbuild_config_path}" \
+    "${image_value}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_build_entrypoint_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local build_function_name="${3:-}"
+  local source_path="${4:-}"
+  local cloudbuild_config_path="${5:-}"
+  local image_value="${6:-}"
+  shift 6 || true
+
+  local runtime_args=()
+  local build_passthrough_args=()
+  local saw_delimiter=0
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    runtime_args+=("$1")
+    shift
+  done
+  if [[ "${saw_delimiter}" == "1" ]]; then
+    build_passthrough_args=("$@")
+  else
+    build_passthrough_args=("${runtime_args[@]}")
+    runtime_args=()
+  fi
+
+  local build_args=(
+    --source "${source_path}"
+    --cloudbuild-config "${cloudbuild_config_path}"
+  )
+  if [[ -n "${image_value}" ]]; then
+    build_args+=(--image "${image_value}")
+  fi
+  build_args+=("${build_passthrough_args[@]}")
+
+  "${runtime_function_name}" "${runtime_args[@]}"
+  "${build_function_name}" "${build_args[@]}"
+}
+spot_runner_wrapper_run_project_submit_entrypoint_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local submit_shell_function_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local submit_function_name="${4:-}"
+  local job_command="${5:-}"
+  shift 5 || true
+
+  local runtime_args=()
+  local submit_args=()
+  local saw_delimiter=0
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--" ]]; then
+      saw_delimiter=1
+      shift
+      break
+    fi
+    runtime_args+=("$1")
+    shift
+  done
+  if [[ "${saw_delimiter}" == "1" ]]; then
+    submit_args=("$@")
+  else
+    submit_args=("${runtime_args[@]}")
+    runtime_args=()
+  fi
+
+  "${submit_shell_function_name}" "${submit_args[@]}"
+  if [[ -n "${runtime_function_name}" ]]; then
+    "${runtime_function_name}" "${runtime_args[@]}"
+  fi
+  "${submit_function_name}" "${job_command}" "${submit_args[@]}"
+}
+spot_runner_wrapper_run_project_submit_wrapper_defaults_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local submit_shell_function_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local submit_function_name="${4:-}"
+  local job_command="${5:-}"
+  shift 5 || true
+
+  spot_runner_wrapper_run_project_submit_entrypoint_required \
+    "${_hint_message}" \
+    "${submit_shell_function_name}" \
+    "${runtime_function_name}" \
+    "${submit_function_name}" \
+    "${job_command}" \
+    "$@"
+}
+spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local submit_shell_function_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local submit_function_name="${4:-}"
+  local job_command="${5:-}"
+  shift 5 || true
+
+  spot_runner_wrapper_run_project_submit_wrapper_defaults_required \
+    "${_hint_message}" \
+    "${submit_shell_function_name}" \
+    "${runtime_function_name}" \
+    "${submit_function_name}" \
+    "${job_command}" \
+    "$@"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="${1:-_SPOT_CAFFEINATED}"
   shift 2 || true
@@ -587,16 +1313,83 @@ spot_runner_prepare_submit_shell_compat() {
   spot_runner_maybe_reexec_caffeinate_compat "${guard_var}" "${guard_alias_csv}" "$@"
   trap '' HUP
 }
-spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+spot_runner_wrapper_prepare_project_submit_shell_entrypoint() {
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
   spot_runner_prepare_submit_shell_compat "_SPOT_CAFFEINATED" "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+  local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
+  shift || true
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint "${guard_alias_csv}" "$@"
 }
 spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local guard_alias_csv="${2:-_IXQT_CAFFEINATED}"
   shift 2 || true
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_profile_submit_guard_aliases() {
+  local profile_name="${1:-default}"
+  case "${profile_name}" in
+    rav)
+      printf '%s\n' "_RAV_CAFFEINATED,_IXQT_CAFFEINATED"
+      ;;
+    *)
+      printf '%s\n' "_IXQT_CAFFEINATED"
+      ;;
+  esac
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile() {
+  local profile_name="${1:-default}"
+  local guard_alias_csv_override="${2:-}"
+  shift 2 || true
+
+  local guard_alias_csv="${guard_alias_csv_override}"
+  if [[ -z "${guard_alias_csv}" ]]; then
+    guard_alias_csv="$(spot_runner_wrapper_profile_submit_guard_aliases "${profile_name}")"
+  fi
+
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat() {
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  local guard_alias_csv_override="${3:-}"
+  shift 3 || true
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile \
+    "${profile_name}" \
+    "${guard_alias_csv_override}" \
+    "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  shift 2 || true
+
+  local guard_alias_csv_override=""
+  if [[ "${1:-}" == _*CAFFEINATED* ]]; then
+    guard_alias_csv_override="$1"
+    shift || true
+  fi
+
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_required \
+    "${hint_message}" \
+    "${profile_name}" \
+    "${guard_alias_csv_override}" \
+    "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  shift 2 || true
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required \
+    "${hint_message}" \
+    "${profile_name}" \
+    "$@"
 }
 
 setup() {
@@ -614,6 +1407,11 @@ setup() {
     unset GCLOUD_CREATE_RESULT_us_east1_c 2>/dev/null || true
     unset GCLOUD_CREATE_RESULT_us_east1_b 2>/dev/null || true
     unset GCLOUD_CREATE_RESULT_us_east1_d 2>/dev/null || true
+    local _stub_name=""
+    while read -r _ _ _stub_name; do
+        [[ "$_stub_name" == spot_runner_* ]] || continue
+        export -f "$_stub_name"
+    done < <(declare -F)
 }
 
 fixture_path()    { echo "$BATS_TEST_DIRNAME/fixtures/$1"; }

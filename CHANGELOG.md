@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 Fixed:
+- `tests/bats/test_helper.bash` now exports fallback `spot_runner_*` stubs into
+  child bash processes, and fake-runner fixtures in
+  `tests/bats/{test_state_helpers_wrapper.bats,test_runner_adapter.bats}` now
+  include bootstrap/version shims so RAV adapter CI passes even when no sibling
+  `gcp-spot-runner` checkout is present.
 - CI: replaced local symlinks for bats test libraries (`bats-core`, `bats-assert`,
   `bats-support`) with proper git submodules so tests run in CI environments.
 - CI: added fallback adapter stubs in `test_helper.bash` so adapter contract tests
@@ -13,20 +18,235 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.41-phase7-contract-matrix-closure` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the
+  canonical runner submit-shell entrypoint/profile helper names instead of the
+  older `*_compat_or_fallback` submit-shell ladder, keeping RAV adapter
+  fixtures aligned with the flattened live runner path.
+- `README.md`, `gcp/GETTING_STARTED.md`, and `gcp/GCP_NOTES.md` now state the
+  current thin-wrapper contract and minimum required runner version
+  (`v0.6.40-phase7-wrapper-runtime-init`).
+- `scripts/gcp_runner_common.sh` now delegates bootstrap sibling-runner
+  discovery and minimum-runner-version enforcement through one shared helper
+  contract
+  (`spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required`)
+  instead of manually chaining two wrapper-local bootstrap calls.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the new
+  shared bootstrap runtime-init contract and require runner version
+  `v0.6.40-phase7-wrapper-runtime-init`.
+- `scripts/gcp_runner_common.sh` now enforces a minimum shared-runner version
+  (`v0.6.39-phase7-version-gates`) at bootstrap time, failing fast with an
+  explicit upgrade message when pointed at an older `gcp-spot-runner` checkout.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the
+  shared bootstrap min-version gate contract, keeping RAV adapter bootstrap
+  stubs/tests aligned with runner version-gating behavior.
+- `scripts/gcp_runner_common.sh` bootstrap initialization now delegates through
+  shared helper
+  `spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required`,
+  so `RUNNER_BOOTSTRAP_DIR_DEFAULT` / `RUNNER_HINT_MESSAGE` and sibling-runner
+  fallback candidates stay single-sourced in runner bootstrap contracts.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required`,
+  keeping RAV bootstrap wrapper defaults stubs/tests aligned with shared
+  bootstrap defaults wiring.
+- `gcp/state_helpers.sh` now delegates through shared helper
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required`,
+  so state-helper wrapper hint/default/profile wiring stays single-sourced in
+  runner common contracts.
+- `tests/bats/test_helper.bash` now mirrors runner contract behavior for
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required`,
+  keeping RAV state-helper wrapper stubs aligned with shared defaults wiring.
+- `gcp/cloud_reconciler/deploy.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required`,
+  so reconciler wrapper config-env/runtime/command defaults stay single-sourced
+  in runner common contracts.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required`,
+  keeping RAV reconciler wrapper stubs/tests aligned with shared defaults wiring.
+- `gcp/cloud_reconciler/deploy.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_reconciler_wrapper_profile_defaults_for_common_required`,
+  so profile-to-config-env mapping (`RUNNER_PROFILE` → `RAV_GCP_ENV`) is
+  single-sourced in runner.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_reconciler_wrapper_profile_defaults_for_common_required`
+  and `spot_runner_wrapper_profile_config_env_var_required`, keeping RAV
+  reconciler wrapper profile-default stubs/tests aligned with shared contracts.
+- `scripts/gcp_runner_common.sh` `prepare_submit_shell` now delegates through
+  shared helper
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required`,
+  so submit-shell profile defaults stay single-sourced for wrapper-common
+  callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required`,
+  keeping RAV submit-shell wrapper common stubs/tests aligned with shared
+  defaults wiring.
+- `scripts/gcp_runner_common.sh` `prepare_rav_runtime` now delegates through
+  shared helper
+  `spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required`,
+  so profile-runtime defaults stay single-sourced for wrapper-common callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required`,
+  keeping RAV runtime-wrapper common stubs/tests aligned with shared defaults
+  wiring.
+- `scripts/gcp_runner_common.sh` `run_project_command` now delegates through
+  shared helper
+  `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required`,
+  keeping profile-command wrapper defaults single-sourced for wrapper-common
+  callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_for_common_required`,
+  keeping RAV command-wrapper common stubs/tests aligned with shared defaults
+  wiring.
+- `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now delegates
+  through shared helper
+  `spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required`,
+  so submit-wrapper defaults wiring is single-sourced for wrapper-common callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required`,
+  keeping RAV submit-wrapper common stubs/tests aligned with shared defaults
+  wiring.
+- `scripts/gcp_runner_common.sh` now exposes `run_rav_build_wrapper`, and
+  `scripts/gcp_build_image.sh` now calls that thin wrapper; build-wrapper
+  common defaults (`hint`, dispatcher, source/config/image wiring) are now
+  single-sourced through shared helper
+  `spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required`.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required`,
+  keeping RAV build-wrapper common stubs/tests aligned with shared defaults
+  wiring.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for `spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required`,
+  keeping standard-wrapper common test stubs aligned with shared defaults wiring.
+- `scripts/gcp_runner_common.sh` `run_rav_standard_command_wrapper` now delegates
+  through shared helper `spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required`,
+  so wrapper-common callsite depth wiring is single-sourced in runner.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required`,
+  keeping command-wrapper test stubs aligned with shared defaults wiring.
+- `scripts/gcp_runner_common.sh` `run_project_command` now delegates through shared
+  helper `spot_runner_wrapper_run_project_profile_command_wrapper_defaults_required`,
+  so profile command-wrapper defaults stay single-sourced before command dispatch.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for `spot_runner_wrapper_run_project_submit_wrapper_defaults_required`,
+  keeping submit-wrapper test stubs aligned with shared defaults wiring.
+- `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now delegates
+  through shared helper `spot_runner_wrapper_run_project_submit_wrapper_defaults_required`,
+  so submit-wrapper defaults stay single-sourced before submit entrypoint handling.
+- `scripts/gcp_build_image.sh` now relies on the shared build-command entrypoint's
+  optional runtime callback contract directly (removed wrapper-local no-op runtime shim).
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior where `spot_runner_wrapper_run_project_command_entrypoint_required` accepts
+  an optional runtime callback (with `--`-split args preserved as command passthrough
+  when runtime callback is omitted).
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior where `spot_runner_wrapper_run_project_reconciler_command_entrypoint_required`
+  accepts an optional runtime callback (with `--`-split args preserved as reconciler
+  deploy passthrough when runtime callback is omitted).
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior for `spot_runner_wrapper_run_project_standard_wrapper_defaults_required`,
+  keeping standard-wrapper test stubs aligned with shared naming/runtime defaults.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner contract
+  behavior for `spot_runner_wrapper_run_project_build_wrapper_defaults_required`,
+  keeping build-wrapper test stubs aligned with shared defaults wiring.
+- `scripts/gcp_build_image.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_build_wrapper_defaults_required`, so build-wrapper
+  defaults wiring stays single-sourced before command-dispatch build entrypoint handling.
+- `gcp/state_helpers.sh` now delegates wrapper entrypoint wiring through shared helper
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_entrypoint_required`, so
+  runner default resolution + shared state-helper source contracts stay single-sourced.
+- `gcp/state_helpers.sh` now uses shared helper
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_required` so
+  standard runner hint/error + `RUNNER_DIR` var wiring stay single-sourced in runner.
+- `gcp/cloud_reconciler/deploy.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_reconciler_command_entrypoint_required`, so
+  `SPOT_CONFIG_PATH` override wiring + runtime setup + `reconciler_deploy` dispatch
+  are enforced by one runner entrypoint contract (using optional runtime args for RAV).
+- `gcp/cloud_reconciler/deploy.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required`, so
+  `SPOT_CONFIG_PATH` override ordering + optional reconciler runtime defaults stay
+  single-sourced in runner before `reconciler_deploy` dispatch.
+- `gcp/cloud_reconciler/deploy.sh` now calls
+  `run_project_command "reconciler_deploy"` directly; removed wrapper-local
+  `run_reconciler_deploy` alias from `scripts/gcp_runner_common.sh`.
+- `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now delegate through shared helper
+  `spot_runner_wrapper_run_project_named_command_entrypoint_required` with fixed command names,
+  and `scripts/gcp_runner_common.sh` dropped wrapper-local `run_ops_command`,
+  `run_monitor_command`, and `run_version_command` aliases.
+- `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now derive command names from wrapper
+  script names (`gcp_*.sh`) via shared helper
+  `spot_runner_wrapper_run_project_named_command_from_script_entrypoint_required`, removing
+  repeated hard-coded command strings in thin wrappers while preserving runtime-arg behavior.
+- `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now route through shared helper
+  `spot_runner_wrapper_run_project_profile_named_command_from_script_entrypoint_required`,
+  so standard-command wrappers inherit profile/command runtime defaults from the shared
+  runner contract (including version-path optional env loading) without wrapper-local
+  runtime arg literals.
+- `scripts/gcp_runner_common.sh` now delegates standard wrapper entrypoint wiring through
+  shared helper `spot_runner_wrapper_run_project_standard_wrapper_defaults_required`, so
+  profile naming contract defaults (`gcp_*.sh`) stay single-sourced in runner.
+- `scripts/gcp_runner_common.sh` now exposes `run_rav_standard_command_wrapper`, and
+  `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now call that one wrapper-common
+  function (delegating through shared callsite entrypoint helper), removing repeated
+  per-script adapter helper invocation blocks.
+- `gcp/GETTING_STARTED.md` and `docs/INDEX.md` now document the standard-wrapper naming
+  contract (`gcp_*.sh` -> derived command name) for thin operator wrappers.
+- `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now uses the shared
+  optional-runtime submit-entrypoint contract directly (no wrapper-local no-op runtime
+  callback needed).
+- `scripts/gcp_runner_common.sh` now centralizes shared submit-wrapper runtime prep, context
+  logging, and submit-entrypoint invocation through
+  `prepare_rav_submit_runtime_and_print_context` +
+  `run_submit_entrypoint_with_job`; `gcp_submit_primary.sh`,
+  `gcp_submit_poc.sh`, and `gcp_submit_chexpert_experiment.sh` now only define
+  mode-specific job commands.
+- `scripts/{gcp_submit_primary.sh,gcp_submit_poc.sh,gcp_submit_chexpert_experiment.sh}` now
+  delegate submit-shell + submit dispatch through shared helper
+  `spot_runner_wrapper_run_project_submit_entrypoint_required`, reducing repeated
+  wrapper-local submit-entrypoint wiring.
+- `scripts/gcp_build_image.sh` now delegates build-arg composition through shared helper
+  `spot_runner_wrapper_run_project_build_entrypoint_required`, reducing wrapper-local
+  `--source` / `--cloudbuild-config` / optional `--image` wiring.
+- `scripts/{gcp_ops.sh,gcp_monitor.sh,gcp_version.sh}` now delegate through shared helper
+  `spot_runner_wrapper_run_project_command_entrypoint_required`, reducing repeated
+  runtime+command entrypoint boilerplate in thin wrappers.
+- `scripts/gcp_runner_common.sh` `run_project_command` now delegates through shared helper
+  `spot_runner_wrapper_run_project_profile_command_with_paths_required`, reducing wrapper-local
+  profile command argument plumbing while retaining shared config-mode behavior.
+- `scripts/gcp_runner_common.sh` runtime setup now delegates through shared helper
+  `spot_runner_wrapper_setup_project_profile_runtime_required`, reducing repeated
+  profile runtime argument plumbing in the thin wrapper.
 - `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
   `submit_with_job`, `build`, `monitor`, `version`, `reconciler_deploy`) through one
-  wrapper-local helper `run_project_command`, which prefers shared required helper
-  `spot_runner_wrapper_run_project_standard_command_required` with fallback to
-  `spot_runner_wrapper_run_project_command_with_mode_required`; `reconciler_deploy`
-  additionally falls back to dedicated helper
-  `spot_runner_wrapper_run_project_reconciler_deploy_with_loaded_config_required`
-  when command-dispatch helpers are unavailable. This removes repeated per-command
-  dispatch argument blocks while preserving compatibility with older/fake runner
-  helper surfaces.
-- `scripts/gcp_runner_common.sh` now routes common command dispatch (`ops`,
-  `submit_with_job`, `build`, `monitor`, `version`) through shared helper
-  `spot_runner_wrapper_run_project_command_with_mode_required`, reducing repeated
-  wrapper-local config-path + dispatch glue.
+  wrapper-local helper `run_project_command`, which now directly requires shared
+  profile-aware command helper
+  `spot_runner_wrapper_run_project_profile_command_required`; shared runner helper
+  ownership now handles profile+command config-mode selection plus fallback dispatch
+  sequencing internally. `reconciler_deploy` now routes through the same shared
+  dispatch path, removing the remaining wrapper-local fallback branch for dedicated
+  reconciler deploy wiring.
+- `tests/bats/test_runner_adapter.bats` fake runner adapter now stubs
+  `spot_runner_wrapper_run_project_standard_command_compat_required`, keeping
+  reconciler wrapper contract tests aligned with the shared dispatch-helper requirement.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now also stub
+  `spot_runner_wrapper_run_project_standard_command_active_required` and
+  `spot_runner_wrapper_run_project_standard_command_loaded_required`, keeping RAV
+  adapter tests aligned with the new shared mode-specific dispatch entrypoints.
+- `scripts/gcp_runner_common.sh` now delegates submit-shell/caffeinate setup through shared
+  profile-aware helper
+  `spot_runner_wrapper_prepare_project_submit_shell_for_profile_from_args_required`, and submit
+  wrappers (`gcp_submit_primary.sh`, `gcp_submit_poc.sh`,
+  `gcp_submit_chexpert_experiment.sh`) now forward `"$@"` directly to
+  `prepare_submit_shell` (no wrapper-local submit-guard alias state required).
 - `gcp/state_helpers.sh` now uses shared helper
   `spot_runner_wrapper_source_project_state_helpers_required_or_fail`, removing duplicate
   wrapper-local state-helper failure plumbing.
@@ -72,6 +292,10 @@ Changed:
 - `scripts/gcp_runner_common.sh` bootstrap preamble is now reduced to a single candidate-resolution
   loop plus required shared initializer call (`spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required`),
   removing the wrapper-local bootstrap helper function wrapper.
+- `scripts/gcp_runner_common.sh` bootstrap preamble now delegates default candidate
+  initializer wiring through shared helper
+  `spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required`,
+  reducing duplicated bootstrap argument plumbing in thin wrappers.
 - Removed unused wrapper-local shim functions `load_rav_spot_env_optional()` and
   `run_spotctl_with_config()` from `scripts/gcp_runner_common.sh`; runtime env loading and
   spotctl dispatch stay centralized behind shared required helper contracts.

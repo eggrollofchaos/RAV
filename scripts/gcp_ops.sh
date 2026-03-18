@@ -5,6 +5,4 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/gcp_runner_common.sh"
 
-prepare_rav_runtime "required" "1" "1"
-
-run_ops_command "$@"
+run_rav_standard_command_wrapper "$@"

@@ -5,7 +5,19 @@ load test_helper
 
 _make_fake_runner() {
   local fake_runner="$1"
-  mkdir -p "$fake_runner"
+  mkdir -p "$fake_runner/adapters"
+  printf '%s\n' 'APP_VERSION = "v0.6.40-phase7-wrapper-runtime-init"' > "$fake_runner/version.py"
+  cat > "$fake_runner/adapters/spot_runner_bootstrap.sh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout.}"
+  local project_root="${2:-}"
+  printf -v RUNNER_BOOTSTRAP_DIR_DEFAULT '%s' "${RUNNER_DIR:-${project_root}/../gcp-spot-runner}"
+  printf -v RUNNER_HINT_MESSAGE '%s' "${hint_message}"
+}
+EOF
+  chmod +x "$fake_runner/adapters/spot_runner_bootstrap.sh"
   cat > "$fake_runner/state_helpers.sh" <<'EOF'
 #!/usr/bin/env bash
 can_transition() {

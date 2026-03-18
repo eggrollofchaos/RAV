@@ -15,7 +15,7 @@ This is the canonical documentation map for RAV.
 
 ## Core Operator Docs
 
-- [../gcp/GETTING_STARTED.md](../gcp/GETTING_STARTED.md) — concise command-first GCP quickstart.
+- [../gcp/GETTING_STARTED.md](../gcp/GETTING_STARTED.md) — concise command-first GCP quickstart, including `gcp_*.sh` wrapper naming contract.
 - [../gcp/GCP_NOTES.md](../gcp/GCP_NOTES.md) — end-to-end GCP runbook, incidents, and recovery notes.
 - [../gcp/DATASET_TRANFER.md](../gcp/DATASET_TRANFER.md) — one-time large dataset transfer workflow.
 - [CHEST_RUNBOOK.md](CHEST_RUNBOOK.md) — end-to-end chest-track experiment/operator runbook.

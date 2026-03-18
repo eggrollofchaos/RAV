@@ -9,14 +9,10 @@ _STATE_HELPERS_PROJECT_ROOT="$(cd "${_STATE_HELPERS_WRAPPER_DIR}/.." && pwd)"
 # shellcheck disable=SC1090
 source "${_STATE_HELPERS_PROJECT_ROOT}/scripts/gcp_runner_common.sh"
 
-# Ensure RUNNER_DIR defaults + state-helper loading follow one shared wrapper contract.
-if ! spot_runner_wrapper_init_project_state_helpers_wrapper_required \
+# Ensure RUNNER_DIR defaults + state-helper loading follow one shared wrapper defaults contract.
+spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required \
+  "${RUNNER_HINT_MESSAGE}" \
   "${_STATE_HELPERS_PROJECT_ROOT}" \
   "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
   "${RUNNER_PROFILE}" \
-  "Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout." \
-  "Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR." \
-  "RUNNER_DIR" \
-  "RUNNER_DIR"; then
-  return 1 2>/dev/null || exit 1
-fi
+  || return 1 2>/dev/null || exit 1
