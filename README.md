@@ -5,7 +5,7 @@ Comprehensive execution plan for building an agentic radiology prototype, now op
 Date: March 1, 2026
 
 Current app version: `v0.2.46-profile-install-runtime-contracts`
-Spot runner lineage version: `gcp-spot-runner v0.6.38-profile-install-runtime-contracts`
+Spot runner lineage version: `gcp-spot-runner v0.6.40-phase7-wrapper-runtime-init`
 
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`

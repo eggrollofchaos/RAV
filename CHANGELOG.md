@@ -17,6 +17,9 @@ Changed:
   canonical runner submit-shell entrypoint/profile helper names instead of the
   older `*_compat_or_fallback` submit-shell ladder, keeping RAV adapter
   fixtures aligned with the flattened live runner path.
+- `README.md`, `gcp/GETTING_STARTED.md`, and `gcp/GCP_NOTES.md` now state the
+  current thin-wrapper contract and minimum required runner version
+  (`v0.6.40-phase7-wrapper-runtime-init`).
 - `scripts/gcp_runner_common.sh` now delegates bootstrap sibling-runner
   discovery and minimum-runner-version enforcement through one shared helper
   contract

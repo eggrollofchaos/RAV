@@ -6,6 +6,7 @@ For incident learnings and deeper troubleshooting patterns, see `GCP_NOTES.md` (
 Reconciler ownership note:
 - `gcp/cloud_reconciler/deploy.sh` in this repo is the thin deploy wrapper.
 - Canonical reconciler implementation lives in `../gcp-spot-runner/cloud_reconciler/`.
+- RAV thin wrappers require `gcp-spot-runner >= v0.6.40-phase7-wrapper-runtime-init`.
 
 Operator CLI note:
 - Use `./scripts/rav-gcp.sh` as the canonical command entrypoint.
