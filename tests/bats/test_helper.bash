@@ -451,6 +451,36 @@ spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required(
     "${command_function_name}" \
     "$@"
 }
+spot_runner_wrapper_profile_config_env_var_required() {
+  local profile_name="${1:-default}"
+  local output_var_name="${2:-}"
+  local _hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local resolved_env_var_name="SPOT_CONFIG_PATH"
+  case "${profile_name}" in
+    ixqt) resolved_env_var_name="IXQT_GCP_ENV" ;;
+    rav) resolved_env_var_name="RAV_GCP_ENV" ;;
+  esac
+  if [[ -n "${output_var_name}" ]]; then
+    printf -v "${output_var_name}" '%s' "${resolved_env_var_name}"
+  else
+    printf '%s\n' "${resolved_env_var_name}"
+  fi
+}
+spot_runner_wrapper_run_project_reconciler_wrapper_profile_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local profile_name="${2:-default}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  shift 4 || true
+  local config_env_var_name=""
+  spot_runner_wrapper_profile_config_env_var_required "${profile_name}" config_env_var_name "${hint_message}"
+  spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required \
+    "${hint_message}" \
+    "${config_env_var_name}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "$@"
+}
 spot_runner_wrapper_source_project_state_helpers_or_fail() {
   local runner_dir="$1"
   local project_root="${2:-}"
