@@ -342,6 +342,12 @@ spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper
     "${default_worktree_runner_dir}" \
     "$@"
 }
+spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local _runner_dir="${2:-}"
+  local _minimum_version="${3:-}"
+  local _feature_label="${4:-This wrapper}"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"

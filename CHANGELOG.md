@@ -13,6 +13,12 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` now enforces a minimum shared-runner version
+  (`v0.6.39-phase7-version-gates`) at bootstrap time, failing fast with an
+  explicit upgrade message when pointed at an older `gcp-spot-runner` checkout.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the
+  shared bootstrap min-version gate contract, keeping RAV adapter bootstrap
+  stubs/tests aligned with runner version-gating behavior.
 - `scripts/gcp_runner_common.sh` bootstrap initialization now delegates through
   shared helper
   `spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required`,
