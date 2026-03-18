@@ -30,6 +30,14 @@ Changed:
 - `tests/bats/test_helper.bash` now mirrors runner contract behavior for
   `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required`,
   keeping RAV state-helper wrapper stubs aligned with shared defaults wiring.
+- `gcp/cloud_reconciler/deploy.sh` now delegates through shared helper
+  `spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required`,
+  so reconciler wrapper config-env/runtime/command defaults stay single-sourced
+  in runner common contracts.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required`,
+  keeping RAV reconciler wrapper stubs/tests aligned with shared defaults wiring.
 - `scripts/gcp_runner_common.sh` `prepare_submit_shell` now delegates through
   shared helper
   `spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required`,

@@ -438,6 +438,19 @@ spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required() {
     "${command_function_name}" \
     "$@"
 }
+spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local config_env_var_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  shift 4 || true
+  spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required \
+    "${hint_message}" \
+    "${config_env_var_name}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "$@"
+}
 spot_runner_wrapper_source_project_state_helpers_or_fail() {
   local runner_dir="$1"
   local project_root="${2:-}"

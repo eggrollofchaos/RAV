@@ -1889,6 +1889,19 @@ spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required() {
     "${command_function_name}" \
     "$@"
 }
+spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local config_env_var_name="${2:-}"
+  local runtime_function_name="${3:-}"
+  local command_function_name="${4:-}"
+  shift 4 || true
+  spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required \
+    "${_hint_message}" \
+    "${config_env_var_name}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "$@"
+}
 spot_runner_wrapper_profile_reconciler_defaults() {
   local profile_name="${1:-default}"
   local function_name_var="${2:-}"

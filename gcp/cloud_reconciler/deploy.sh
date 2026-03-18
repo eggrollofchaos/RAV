@@ -8,7 +8,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 # shellcheck disable=SC1090
 source "${REPO_ROOT}/scripts/gcp_runner_common.sh"
 
-spot_runner_wrapper_run_project_reconciler_wrapper_defaults_required \
+spot_runner_wrapper_run_project_reconciler_wrapper_defaults_for_common_required \
   "${RUNNER_HINT_MESSAGE}" \
   "RAV_GCP_ENV" \
   "prepare_rav_runtime" \
