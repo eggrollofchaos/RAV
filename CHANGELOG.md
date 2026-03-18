@@ -13,6 +13,15 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` `run_submit_entrypoint_with_job` now delegates
+  through shared helper
+  `spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required`,
+  so submit-wrapper defaults wiring is single-sourced for wrapper-common callsites.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required`,
+  keeping RAV submit-wrapper common stubs/tests aligned with shared defaults
+  wiring.
 - `scripts/gcp_runner_common.sh` now exposes `run_rav_build_wrapper`, and
   `scripts/gcp_build_image.sh` now calls that thin wrapper; build-wrapper
   common defaults (`hint`, dispatcher, source/config/image wiring) are now

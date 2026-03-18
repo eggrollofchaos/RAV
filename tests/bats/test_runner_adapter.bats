@@ -365,6 +365,29 @@ _capture_stub() {
   assert_line --index 8 "--dry-run"
 }
 
+@test "run_submit_entrypoint_with_job delegates through shared submit-wrapper common defaults helper" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/submit_wrapper_common_args.txt"
+
+  spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required() {
+    printf '[%s]\n' "$@" > "$captured"
+  }
+
+  run_submit_entrypoint_with_job "echo train" --run-id rav-126 --no-gpu
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "[Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout.]"
+  assert_line --index 1 "[prepare_submit_shell]"
+  assert_line --index 2 "[]"
+  assert_line --index 3 "[run_submit_with_job]"
+  assert_line --index 4 "[echo train]"
+  assert_line --index 5 "[--]"
+  assert_line --index 6 "[--run-id]"
+  assert_line --index 7 "[rav-126]"
+  assert_line --index 8 "[--no-gpu]"
+}
+
 _setup_temp_submit_wrappers() {
   export TEMP_REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$TEMP_REPO/scripts"
@@ -810,6 +833,21 @@ spot_runner_wrapper_run_project_submit_wrapper_defaults_required() {
     "\${job_command}" \
     "\$@"
 }
+spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local submit_shell_function_name="\${2:-}"
+  local runtime_function_name="\${3:-}"
+  local submit_function_name="\${4:-}"
+  local job_command="\${5:-}"
+  shift 5 || true
+  spot_runner_wrapper_run_project_submit_wrapper_defaults_required \
+    "\${_hint_message}" \
+    "\${submit_shell_function_name}" \
+    "\${runtime_function_name}" \
+    "\${submit_function_name}" \
+    "\${job_command}" \
+    "\$@"
+}
 spot_runner_maybe_reexec_caffeinate_compat() {
   local guard_var="\${1:-_SPOT_CAFFEINATED}"
   shift 2 || true
@@ -839,7 +877,7 @@ prepare_submit_shell() {
 run_submit_entrypoint_with_job() {
   local job_command="\$1"
   shift || true
-  spot_runner_wrapper_run_project_submit_wrapper_defaults_required \
+  spot_runner_wrapper_run_project_submit_wrapper_defaults_for_common_required \
     "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
     "prepare_submit_shell" \
     "" \
