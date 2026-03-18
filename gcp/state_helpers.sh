@@ -10,7 +10,8 @@ _STATE_HELPERS_PROJECT_ROOT="$(cd "${_STATE_HELPERS_WRAPPER_DIR}/.." && pwd)"
 source "${_STATE_HELPERS_PROJECT_ROOT}/scripts/gcp_runner_common.sh"
 
 # Ensure RUNNER_DIR defaults + state-helper loading follow one shared wrapper defaults contract.
-spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_required \
+spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required \
+  "${RUNNER_HINT_MESSAGE}" \
   "${_STATE_HELPERS_PROJECT_ROOT}" \
   "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
   "${RUNNER_PROFILE}" \

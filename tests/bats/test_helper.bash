@@ -489,6 +489,27 @@ spot_runner_wrapper_init_project_state_helpers_wrapper_required() {
     "${hint_message}" \
     "${error_message}"
 }
+spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="$2"
+  local default_runner_dir="$3"
+  local profile_name="${4:-default}"
+  local error_message="${5:-Unable to locate gcp-spot-runner. Set RUNNER_DIR or GCP_SPOT_RUNNER_DIR.}"
+  if [[ $# -gt 5 ]]; then
+    shift 5
+  else
+    set --
+  fi
+  spot_runner_wrapper_init_project_state_helpers_wrapper_required \
+    "${project_root}" \
+    "${default_runner_dir}" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "${error_message}" \
+    "RUNNER_DIR" \
+    "RUNNER_DIR" \
+    "$@"
+}
 spot_runner_require_install_or_exit() { return 0; }
 spot_runner_wrapper_apply_rav_defaults() {
   : "${ZONE:=us-east1-c}"

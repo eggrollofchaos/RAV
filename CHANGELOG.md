@@ -23,6 +23,13 @@ Changed:
   `spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required`,
   keeping RAV bootstrap wrapper defaults stubs/tests aligned with shared
   bootstrap defaults wiring.
+- `gcp/state_helpers.sh` now delegates through shared helper
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required`,
+  so state-helper wrapper hint/default/profile wiring stays single-sourced in
+  runner common contracts.
+- `tests/bats/test_helper.bash` now mirrors runner contract behavior for
+  `spot_runner_wrapper_source_project_state_helpers_wrapper_defaults_for_common_required`,
+  keeping RAV state-helper wrapper stubs aligned with shared defaults wiring.
 - `scripts/gcp_runner_common.sh` `prepare_submit_shell` now delegates through
   shared helper
   `spot_runner_wrapper_prepare_project_submit_shell_for_profile_wrapper_defaults_for_common_required`,
