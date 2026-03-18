@@ -133,3 +133,28 @@ run_rav_standard_command_wrapper() {
     "${RUNNER_PROFILE}" \
     "$@"
 }
+
+run_rav_build_wrapper() {
+  prepare_rav_runtime "required" "1" "1"
+
+  echo "Building/pushing image: ${IMAGE}"
+  echo "Project: ${PROJECT} | Region: ${REGION}"
+  if [[ -n "${CLOUDSDK_PYTHON:-}" ]]; then
+    echo "gcloud Python: ${CLOUDSDK_PYTHON}"
+  fi
+  local source_staging_dir="${GCS_SOURCE_STAGING_DIR:-gs://${BUCKET}/cloudbuild/source}"
+  echo "Source staging dir: ${source_staging_dir}"
+
+  spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required \
+    "${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+    "" \
+    "run_project_command" \
+    "${RAV_ROOT}" \
+    "${RAV_ROOT}/gcp/cloudbuild.rav.yaml" \
+    "${IMAGE}" \
+    -- \
+    --gcs-source-staging-dir "${source_staging_dir}" \
+    "$@"
+
+  echo "Build complete: ${IMAGE}"
+}

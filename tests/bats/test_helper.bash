@@ -975,6 +975,24 @@ spot_runner_wrapper_run_project_build_wrapper_defaults_required() {
     "${image_value}" \
     "$@"
 }
+spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required() {
+  local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="${2:-}"
+  local command_function_name="${3:-}"
+  local source_path="${4:-}"
+  local cloudbuild_config_path="${5:-}"
+  local image_value="${6:-}"
+  shift 6 || true
+
+  spot_runner_wrapper_run_project_build_wrapper_defaults_required \
+    "${_hint_message}" \
+    "${runtime_function_name}" \
+    "${command_function_name}" \
+    "${source_path}" \
+    "${cloudbuild_config_path}" \
+    "${image_value}" \
+    "$@"
+}
 spot_runner_wrapper_run_project_build_entrypoint_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local runtime_function_name="${2:-}"

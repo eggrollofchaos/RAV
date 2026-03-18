@@ -13,6 +13,16 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` now exposes `run_rav_build_wrapper`, and
+  `scripts/gcp_build_image.sh` now calls that thin wrapper; build-wrapper
+  common defaults (`hint`, dispatcher, source/config/image wiring) are now
+  single-sourced through shared helper
+  `spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required`.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
+  contract behavior for
+  `spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required`,
+  keeping RAV build-wrapper common stubs/tests aligned with shared defaults
+  wiring.
 - `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror runner
   contract behavior for `spot_runner_wrapper_run_project_standard_wrapper_defaults_for_common_required`,
   keeping standard-wrapper common test stubs aligned with shared defaults wiring.

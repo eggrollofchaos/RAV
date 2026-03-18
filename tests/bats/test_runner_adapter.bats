@@ -327,6 +327,44 @@ _capture_stub() {
   assert_line --index 3 "--dry-run"
 }
 
+@test "run_rav_build_wrapper delegates through shared build-wrapper common defaults helper" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/build_wrapper_common_args.txt"
+  local runtime_capture="$BATS_TEST_TMPDIR/build_wrapper_common_runtime_args.txt"
+
+  prepare_rav_runtime() {
+    printf '%s\n' "$@" > "$runtime_capture"
+    IMAGE="us-east1-docker.pkg.dev/demo/rav/train:latest"
+    PROJECT="demo-project"
+    REGION="us-east1"
+    BUCKET="demo-bucket"
+  }
+  spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required() {
+    printf '%s\n' "$@" > "$captured"
+  }
+
+  run run_rav_build_wrapper --dry-run
+  assert_success
+
+  run cat "$runtime_capture"
+  assert_success
+  assert_line --index 0 "required"
+  assert_line --index 1 "1"
+  assert_line --index 2 "1"
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+  assert_line --index 1 "run_project_command"
+  assert_line --index 2 "$REPO_ROOT"
+  assert_line --index 3 "$REPO_ROOT/gcp/cloudbuild.rav.yaml"
+  assert_line --index 4 "us-east1-docker.pkg.dev/demo/rav/train:latest"
+  assert_line --index 5 -- "--"
+  assert_line --index 6 "--gcs-source-staging-dir"
+  assert_line --index 7 "gs://demo-bucket/cloudbuild/source"
+  assert_line --index 8 "--dry-run"
+}
+
 _setup_temp_submit_wrappers() {
   export TEMP_REPO="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$TEMP_REPO/scripts"
@@ -492,6 +530,24 @@ spot_runner_wrapper_run_project_build_wrapper_defaults_required() {
   shift 6 || true
 
   spot_runner_wrapper_run_project_build_command_entrypoint_required \
+    "\${_hint_message}" \
+    "\${runtime_function_name}" \
+    "\${command_function_name}" \
+    "\${source_path}" \
+    "\${cloudbuild_config_path}" \
+    "\${image_value}" \
+    "\$@"
+}
+spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required() {
+  local _hint_message="\${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local runtime_function_name="\${2:-}"
+  local command_function_name="\${3:-}"
+  local source_path="\${4:-}"
+  local cloudbuild_config_path="\${5:-}"
+  local image_value="\${6:-}"
+  shift 6 || true
+
+  spot_runner_wrapper_run_project_build_wrapper_defaults_required \
     "\${_hint_message}" \
     "\${runtime_function_name}" \
     "\${command_function_name}" \
@@ -842,6 +898,20 @@ run_rav_standard_command_wrapper() {
     "prepare_rav_runtime" \
     "run_project_command" \
     "rav" \
+    "\$@"
+}
+run_rav_build_wrapper() {
+  prepare_rav_runtime "required" "1" "1"
+  local source_staging_dir="\${GCS_SOURCE_STAGING_DIR:-gs://\${BUCKET}/cloudbuild/source}"
+  spot_runner_wrapper_run_project_build_wrapper_defaults_for_common_required \
+    "\${RUNNER_HINT_MESSAGE:-Set RUNNER_DIR to your gcp-spot-runner checkout.}" \
+    "" \
+    "run_project_command" \
+    "\${RAV_ROOT}" \
+    "\${RAV_ROOT}/gcp/cloudbuild.rav.yaml" \
+    "\${IMAGE}" \
+    -- \
+    --gcs-source-staging-dir "\${source_staging_dir}" \
     "\$@"
 }
 SCRIPT
