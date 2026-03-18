@@ -2341,6 +2341,23 @@ spot_runner_run_spotctl() {
 ADAPTER_STUB
   chmod +x "$fake_runner/adapters/spot_runner_common.sh"
   printf '%s\n' 'APP_VERSION = "v0.6.40-phase7-wrapper-runtime-init"' > "$fake_runner/version.py"
+  cat > "$fake_runner/adapters/spot_runner_bootstrap.sh" <<'BOOTSTRAP_STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+BOOTSTRAP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMMON_LIB="${BOOTSTRAP_DIR}/spot_runner_common.sh"
+if [[ -f "${COMMON_LIB}" ]]; then
+  # shellcheck disable=SC1090
+  source "${COMMON_LIB}"
+fi
+spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout.}"
+  local project_root="${2:-}"
+  printf -v RUNNER_BOOTSTRAP_DIR_DEFAULT '%s' "${RUNNER_DIR:-${project_root}/../gcp-spot-runner}"
+  printf -v RUNNER_HINT_MESSAGE '%s' "${hint_message}"
+}
+BOOTSTRAP_STUB
+  chmod +x "$fake_runner/adapters/spot_runner_bootstrap.sh"
 
   local fake_bin="$BATS_TEST_TMPDIR/fake-bin"
   mkdir -p "$fake_bin"

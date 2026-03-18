@@ -1407,6 +1407,11 @@ setup() {
     unset GCLOUD_CREATE_RESULT_us_east1_c 2>/dev/null || true
     unset GCLOUD_CREATE_RESULT_us_east1_b 2>/dev/null || true
     unset GCLOUD_CREATE_RESULT_us_east1_d 2>/dev/null || true
+    local _stub_name=""
+    while read -r _ _ _stub_name; do
+        [[ "$_stub_name" == spot_runner_* ]] || continue
+        export -f "$_stub_name"
+    done < <(declare -F)
 }
 
 fixture_path()    { echo "$BATS_TEST_DIRNAME/fixtures/$1"; }

@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 Fixed:
+- `tests/bats/test_helper.bash` now exports fallback `spot_runner_*` stubs into
+  child bash processes, and fake-runner fixtures in
+  `tests/bats/{test_state_helpers_wrapper.bats,test_runner_adapter.bats}` now
+  include bootstrap/version shims so RAV adapter CI passes even when no sibling
+  `gcp-spot-runner` checkout is present.
 - CI: replaced local symlinks for bats test libraries (`bats-core`, `bats-assert`,
   `bats-support`) with proper git submodules so tests run in CI environments.
 - CI: added fallback adapter stubs in `test_helper.bash` so adapter contract tests
