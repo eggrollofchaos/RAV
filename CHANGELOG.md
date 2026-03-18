@@ -13,6 +13,9 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.41-phase7-contract-matrix-closure` in:
+  - `README.md`
+  - `gcp/GCP_NOTES.md`
 - `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the
   canonical runner submit-shell entrypoint/profile helper names instead of the
   older `*_compat_or_fallback` submit-shell ladder, keeping RAV adapter
