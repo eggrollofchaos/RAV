@@ -1313,16 +1313,21 @@ spot_runner_prepare_submit_shell_compat() {
   spot_runner_maybe_reexec_caffeinate_compat "${guard_var}" "${guard_alias_csv}" "$@"
   trap '' HUP
 }
-spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+spot_runner_wrapper_prepare_project_submit_shell_entrypoint() {
   local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
   shift || true
   spot_runner_prepare_submit_shell_compat "_SPOT_CAFFEINATED" "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+  local guard_alias_csv="${1:-_IXQT_CAFFEINATED}"
+  shift || true
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint "${guard_alias_csv}" "$@"
 }
 spot_runner_wrapper_prepare_project_submit_shell_entrypoint_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local guard_alias_csv="${2:-_IXQT_CAFFEINATED}"
   shift 2 || true
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint "${guard_alias_csv}" "$@"
 }
 spot_runner_wrapper_profile_submit_guard_aliases() {
   local profile_name="${1:-default}"
@@ -1335,7 +1340,7 @@ spot_runner_wrapper_profile_submit_guard_aliases() {
       ;;
   esac
 }
-spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat() {
+spot_runner_wrapper_prepare_project_submit_shell_for_profile() {
   local profile_name="${1:-default}"
   local guard_alias_csv_override="${2:-}"
   shift 2 || true
@@ -1345,14 +1350,17 @@ spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat() {
     guard_alias_csv="$(spot_runner_wrapper_profile_submit_guard_aliases "${profile_name}")"
   fi
 
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback "${guard_alias_csv}" "$@"
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint "${guard_alias_csv}" "$@"
+}
+spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat() {
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile "$@"
 }
 spot_runner_wrapper_prepare_project_submit_shell_for_profile_required() {
   local _hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
   local profile_name="${2:-default}"
   local guard_alias_csv_override="${3:-}"
   shift 3 || true
-  spot_runner_wrapper_prepare_project_submit_shell_for_profile_compat \
+  spot_runner_wrapper_prepare_project_submit_shell_for_profile \
     "${profile_name}" \
     "${guard_alias_csv_override}" \
     "$@"

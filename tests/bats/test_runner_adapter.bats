@@ -408,7 +408,7 @@ BOOTSTRAP_STUB
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/prepare_project_submit_args.txt"
 
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint() {
     printf '%s\n' "$@" > "$captured"
   }
 
@@ -446,7 +446,7 @@ BOOTSTRAP_STUB
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/prepare_project_submit_default_alias_args.txt"
 
-  spot_runner_wrapper_prepare_project_submit_shell_entrypoint_compat_or_fallback() {
+  spot_runner_wrapper_prepare_project_submit_shell_entrypoint() {
     printf '%s\n' "$@" > "$captured"
   }
 

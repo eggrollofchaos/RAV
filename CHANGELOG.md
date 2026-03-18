@@ -13,6 +13,10 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the
+  canonical runner submit-shell entrypoint/profile helper names instead of the
+  older `*_compat_or_fallback` submit-shell ladder, keeping RAV adapter
+  fixtures aligned with the flattened live runner path.
 - `scripts/gcp_runner_common.sh` now delegates bootstrap sibling-runner
   discovery and minimum-runner-version enforcement through one shared helper
   contract
