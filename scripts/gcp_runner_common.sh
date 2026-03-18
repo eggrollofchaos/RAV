@@ -30,13 +30,10 @@ for RUNNER_BOOTSTRAP_CANDIDATE in "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" "${RUNNER_
   fi
 done
 
-spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required \
+spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required \
+  "${RUNNER_HINT_DEFAULT}" \
   "${RAV_ROOT}" \
   "${RUNNER_PROFILE}" \
-  "${RUNNER_HINT_DEFAULT}" \
-  RUNNER_BOOTSTRAP_DIR_DEFAULT \
-  "RUNNER_DIR" \
-  RUNNER_HINT_MESSAGE \
   "${RUNNER_DIR_DEFAULT_PRIMARY}" \
   "${RUNNER_DIR_DEFAULT_WORKTREE}"
 

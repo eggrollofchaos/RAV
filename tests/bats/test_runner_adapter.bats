@@ -352,6 +352,32 @@ _capture_stub() {
   assert_line --index 10 "[1]"
 }
 
+@test "rav runner bootstrap uses shared bootstrap common defaults helper" {
+  local fake_runner="$BATS_TEST_TMPDIR/fake-runner"
+  local captured="$BATS_TEST_TMPDIR/bootstrap_common_defaults_args.txt"
+  mkdir -p "$fake_runner/adapters"
+  cat > "$fake_runner/adapters/spot_runner_bootstrap.sh" <<'BOOTSTRAP_STUB'
+spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required() {
+  printf '%s\n' "$@" > "${RAV_BOOTSTRAP_CAPTURE_PATH}"
+  printf -v RUNNER_BOOTSTRAP_DIR_DEFAULT '%s' "/tmp/fake-bootstrap-runner"
+  printf -v RUNNER_HINT_MESSAGE '%s' "$1"
+}
+BOOTSTRAP_STUB
+
+  run env RUNNER_DIR="$fake_runner" RAV_BOOTSTRAP_CAPTURE_PATH="$captured" bash -c "source '$REPO_ROOT/scripts/gcp_runner_common.sh'; printf '%s\n' \"\$RUNNER_BOOTSTRAP_DIR_DEFAULT\" \"\$RUNNER_HINT_MESSAGE\""
+  assert_success
+  assert_line --index 0 "/tmp/fake-bootstrap-runner"
+  assert_line --index 1 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
+  assert_line --index 1 "$REPO_ROOT"
+  assert_line --index 2 "rav"
+  assert_line --index 3 "$REPO_ROOT/../gcp-spot-runner"
+  assert_line --index 4 "$REPO_ROOT/../gcp-spot-runner-codex"
+}
+
 @test "run_project_command ops delegates to shared profiled compat helper" {
   source "$REPO_ROOT/scripts/gcp_runner_common.sh"
   local captured="$BATS_TEST_TMPDIR/profiled_compat_args.txt"

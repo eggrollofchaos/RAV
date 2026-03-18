@@ -320,6 +320,28 @@ spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required() {
 spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required() {
   spot_runner_bootstrap_initialize_project_wrapper_from_candidates_required "$@"
 }
+spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required() {
+  local default_hint="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="$2"
+  local profile_name="${3:-default}"
+  local default_primary_runner_dir="${4:-${project_root}/../gcp-spot-runner}"
+  local default_worktree_runner_dir="${5:-${project_root}/../gcp-spot-runner-codex}"
+  if [[ $# -gt 5 ]]; then
+    shift 5
+  else
+    set --
+  fi
+  spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required \
+    "${project_root}" \
+    "${profile_name}" \
+    "${default_hint}" \
+    "RUNNER_BOOTSTRAP_DIR_DEFAULT" \
+    "RUNNER_DIR" \
+    "RUNNER_HINT_MESSAGE" \
+    "${default_primary_runner_dir}" \
+    "${default_worktree_runner_dir}" \
+    "$@"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"
