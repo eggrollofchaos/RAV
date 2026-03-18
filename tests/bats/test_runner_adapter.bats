@@ -355,20 +355,16 @@ _capture_stub() {
 @test "rav runner bootstrap uses shared bootstrap common defaults helper" {
   local fake_runner="$BATS_TEST_TMPDIR/fake-runner"
   local captured="$BATS_TEST_TMPDIR/bootstrap_common_defaults_args.txt"
-  local version_captured="$BATS_TEST_TMPDIR/bootstrap_min_version_args.txt"
   mkdir -p "$fake_runner/adapters"
   cat > "$fake_runner/adapters/spot_runner_bootstrap.sh" <<'BOOTSTRAP_STUB'
-spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required() {
+spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required() {
   printf '%s\n' "$@" > "${RAV_BOOTSTRAP_CAPTURE_PATH}"
   printf -v RUNNER_BOOTSTRAP_DIR_DEFAULT '%s' "/tmp/fake-bootstrap-runner"
   printf -v RUNNER_HINT_MESSAGE '%s' "$1"
 }
-spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required() {
-  printf '%s\n' "$@" > "${RAV_MIN_VERSION_CAPTURE_PATH}"
-}
 BOOTSTRAP_STUB
 
-  run env RUNNER_DIR="$fake_runner" RAV_BOOTSTRAP_CAPTURE_PATH="$captured" RAV_MIN_VERSION_CAPTURE_PATH="$version_captured" bash -c "source '$REPO_ROOT/scripts/gcp_runner_common.sh'; printf '%s\n' \"\$RUNNER_BOOTSTRAP_DIR_DEFAULT\" \"\$RUNNER_HINT_MESSAGE\""
+  run env RUNNER_DIR="$fake_runner" RAV_BOOTSTRAP_CAPTURE_PATH="$captured" bash -c "source '$REPO_ROOT/scripts/gcp_runner_common.sh'; printf '%s\n' \"\$RUNNER_BOOTSTRAP_DIR_DEFAULT\" \"\$RUNNER_HINT_MESSAGE\""
   assert_success
   assert_line --index 0 "/tmp/fake-bootstrap-runner"
   assert_line --index 1 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
@@ -378,15 +374,10 @@ BOOTSTRAP_STUB
   assert_line --index 0 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
   assert_line --index 1 "$REPO_ROOT"
   assert_line --index 2 "rav"
-  assert_line --index 3 "$REPO_ROOT/../gcp-spot-runner"
-  assert_line --index 4 "$REPO_ROOT/../gcp-spot-runner-codex"
-
-  run cat "$version_captured"
-  assert_success
-  assert_line --index 0 "Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
-  assert_line --index 1 "/tmp/fake-bootstrap-runner"
-  assert_line --index 2 "v0.6.39-phase7-version-gates"
-  assert_line --index 3 "RAV GCP wrappers"
+  assert_line --index 3 "v0.6.40-phase7-wrapper-runtime-init"
+  assert_line --index 4 "RAV GCP wrappers"
+  assert_line --index 5 "$REPO_ROOT/../gcp-spot-runner"
+  assert_line --index 6 "$REPO_ROOT/../gcp-spot-runner-codex"
 }
 
 @test "run_project_command ops delegates to shared profiled compat helper" {
@@ -2349,7 +2340,7 @@ spot_runner_run_spotctl() {
 }
 ADAPTER_STUB
   chmod +x "$fake_runner/adapters/spot_runner_common.sh"
-  printf '%s\n' 'APP_VERSION = "v0.6.39-phase7-version-gates"' > "$fake_runner/version.py"
+  printf '%s\n' 'APP_VERSION = "v0.6.40-phase7-wrapper-runtime-init"' > "$fake_runner/version.py"
 
   local fake_bin="$BATS_TEST_TMPDIR/fake-bin"
   mkdir -p "$fake_bin"

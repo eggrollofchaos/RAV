@@ -13,6 +13,14 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
+- `scripts/gcp_runner_common.sh` now delegates bootstrap sibling-runner
+  discovery and minimum-runner-version enforcement through one shared helper
+  contract
+  (`spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required`)
+  instead of manually chaining two wrapper-local bootstrap calls.
+- `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the new
+  shared bootstrap runtime-init contract and require runner version
+  `v0.6.40-phase7-wrapper-runtime-init`.
 - `scripts/gcp_runner_common.sh` now enforces a minimum shared-runner version
   (`v0.6.39-phase7-version-gates`) at bootstrap time, failing fast with an
   explicit upgrade message when pointed at an older `gcp-spot-runner` checkout.

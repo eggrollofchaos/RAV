@@ -348,6 +348,58 @@ spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_req
   local _minimum_version="${3:-}"
   local _feature_label="${4:-This wrapper}"
 }
+spot_runner_bootstrap_initialize_project_wrapper_runtime_required() {
+  local project_root="$1"
+  local profile_name="${2:-default}"
+  local hint_message="${3:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local minimum_version="${4:-}"
+  local feature_label="${5:-This wrapper}"
+  local default_primary_runner_dir="${6:-${project_root}/../gcp-spot-runner}"
+  local default_worktree_runner_dir="${7:-${project_root}/../gcp-spot-runner-codex}"
+  if [[ $# -gt 7 ]]; then
+    shift 7
+  else
+    set --
+  fi
+  spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_required \
+    "${project_root}" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "RUNNER_BOOTSTRAP_DIR_DEFAULT" \
+    "RUNNER_DIR" \
+    "RUNNER_HINT_MESSAGE" \
+    "${default_primary_runner_dir}" \
+    "${default_worktree_runner_dir}" \
+    "$@"
+  spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required \
+    "${RUNNER_HINT_MESSAGE:-${hint_message}}" \
+    "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
+    "${minimum_version}" \
+    "${feature_label}"
+}
+spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="${2:-}"
+  local profile_name="${3:-default}"
+  local minimum_version="${4:-}"
+  local feature_label="${5:-This wrapper}"
+  local default_primary_runner_dir="${6:-${project_root}/../gcp-spot-runner}"
+  local default_worktree_runner_dir="${7:-${project_root}/../gcp-spot-runner-codex}"
+  if [[ $# -gt 7 ]]; then
+    shift 7
+  else
+    set --
+  fi
+  spot_runner_bootstrap_initialize_project_wrapper_runtime_required \
+    "${project_root}" \
+    "${profile_name}" \
+    "${hint_message}" \
+    "${minimum_version}" \
+    "${feature_label}" \
+    "${default_primary_runner_dir}" \
+    "${default_worktree_runner_dir}" \
+    "$@"
+}
 spot_runner_require_wrapper_runtime_or_exit() {
   local _runner_dir="$1"
   local _hint="${2:-}"

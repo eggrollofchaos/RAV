@@ -10,7 +10,7 @@ RUNNER_DIR_DEFAULT_WORKTREE="${RAV_ROOT}/../gcp-spot-runner-codex"
 RAV_GCP_ENV_PATH=""
 RUNNER_ADAPTER_LIB_LOADED="0"
 RUNNER_PROFILE="rav"
-RUNNER_MIN_VERSION="v0.6.39-phase7-version-gates"
+RUNNER_MIN_VERSION="v0.6.40-phase7-wrapper-runtime-init"
 RUNNER_BOOTSTRAP_DIR_DEFAULT="${RUNNER_DIR_DEFAULT_PRIMARY}"
 RUNNER_HINT_DEFAULT="Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout."
 RUNNER_HINT_MESSAGE="${RUNNER_HINT_DEFAULT}"
@@ -31,23 +31,14 @@ for RUNNER_BOOTSTRAP_CANDIDATE in "${RUNNER_BOOTSTRAP_ENV_CANDIDATE}" "${RUNNER_
   fi
 done
 
-spot_runner_bootstrap_initialize_project_wrapper_from_default_candidates_wrapper_defaults_for_common_required \
+spot_runner_bootstrap_initialize_project_wrapper_runtime_wrapper_defaults_for_common_required \
   "${RUNNER_HINT_DEFAULT}" \
   "${RAV_ROOT}" \
   "${RUNNER_PROFILE}" \
-  "${RUNNER_DIR_DEFAULT_PRIMARY}" \
-  "${RUNNER_DIR_DEFAULT_WORKTREE}"
-
-if ! declare -F spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required >/dev/null 2>&1; then
-  echo "RAV GCP wrappers require gcp-spot-runner >= ${RUNNER_MIN_VERSION}. Upgrade your runner checkout." >&2
-  return 1 2>/dev/null || exit 1
-fi
-
-spot_runner_bootstrap_require_min_runner_version_wrapper_defaults_for_common_required \
-  "${RUNNER_HINT_MESSAGE}" \
-  "${RUNNER_BOOTSTRAP_DIR_DEFAULT}" \
   "${RUNNER_MIN_VERSION}" \
   "RAV GCP wrappers" \
+  "${RUNNER_DIR_DEFAULT_PRIMARY}" \
+  "${RUNNER_DIR_DEFAULT_WORKTREE}" \
   || return 1 2>/dev/null || exit 1
 
 prepare_rav_runtime() {
