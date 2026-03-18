@@ -127,6 +127,39 @@ _capture_stub() {
       "${gcloud_project_root}" \
       "$@"
   }
+  spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required() {
+    local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+    local project_root="$2"
+    local default_runner_dir="$3"
+    local profile_name="${4:-default}"
+    local env_var_name="${5:-RAV_GCP_ENV}"
+    local default_env_path="${6:-}"
+    local output_env_var_name="${7:-RAV_GCP_ENV_PATH}"
+    local env_mode="${8:-optional}"
+    local missing_env_message="${9:-Missing required project environment file.}"
+    local require_spot_vars="${10:-0}"
+    local configure_gcloud="${11:-0}"
+    local gcloud_project_root="${12:-${project_root}}"
+    if [[ $# -gt 12 ]]; then
+      shift 12
+    else
+      set --
+    fi
+    spot_runner_wrapper_setup_project_profile_runtime_required \
+      "${project_root}" \
+      "${default_runner_dir}" \
+      "${hint_message}" \
+      "${profile_name}" \
+      "${env_var_name}" \
+      "${default_env_path}" \
+      "${output_env_var_name}" \
+      "${env_mode}" \
+      "${missing_env_message}" \
+      "${require_spot_vars}" \
+      "${configure_gcloud}" \
+      "${gcloud_project_root}" \
+      "$@"
+  }
   run_spotctl_with_config() {
     printf '%s\n' "$@" > "$CAPTURE_PATH"
   }
@@ -291,6 +324,32 @@ _capture_stub() {
   assert_line --index 7 "watch"
   assert_line --index 8 "20"
   assert_line --index 9 "--json"
+}
+
+@test "prepare_rav_runtime delegates through shared profile-runtime common defaults helper" {
+  source "$REPO_ROOT/scripts/gcp_runner_common.sh"
+  local captured="$BATS_TEST_TMPDIR/profile_runtime_wrapper_common_args.txt"
+
+  RUNNER_BOOTSTRAP_DIR_DEFAULT="/tmp/default-runner"
+  spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required() {
+    printf '[%s]\n' "$@" > "$captured"
+  }
+
+  prepare_rav_runtime "required" "1" "1" "missing rav env"
+
+  run cat "$captured"
+  assert_success
+  assert_line --index 0 "[Set RUNNER_DIR in gcp/rav_spot.env to your gcp-spot-runner checkout.]"
+  assert_line --index 1 "[$REPO_ROOT]"
+  assert_line --index 2 "[/tmp/default-runner]"
+  assert_line --index 3 "[rav]"
+  assert_line --index 4 "[RAV_GCP_ENV]"
+  assert_line --index 5 "[$REPO_ROOT/gcp/rav_spot.env]"
+  assert_line --index 6 "[RAV_GCP_ENV_PATH]"
+  assert_line --index 7 "[required]"
+  assert_line --index 8 "[missing rav env]"
+  assert_line --index 9 "[1]"
+  assert_line --index 10 "[1]"
 }
 
 @test "run_project_command ops delegates to shared profiled compat helper" {
@@ -1627,6 +1686,39 @@ spot_runner_wrapper_setup_project_profile_runtime_required() {
     "${env_var_name}" \
     "${default_env_path}" \
     "${output_env_var_name}" \
+    "${missing_env_message}" \
+    "${require_spot_vars}" \
+    "${configure_gcloud}" \
+    "${gcloud_project_root}" \
+    "$@"
+}
+spot_runner_wrapper_setup_project_profile_runtime_wrapper_defaults_for_common_required() {
+  local hint_message="${1:-Set RUNNER_DIR to your gcp-spot-runner checkout.}"
+  local project_root="$2"
+  local default_runner_dir="$3"
+  local profile_name="${4:-default}"
+  local env_var_name="${5:-RAV_GCP_ENV}"
+  local default_env_path="${6:-}"
+  local output_env_var_name="${7:-RAV_GCP_ENV_PATH}"
+  local env_mode="${8:-optional}"
+  local missing_env_message="${9:-Missing required project environment file.}"
+  local require_spot_vars="${10:-0}"
+  local configure_gcloud="${11:-0}"
+  local gcloud_project_root="${12:-${project_root}}"
+  if [[ $# -gt 12 ]]; then
+    shift 12
+  else
+    set --
+  fi
+  spot_runner_wrapper_setup_project_profile_runtime_required \
+    "${project_root}" \
+    "${default_runner_dir}" \
+    "${hint_message}" \
+    "${profile_name}" \
+    "${env_var_name}" \
+    "${default_env_path}" \
+    "${output_env_var_name}" \
+    "${env_mode}" \
     "${missing_env_message}" \
     "${require_spot_vars}" \
     "${configure_gcloud}" \
