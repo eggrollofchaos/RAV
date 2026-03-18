@@ -18,7 +18,7 @@ Fixed:
   `gcp-spot-runner` checkout is not present.
 
 Changed:
-- Runner lineage docs synchronized to `gcp-spot-runner v0.6.41-phase7-contract-matrix-closure` in:
+- Runner lineage docs synchronized to `gcp-spot-runner v0.6.42-reconciler-dry-run-safety` in:
   - `README.md`
   - `gcp/GCP_NOTES.md`
 - `tests/bats/{test_helper.bash,test_runner_adapter.bats}` now mirror the
