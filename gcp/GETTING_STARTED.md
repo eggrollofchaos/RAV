@@ -75,6 +75,8 @@ Edit `gcp/rav_spot.env` and set at minimum:
 - `BUCKET`
 - `IMAGE`
 - `RUNNER_DIR`
+- `RAV_RAW_URI`
+- `RAV_PROCESSED_URI`
 
 Recommended starting values:
 
@@ -87,6 +89,8 @@ Recommended starting values:
 - `DATA_DISK_MOUNT_PATH="/var/lib/spot-data"` (COS writable path)
 - `DATA_DISK_NAME="rav-chexpert-cache-central1"` (set this to reuse one cache disk; if empty, each new `RUN_ID` creates a new disk name)
 - `SYNC_INTERVAL_SEC="180"`
+- `RAV_RAW_URI="gs://${BUCKET}/datasets/chexpert/raw"`
+- `RAV_PROCESSED_URI="gs://${BUCKET}/datasets/chexpert/processed"`
 
 Timeout alignment rule:
 - Ensure `POLL_INTERVAL * PROGRESS_STALL_POLLS >= GPU_TIMEOUT_SEC`
@@ -97,6 +101,15 @@ Timeout alignment rule:
 ```bash
 IMAGE="${REGION}-docker.pkg.dev/<PROJECT_ID>/rav-train/rav-chest:latest"
 ```
+
+The RAV profile's in-container `pre_job_sync` hook reads dataset URIs from:
+
+- `RAV_RAW_URI`
+- `RAV_PROCESSED_URI`
+
+If either is unset, the sync hook fails before training starts.
+That failure now propagates as the real nonzero run exit instead of being
+misclassified as a successful completion.
 
 ## 5) Build and push training image
 
