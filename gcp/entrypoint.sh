@@ -12,7 +12,7 @@ PROFILE_NAME="${PROFILE_NAME:-}"
 RESUME_STRATEGY="${RESUME_STRATEGY:-}"
 LARGE_ASSETS_MODE="${LARGE_ASSETS_MODE:-}"
 PRE_JOB_SYNC_CMD="${PRE_JOB_SYNC_CMD:-}"
-PRE_JOB_SYNC_ON_FAILURE="${PRE_JOB_SYNC_ON_FAILURE:-warn}"
+PRE_JOB_SYNC_ON_FAILURE="${PRE_JOB_SYNC_ON_FAILURE:-fail}"
 RESUME_BOOTSTRAP_CMD="${RESUME_BOOTSTRAP_CMD:-}"
 RESUME_BOOTSTRAP_ON_FAILURE="${RESUME_BOOTSTRAP_ON_FAILURE:-warn}"
 RESULTS_FINALIZE_CMD="${RESULTS_FINALIZE_CMD:-}"
@@ -478,7 +478,6 @@ _run_hook() {
 
 JOB_EXIT=0
 PREP_OK=true
-HOOK_RC=0
 
 HOOK_RC=0
 _run_hook "pre_job_sync" "$PRE_JOB_SYNC_CMD" "$PRE_JOB_SYNC_ON_FAILURE" || HOOK_RC=$?
@@ -505,7 +504,7 @@ if [[ "$PREP_OK" == true ]]; then
   JOB_EXIT=$?
   set -e
 else
-  echo "[$(date -u)] Skipping main job due pre-run hook failure (exit=${JOB_EXIT})"
+  echo "[$(date -u)] Skipping main job due to pre-run hook failure (exit=${JOB_EXIT})"
 fi
 
 HB_EXIT=$JOB_EXIT

@@ -107,7 +107,8 @@ The RAV profile's in-container `pre_job_sync` hook reads dataset URIs from:
 - `RAV_RAW_URI`
 - `RAV_PROCESSED_URI`
 
-If either is unset, the sync hook fails before training starts.
+If either is unset, the sync hook fails before training starts when the hook is
+left at its default fail-fast policy.
 That failure now propagates as the real nonzero run exit instead of being
 misclassified as a successful completion.
 
