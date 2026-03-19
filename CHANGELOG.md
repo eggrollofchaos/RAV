@@ -5,6 +5,9 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 ### Changed
+- `AGENTS.md` now pins the non-blocking post-review follow-ups for richer
+  `run_config.json` hook snapshots and a future decision on whether invalid
+  hook-policy values should warn or fail fast.
 - `gcp/entrypoint.sh` now honors the shared runner hook contract for
   `pre_job_sync`, `resume_bootstrap`, and `results_finalize`, and uploads
   `run_config.json` at startup so RAV container launches no longer skip the

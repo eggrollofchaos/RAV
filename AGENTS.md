@@ -18,3 +18,8 @@ Use this file plus `docs/INDEX.md` to route quickly to canonical docs and code s
 ## Documentation Maintenance Rule
 
 When adding or changing docs, update `docs/INDEX.md` in the same change.
+
+## Pinned Follow-Ups
+
+- 2026-03-19: Extend `gcp/entrypoint.sh` `run_config.json` snapshots to include hook commands and hook failure policies, so standalone/debug runs preserve more of the runtime contract in cloud artifacts.
+- 2026-03-19: Decide whether invalid hook-policy values in the RAV entrypoint should keep normalizing to `warn` for runner parity or fail fast with an explicit configuration error.
