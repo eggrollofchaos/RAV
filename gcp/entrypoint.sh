@@ -7,6 +7,16 @@ RUN_ID="${RUN_ID:-$(date -u +%Y%m%d_%H%M%S)}"
 JOB_COMMAND_RAW="${JOB_COMMAND:-echo 'No JOB_COMMAND set'}"
 JOB_COMMAND="$JOB_COMMAND_RAW"
 DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}"
+CONDA_ENV="${CONDA_ENV:-}"
+PROFILE_NAME="${PROFILE_NAME:-}"
+RESUME_STRATEGY="${RESUME_STRATEGY:-}"
+LARGE_ASSETS_MODE="${LARGE_ASSETS_MODE:-}"
+PRE_JOB_SYNC_CMD="${PRE_JOB_SYNC_CMD:-}"
+PRE_JOB_SYNC_ON_FAILURE="${PRE_JOB_SYNC_ON_FAILURE:-fail}"
+RESUME_BOOTSTRAP_CMD="${RESUME_BOOTSTRAP_CMD:-}"
+RESUME_BOOTSTRAP_ON_FAILURE="${RESUME_BOOTSTRAP_ON_FAILURE:-warn}"
+RESULTS_FINALIZE_CMD="${RESULTS_FINALIZE_CMD:-}"
+RESULTS_FINALIZE_ON_FAILURE="${RESULTS_FINALIZE_ON_FAILURE:-warn}"
 INSTANCE_NAME="$(curl -fsS -H 'Metadata-Flavor: Google' \
   'http://metadata.google.internal/computeMetadata/v1/instance/name' 2>/dev/null || hostname)"
 INSTANCE_ZONE="$(curl -fsS -H 'Metadata-Flavor: Google' \
@@ -371,6 +381,22 @@ _run_manifest="$(jq -n \
 )"
 _gcs_upload_string "$_manifest_path" "$_run_manifest"
 
+# ──── Upload run config snapshot ────
+
+_config_payload="$(jq -n \
+  --arg run_id "$RUN_ID" \
+  --arg instance "$INSTANCE_NAME" \
+  --arg zone "$INSTANCE_ZONE" \
+  --arg job_command "$JOB_COMMAND" \
+  --arg conda_env "${CONDA_ENV:-}" \
+  --arg profile_name "${PROFILE_NAME:-}" \
+  --arg resume_strategy "${RESUME_STRATEGY:-}" \
+  --arg large_assets_mode "${LARGE_ASSETS_MODE:-}" \
+  --arg timestamp "$(_now_iso)" \
+  '{run_id:$run_id, instance:$instance, zone:$zone, job_command:$job_command, conda_env:$conda_env, profile_name:$profile_name, resume_strategy:$resume_strategy, large_assets_mode:$large_assets_mode, timestamp:$timestamp}'
+)"
+_gcs_upload_string "gs://${BUCKET}/runs/${RUN_ID}/run_config.json" "$_config_payload"
+
 # ──── Background heartbeat loop ────
 
 _heartbeat_loop() {
@@ -404,16 +430,92 @@ _cleanup() {
 }
 trap _cleanup EXIT INT TERM
 
+_normalize_hook_policy() {
+  local raw="${1:-}"
+  case "${raw,,}" in
+    fail|warn|ignore) printf '%s\n' "${raw,,}" ;;
+    *) printf 'warn\n' ;;
+  esac
+}
+
+_run_hook() {
+  local hook_name="$1"
+  local hook_cmd="$2"
+  local hook_policy
+  hook_policy="$(_normalize_hook_policy "$3")"
+
+  if [[ -z "${hook_cmd// }" ]]; then
+    return 0
+  fi
+
+  echo "[$(date -u)] Hook ${hook_name}: start (policy=${hook_policy})"
+  set +e
+  bash -c "$hook_cmd"
+  local rc=$?
+  set -e
+  if [[ $rc -eq 0 ]]; then
+    echo "[$(date -u)] Hook ${hook_name}: success"
+    return 0
+  fi
+
+  case "$hook_policy" in
+    fail)
+      echo "[$(date -u)] ERROR: Hook ${hook_name} failed (rc=${rc}, policy=fail)"
+      return "$rc"
+      ;;
+    warn)
+      echo "[$(date -u)] WARNING: Hook ${hook_name} failed (rc=${rc}, policy=warn); continuing"
+      return 0
+      ;;
+    ignore)
+      echo "[$(date -u)] Hook ${hook_name} failed (rc=${rc}, policy=ignore); continuing"
+      return 0
+      ;;
+  esac
+}
+
 # ──── Run the job ────
 
-set +e
-bash -lc "$JOB_COMMAND"
-JOB_EXIT=$?
-set -e
+JOB_EXIT=0
+PREP_OK=true
+
+HOOK_RC=0
+_run_hook "pre_job_sync" "$PRE_JOB_SYNC_CMD" "$PRE_JOB_SYNC_ON_FAILURE" || HOOK_RC=$?
+if [[ $HOOK_RC -ne 0 ]]; then
+  JOB_EXIT=$HOOK_RC
+  PREP_OK=false
+fi
+if [[ "$PREP_OK" == true ]]; then
+  HOOK_RC=0
+  _run_hook "resume_bootstrap" "$RESUME_BOOTSTRAP_CMD" "$RESUME_BOOTSTRAP_ON_FAILURE" || HOOK_RC=$?
+  if [[ $HOOK_RC -ne 0 ]]; then
+    JOB_EXIT=$HOOK_RC
+    PREP_OK=false
+  fi
+fi
+
+if [[ "$PREP_OK" == true ]]; then
+  set +e
+  if [[ -n "$CONDA_ENV" ]]; then
+    conda run --no-capture-output -n "$CONDA_ENV" bash -lc "$JOB_COMMAND"
+  else
+    bash -lc "$JOB_COMMAND"
+  fi
+  JOB_EXIT=$?
+  set -e
+else
+  echo "[$(date -u)] Skipping main job due to pre-run hook failure (exit=${JOB_EXIT})"
+fi
 
 HB_EXIT=$JOB_EXIT
 HB_PHASE="finished"
 echo "[$(date -u)] Job finished with exit code ${JOB_EXIT}"
+
+HOOK_RC=0
+_run_hook "results_finalize" "$RESULTS_FINALIZE_CMD" "$RESULTS_FINALIZE_ON_FAILURE" || HOOK_RC=$?
+if [[ $HOOK_RC -ne 0 ]] && [[ $JOB_EXIT -eq 0 ]]; then
+  JOB_EXIT=$HOOK_RC
+fi
 
 # ──── Upload results ────
 

@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Changed
+- `AGENTS.md` now pins the non-blocking post-review follow-ups for richer
+  `run_config.json` hook snapshots and a future decision on whether invalid
+  hook-policy values should warn or fail fast.
+- `gcp/entrypoint.sh` now honors the shared runner hook contract for
+  `pre_job_sync`, `resume_bootstrap`, and `results_finalize`, and uploads
+  `run_config.json` at startup so RAV container launches no longer skip the
+  profile-managed dataset sync path. Hook failures now preserve their real
+  nonzero exit code instead of collapsing to a false `COMPLETE`.
+- `gcp/rav_spot.env.example` and `gcp/GETTING_STARTED.md` now document
+  `RAV_RAW_URI` and `RAV_PROCESSED_URI` as required profile inputs for the RAV
+  dataset sync hook, including the fail-fast behavior when those values are
+  missing.
+
 Fixed:
 - `tests/bats/test_helper.bash` now exports fallback `spot_runner_*` stubs into
   child bash processes, and fake-runner fixtures in
