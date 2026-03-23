@@ -50,3 +50,6 @@ data/poc/chest_xray_pneumonia/source_archives/
 git-status.sh
 
 .agent-sessions/
+codex_prompts/
+codex_mcp_prompts/
+claude_mcp_prompts/
