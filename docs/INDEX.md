@@ -19,6 +19,15 @@ This is the canonical documentation map for RAV.
 - [../gcp/GCP_NOTES.md](../gcp/GCP_NOTES.md) — end-to-end GCP runbook, incidents, and recovery notes.
 - [../gcp/DATASET_TRANFER.md](../gcp/DATASET_TRANFER.md) — one-time large dataset transfer workflow.
 - [CHEST_RUNBOOK.md](CHEST_RUNBOOK.md) — end-to-end chest-track experiment/operator runbook.
+- [retrospectives/](retrospectives/) — durable work closeouts and closeout-linked retrospectives, including the 2026-06-04 chest-first planning, CheXpert local data-prep, Streamlit/LLM MVP, Sean workstation, and GCP runner addendum closeouts.
+- [knowledge-base/](knowledge-base/) — curated project learnings and decisions extracted from retrospectives and incidents, including RAV data-management decisions, MVP app ops, and CheXpert cloud-training learnings.
+
+## Project Management
+
+- [../pm/backlog.md](../pm/backlog.md) — actionable follow-ups surfaced by closeouts.
+- [../pm/issues.md](../pm/issues.md) — open risks surfaced by closeouts.
+- [../pm/ideas.md](../pm/ideas.md) — deferred roadmap ideas surfaced by closeouts.
+- [../pm/done.md](../pm/done.md) — completed closeout capture index.
 
 ## Maintenance Rule
 
