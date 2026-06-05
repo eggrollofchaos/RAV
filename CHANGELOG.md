@@ -4,7 +4,55 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+- `docs/retrospectives/2026-06-04_rav-chest-first-planning-local-mvp.md`,
+  `docs/retrospectives/2026-06-04_chexpert-local-data-prep.md`, and
+  `docs/knowledge-base/decisions/data-management.md` preserve the current
+  Project planning session's chest-first route decisions and local
+  CheXpert-small prep evidence.
+- `pm/done.md` now indexes completed closeout captures.
+- `docs/retrospectives/2026-06-04_rav-streamlit-llm-mvp-closeout.md`,
+  `docs/retrospectives/2026-06-04_rav-gcp-runner-operations-addendum.md`,
+  and `docs/knowledge-base/learnings/2026-06-04_rav-mvp-app-ops.md`
+  preserve the long-session closeout for the Streamlit/LLM MVP path and
+  RAV GCP runner operations addendum.
+- Split retrospectives and KB learning for the CheXpert remote
+  training/evaluation closeout:
+  - `docs/retrospectives/2026-05-29_chexpert-gcp-dataset-ops.md`
+  - `docs/retrospectives/2026-05-29_chexpert-training-stability.md`
+  - `docs/retrospectives/2026-05-29_chexpert-model-evaluation-thresholding.md`
+  - `docs/retrospectives/2026-05-29_chexpert-remote-training-evaluation.md`
+    now acts as a superseded split index.
+  - `docs/knowledge-base/learnings/2026-05-29_rav-chexpert-ops.md`
+- RAV-local closeout and PM follow-up surfaces for the Sean workstation local
+  GPU pivot:
+  - `docs/retrospectives/2026-06-04_sean-workstation-rav-local-gpu.md`
+  - `pm/backlog.md`
+  - `pm/issues.md`
+  - `pm/ideas.md`
+- Repo-local review scope guard tooling:
+  - `.githooks/pre-push`
+  - `scripts/check_pr_scope.py`
+  - `scripts/review_scope_guard.py`
+- `.cgcignore` now pins CodeGraphContext ignore patterns for generated,
+  runtime, and repo-local operational paths.
+
 ### Changed
+- `docs/knowledge-base/learnings/2026-05-29_rav-chexpert-ops.md` now includes
+  local CheXpert-small storage and prep-runtime learnings.
+- `pm/backlog.md`, `pm/issues.md`, and `pm/ideas.md` now include follow-ups
+  from the chest-first planning and local CheXpert prep closeout.
+- `docs/retrospectives/2026-06-04_rav-streamlit-llm-mvp-closeout.md` now
+  cross-links the current Project planning closeout.
+- `docs/knowledge-base/learnings/2026-05-29_rav-chexpert-ops.md` now includes
+  the image/data/GPU freshness gates and `RUN_ID` resume guidance from the
+  GCP runner operations addendum.
+- `docs/retrospectives/2026-05-29_chexpert-model-evaluation-thresholding.md`
+  and `docs/knowledge-base/learnings/2026-05-29_rav-chexpert-ops.md` now link
+  the local GPU execution context while preserving threshold tuning as the next
+  model-quality step.
+- `.gitignore` now groups agent/runtime scratch paths explicitly, including
+  hidden agent directories, legacy worktree roots, and review artifacts.
 - `AGENTS.md` now pins the non-blocking post-review follow-ups for richer
   `run_config.json` hook snapshots and a future decision on whether invalid
   hook-policy values should warn or fail fast.
