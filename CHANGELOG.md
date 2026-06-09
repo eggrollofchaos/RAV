@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+
+## 2026-06-09
+
+### Added
+
+- **`scripts/allocate_id.py`** — ID allocator deployed from ai-coding-agents.
+  Reserves governed WORK/IMP/PLAN IDs by bumping high-water marks in
+  `pm/governance.md`.
+
 ## Unreleased
 
 ### Added
