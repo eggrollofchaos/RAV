@@ -7,9 +7,16 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-- **`scripts/allocate_id.py`** — ID allocator deployed from ai-coding-agents.
-  Reserves governed WORK/IMP/PLAN IDs by bumping high-water marks in
-  `pm/governance.md`.
+- **`scripts/pm_audit.py`** — /pm-audit runner deployed from ai-coding-agents.
+  Stateful cross-run audit intelligence with duplicate detection, high-water
+  drift analysis, and report persistence.
+
+
+### Added
+
+- **`scripts/pm_audit.py`** — /pm-audit runner deployed from ai-coding-agents.
+  Stateful cross-run audit intelligence with duplicate detection, high-water
+  drift analysis, and report persistence.
 
 ## Unreleased
 

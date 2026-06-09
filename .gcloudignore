@@ -25,8 +25,13 @@
 **/.DS_Store
 **/__pycache__/
 **/__pycache__/**
+.DS_Store
+__pycache__/
 *.pyc
 
 # .git.nosync/ — removed 2026-03-09, repos moved out of iCloud to ~/coding
 
 .agent-sessions/
+.claude/
+.codex/
+review/

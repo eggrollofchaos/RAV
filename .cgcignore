@@ -15,8 +15,7 @@ out/
 .agent-sessions/
 .claude/
 .codex/
-claude-worktrees/
-codex-worktrees/
+review/
 __pycache__/
 *.png
 *.jpg

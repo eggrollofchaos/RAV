@@ -47,8 +47,4 @@ git-status.sh
 .claude/
 .codex/
 .agent-sessions/
-codex-worktrees/
-claude-worktrees/
-codex_mcp_prompts/
-claude_mcp_prompts/
 review/
