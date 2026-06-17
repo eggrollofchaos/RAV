@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file.
 
 
+## 2026-06-17
+
+### Changed
+
+- Untrack shared tooling artifacts now managed as symlinks from the central
+  agent-tooling repo (`scripts/{allocate_id,check_pr_scope,pm_audit,review_scope_guard}.py`,
+  `.githooks/pre-push`, `.githooks/prepare-commit-msg`, `git-status.sh`,
+  `docs/governance/taxonomy-reference.md`). These were tracked copies that drifted
+  from source; they are now gitignored and deployed by the central `deploy.sh`,
+  so the repo no longer carries stale duplicates.
+
+
 ## 2026-06-09
 
 ### Added
