@@ -48,3 +48,17 @@ git-status.sh
 .codex/
 .agent-sessions/
 review/
+scripts/check_pr_scope.py
+scripts/review_scope_guard.py
+scripts/check_branch_base.py
+scripts/check_tiny_commit.py
+scripts/check_skill_frontmatter.py
+scripts/allocate_id.py
+scripts/pm_audit.py
+scripts/repo_map
+scripts/scan_errors.py
+scripts/summarize_json.py
+scripts/compact_logs.py
+.githooks/pre-push
+.githooks/prepare-commit-msg
+docs/governance/taxonomy-reference.md
