@@ -14,7 +14,6 @@ All notable changes to this project are documented in this file.
   from source; they are now gitignored and deployed by the central `deploy.sh`,
   so the repo no longer carries stale duplicates.
 
-
 ## 2026-06-09
 
 ### Added
