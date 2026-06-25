@@ -10,7 +10,7 @@ Use this as a reference lane, not as the default RAV runtime. The active RAV pat
 |---|---|---|---|
 | EVA-X binary POC | `rav_reference/eva_x.py`, `rav_reference/models.py`, `rav_reference/training.py`, `scripts/train.py`, `scripts/diagnose.py` | Revisit the Kaggle pneumonia binary classifier or compare EVA-X Tiny against the current DenseNet/ResNet/EfficientNet baselines. | Reference-only; requires `timm` and an EVA-X MIM checkpoint for training. |
 | Local VLM reasoning | `rav_reference/llm.py` | Re-add local Llama or CheXagent reasoning after stable classifier artifacts exist. | Optional GPU lane; dependencies are intentionally separate. |
-| MedGemma judge / QA evaluation | `rav_reference/evaluation.py`, `rav_reference/qa_evaluator.py`, `scripts/evaluate_radiology_assistant.py`, `scripts/generate_test_json.py` | Evaluate generated report/Q&A answers with a local judge and text metrics. | Optional evaluation lane; needs Hugging Face access and GPU memory. |
+| MedGemma judge / QA evaluation | `rav_reference/evaluation.py`, `rav_reference/qa_evaluator.py`, `scripts/download_test_images.py`, `scripts/generate_test_json.py`, `scripts/evaluate_radiology_assistant.py` | Evaluate generated report/Q&A answers with a local judge and text metrics. | Optional evaluation lane; needs Hugging Face access, Kaggle credentials for sample downloads, and GPU memory for local judging. |
 
 ## What Was Excluded
 
@@ -35,3 +35,10 @@ python -m compileall reference_pipelines/chest_xray_eva_vlm
 ```
 
 The full smoke test expects a local `eva_x_tiny_binary_best.pt` checkpoint and optional model dependencies, so it is not part of default RAV verification.
+
+Optional dependency files:
+
+- `requirements-core.txt` for the EVA-X reference lane.
+- `requirements-llama.txt` for local Llama reasoning.
+- `requirements-chexagent.txt` for CheXagent reasoning.
+- `requirements-judge.txt` for MedGemma/QA evaluation helpers.

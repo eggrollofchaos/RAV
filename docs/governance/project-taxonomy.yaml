@@ -135,6 +135,7 @@ domains:
         files:
           - "reference_pipelines/chest_xray_eva_vlm/rav_reference/evaluation.py"
           - "reference_pipelines/chest_xray_eva_vlm/rav_reference/qa_evaluator.py"
+          - "reference_pipelines/chest_xray_eva_vlm/scripts/download_test_images.py"
           - "reference_pipelines/chest_xray_eva_vlm/scripts/evaluate_radiology_assistant.py"
           - "reference_pipelines/chest_xray_eva_vlm/scripts/generate_test_json.py"
         tests: []

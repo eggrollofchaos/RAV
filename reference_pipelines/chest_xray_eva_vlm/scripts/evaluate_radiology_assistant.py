@@ -52,7 +52,7 @@ def main():
         description=(
             "Evaluate Radiology Assistant QA capabilities. "
             "Requires pre-generated test data: run scripts/download_test_images.py "
-            "then scripts/generate_test_json.py first."
+            "and then scripts/generate_test_json.py first."
         ),
     )
     parser.add_argument(
