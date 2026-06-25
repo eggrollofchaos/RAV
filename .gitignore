@@ -62,3 +62,7 @@ scripts/compact_logs.py
 .githooks/pre-push
 .githooks/prepare-commit-msg
 docs/governance/taxonomy-reference.md
+
+# BEGIN coord-update local shift notes
+docs/coordination/shift_coordination_note__*.md
+# END coord-update local shift notes

@@ -2,6 +2,7 @@
 
 ## Completed Work
 
+- 2026-06-24: Set up RAV coord-update tracked surfaces and captured the historical session audit. Source: [Coord-update historical session closeout](../docs/retrospectives/2026-06-24_coord-update-historical-session-closeout.md).
 - 2026-06-04: Captured RAV chest-first planning and local MVP scaffold closeout. Source: [RAV chest-first planning local MVP](../docs/retrospectives/2026-06-04_rav-chest-first-planning-local-mvp.md).
 - 2026-06-04: Captured CheXpert local data prep closeout and verified local prep completed in about 5.3 seconds. Source: [CheXpert local data prep](../docs/retrospectives/2026-06-04_chexpert-local-data-prep.md).
 - 2026-06-04: Ran lightweight primary CheXpert data sanity check with `--skip-file-check`; status passed with no empty paths or duplicates. Source: [CheXpert local data prep](../docs/retrospectives/2026-06-04_chexpert-local-data-prep.md).

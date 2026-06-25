@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## 2026-06-24
+
+### Added
+
+- RAV coord-update overlay support and historical session closeout capture:
+  `docs/coordination/`, `docs/knowledge-base/qa/2026-06-24_rav-ops.md`,
+  `docs/knowledge-base/learnings/2026-06-24_rav-coordination-closeout.md`,
+  and `docs/retrospectives/2026-06-24_coord-update-historical-session-closeout.md`.
 
 ## 2026-06-17
 

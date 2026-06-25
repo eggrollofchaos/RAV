@@ -23,6 +23,8 @@ This is the canonical documentation map for RAV.
 - [retrospectives/](retrospectives/) — durable work closeouts and closeout-linked retrospectives, including the 2026-06-04 chest-first planning, CheXpert local data-prep, Streamlit/LLM MVP, Sean workstation, and GCP runner addendum closeouts.
 - [knowledge-base/](knowledge-base/) — curated project learnings and decisions extracted from retrospectives and incidents, including RAV data-management decisions, MVP app ops, and CheXpert cloud-training learnings.
 - [../reference_pipelines/chest_xray_eva_vlm/README.md](../reference_pipelines/chest_xray_eva_vlm/README.md) — sanitized reference lanes imported from the older chest X-ray prototype.
+- [coordination/](coordination/) — live coordination summary, history, and shift-note template for the repo-local `$coord-update` protocol.
+- [knowledge-base/qa/2026-06-24_rav-ops.md](knowledge-base/qa/2026-06-24_rav-ops.md) — RAV operational Q&A bank used by coord-update.
 
 ## Project Management
 
