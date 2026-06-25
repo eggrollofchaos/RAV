@@ -1,0 +1,9 @@
+numpy>=1.26,<3
+openai>=1.0,<2
+pandas>=2.2,<3
+Pillow>=10.0,<12
+python-dotenv>=1.0,<2
+scikit-learn>=1.4,<2
+timm>=0.9.8,<2
+torch>=2.2,<3
+torchvision>=0.17,<1

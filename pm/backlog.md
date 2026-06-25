@@ -12,3 +12,9 @@ Actionable follow-ups surfaced by retrospectives and session closeouts.
 - P1 near-term: Run Streamlit end-to-end with a real checkpoint, report download, model metrics page, and OpenAI `.env` path before the class demo. Source: [RAV Streamlit, LLM, And MVP Documentation Closeout](../docs/retrospectives/2026-06-04_rav-streamlit-llm-mvp-closeout.md).
 - P1 near-term: Verify CheXpert GCS dataset completeness with object counts, size checks, and sample reads before long full-data training. Source: [RAV GCP Runner Operations Addendum](../docs/retrospectives/2026-06-04_rav-gcp-runner-operations-addendum.md).
 - P2 later: Keep RAV wrapper docs synchronized when `gcp-spot-runner` changes required profile/wrapper contracts. Source: [RAV GCP Runner Operations Addendum](../docs/retrospectives/2026-06-04_rav-gcp-runner-operations-addendum.md).
+
+## 2026-06-25
+
+- P1 near-term: Decide whether to activate the imported EVA-X binary reference lane as a real comparison config, including `timm`, EVA-X MIM weights, checkpoint provenance, and a smoke check. Source: [RAV Initiatives](../docs/INITIATIVES.md).
+- P2 later: Add a small provenance-bearing QA/report evaluation fixture before using the imported MedGemma judge lane for docs or model-quality claims. Source: [Chest X-Ray EVA-VLM Reference Pipelines](../reference_pipelines/chest_xray_eva_vlm/README.md).
+- P2 later: Keep imported local Llama/CheXagent backends optional and GPU-gated unless a stable classifier artifact and dependency budget justify activation. Source: [Chest X-Ray EVA-VLM Reference Pipelines](../reference_pipelines/chest_xray_eva_vlm/README.md).

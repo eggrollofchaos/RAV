@@ -32,6 +32,14 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 ### Added
+- `docs/INITIATIVES.md` now inventories active, completed, and deferred RAV
+  initiatives with progress estimates, remaining work, and imported-lane
+  boundaries.
+- `reference_pipelines/chest_xray_eva_vlm/` now preserves sanitized reference
+  code lanes from the older chest X-ray prototype: EVA-X binary classification,
+  local Llama/CheXagent reasoning, and MedGemma/QA evaluation. Notebooks,
+  PDFs, screenshots, checkpoints, and class/personal prose were intentionally
+  excluded.
 - `docs/retrospectives/2026-06-04_rav-chest-first-planning-local-mvp.md`,
   `docs/retrospectives/2026-06-04_chexpert-local-data-prep.md`, and
   `docs/knowledge-base/decisions/data-management.md` preserve the current
@@ -65,6 +73,10 @@ All notable changes to this project are documented in this file.
   runtime, and repo-local operational paths.
 
 ### Changed
+- `README.md`, `docs/CHEST_RUNBOOK.md`, `docs/INDEX.md`, PM surfaces, and
+  `docs/governance/project-taxonomy.yaml` now point at the initiative inventory
+  and imported reference lanes, with stale checkout paths/version labels
+  refreshed.
 - `docs/knowledge-base/learnings/2026-05-29_rav-chexpert-ops.md` now includes
   local CheXpert-small storage and prep-runtime learnings.
 - `pm/backlog.md`, `pm/issues.md`, and `pm/ideas.md` now include follow-ups

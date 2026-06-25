@@ -12,15 +12,17 @@ This is the canonical documentation map for RAV.
 ## Start Here
 
 - [../README.md](../README.md) — product overview and primary operator entrypoints.
+- [INITIATIVES.md](INITIATIVES.md) — current initiative inventory, progress, remaining work, and imported-lane boundaries.
 
 ## Core Operator Docs
 
 - [../gcp/GETTING_STARTED.md](../gcp/GETTING_STARTED.md) — concise command-first GCP quickstart, including `gcp_*.sh` wrapper naming contract.
 - [../gcp/GCP_NOTES.md](../gcp/GCP_NOTES.md) — end-to-end GCP runbook, incidents, and recovery notes.
-- [../gcp/DATASET_TRANFER.md](../gcp/DATASET_TRANFER.md) — one-time large dataset transfer workflow.
+- [../gcp/DATASET_TRANSFER.md](../gcp/DATASET_TRANSFER.md) — one-time large dataset transfer workflow.
 - [CHEST_RUNBOOK.md](CHEST_RUNBOOK.md) — end-to-end chest-track experiment/operator runbook.
 - [retrospectives/](retrospectives/) — durable work closeouts and closeout-linked retrospectives, including the 2026-06-04 chest-first planning, CheXpert local data-prep, Streamlit/LLM MVP, Sean workstation, and GCP runner addendum closeouts.
 - [knowledge-base/](knowledge-base/) — curated project learnings and decisions extracted from retrospectives and incidents, including RAV data-management decisions, MVP app ops, and CheXpert cloud-training learnings.
+- [../reference_pipelines/chest_xray_eva_vlm/README.md](../reference_pipelines/chest_xray_eva_vlm/README.md) — sanitized reference lanes imported from the older chest X-ray prototype.
 
 ## Project Management
 
