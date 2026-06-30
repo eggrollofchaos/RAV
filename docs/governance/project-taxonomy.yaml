@@ -42,6 +42,15 @@ domains:
         description: "Specialized training script for CheXpert 5-task mixed uncertainty policy experiments with per-class uncertainty handling"
         files: ["scripts/train_chexpert_5task_policy.py"]
         tests: []
+      - name: "ImportedEvaXReference"
+        type: "reference"
+        description: "Sanitized EVA-X Tiny binary classifier reference lane copied from the older chest X-ray prototype for future backbone comparison"
+        files:
+          - "reference_pipelines/chest_xray_eva_vlm/rav_reference/eva_x.py"
+          - "reference_pipelines/chest_xray_eva_vlm/rav_reference/models.py"
+          - "reference_pipelines/chest_xray_eva_vlm/rav_reference/training.py"
+          - "reference_pipelines/chest_xray_eva_vlm/scripts/train.py"
+        tests: []
     rules: []
     reference_docs: []
     active_initiatives: ["Chest Baseline"]
@@ -120,6 +129,16 @@ domains:
         description: "Real-time ETA estimation from metrics history.jsonl with continuous watch mode"
         files: ["scripts/monitor_training_eta.py"]
         tests: []
+      - name: "ImportedJudgeReference"
+        type: "reference"
+        description: "Sanitized MedGemma judge and QA evaluation reference lane copied from the older chest X-ray prototype"
+        files:
+          - "reference_pipelines/chest_xray_eva_vlm/rav_reference/evaluation.py"
+          - "reference_pipelines/chest_xray_eva_vlm/rav_reference/qa_evaluator.py"
+          - "reference_pipelines/chest_xray_eva_vlm/scripts/download_test_images.py"
+          - "reference_pipelines/chest_xray_eva_vlm/scripts/evaluate_radiology_assistant.py"
+          - "reference_pipelines/chest_xray_eva_vlm/scripts/generate_test_json.py"
+        tests: []
     rules: []
     reference_docs: []
     active_initiatives: []
@@ -152,6 +171,13 @@ domains:
         type: "script"
         description: "CLI for direct prompts, file-based prompts, and report JSON impression rewriting via OpenAI"
         files: ["scripts/llm_wrapper.py"]
+        tests: []
+      - name: "ImportedLocalVLMReference"
+        type: "reference"
+        description: "Sanitized local Llama and CheXagent backend reference lane copied from the older chest X-ray prototype"
+        files:
+          - "reference_pipelines/chest_xray_eva_vlm/rav_reference/llm.py"
+          - "reference_pipelines/chest_xray_eva_vlm/scripts/diagnose.py"
         tests: []
     rules: []
     reference_docs: []

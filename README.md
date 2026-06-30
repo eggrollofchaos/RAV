@@ -10,6 +10,8 @@ Spot runner lineage version: `gcp-spot-runner v0.6.42-reconciler-dry-run-safety`
 Changelog: `CHANGELOG.md`
 GCP operations notes: `gcp/GCP_NOTES.md`
 Documentation index: `docs/INDEX.md`
+Initiative status: `docs/INITIATIVES.md`
+Imported reference lanes: `reference_pipelines/chest_xray_eva_vlm/README.md`
 
 ## 1) TL;DR
 
@@ -204,7 +206,7 @@ Mitigations:
 
 ## 11) 6-Week Chest-First Build Plan (Status Checklist)
 
-Status date: 2026-02-27
+Status date: 2026-06-25
 Legend: checkboxes marked complete can be track-specific; explicit notes call out `POC` vs `CheXpert` status.
 
 ### Week 1: Scope Lock and Data Access
@@ -408,7 +410,7 @@ Track-specific requirements:
 
 Primary quickstart (CheXpert):
 ```bash
-cd /Users/wax/Documents/Programming/RAV
+cd /Users/wax/coding/RAV
 python3 -m venv .venv                     # only the first time, to set up the virtual env
 source .venv/bin/activate
 pip install -r requirements.txt

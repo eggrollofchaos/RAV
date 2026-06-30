@@ -11,3 +11,9 @@ Open risks surfaced by retrospectives and session closeouts.
 - P1 near-term: LLM output can sound more authoritative than the underlying model/data support; keep research-only UI language and context-grounded prompts. Source: [RAV Streamlit, LLM, And MVP Documentation Closeout](../docs/retrospectives/2026-06-04_rav-streamlit-llm-mvp-closeout.md).
 - P1 near-term: Long CheXpert GCP runs still depend on cloud quota, image freshness, dataset freshness, and GPU startup health; run preflight checks before expensive submits. Source: [RAV GCP Runner Operations Addendum](../docs/retrospectives/2026-06-04_rav-gcp-runner-operations-addendum.md).
 - P2 later: Full CheXpert should not be downloaded to the internal laptop disk without an external storage or cloud plan. Source: [CheXpert Local Data Prep Closeout](../docs/retrospectives/2026-06-04_chexpert-local-data-prep.md).
+
+## 2026-06-25
+
+- P1 near-term: Imported EVA-X reference code does not include the trained checkpoint or pretrained MIM weights, so it cannot support result claims until artifacts are provided with provenance. Source: [Chest X-Ray EVA-VLM Reference Pipelines](../reference_pipelines/chest_xray_eva_vlm/README.md).
+- P1 near-term: Local VLM and MedGemma lanes depend on heavyweight/gated GPU packages; default RAV imports and app startup must remain CPU-safe without those dependencies. Source: [RAV Initiatives](../docs/INITIATIVES.md).
+- P2 later: External-image generalization claims from the older prototype were not imported because they need a reproducible evaluation artifact before they should appear in current RAV docs. Source: [Chest X-Ray EVA-VLM Reference Pipelines](../reference_pipelines/chest_xray_eva_vlm/README.md).

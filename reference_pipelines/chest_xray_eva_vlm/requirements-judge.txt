@@ -1,0 +1,7 @@
+-r requirements-core.txt
+accelerate>=0.25
+bitsandbytes>=0.43
+evaluate>=0.4
+kaggle>=1.6
+rouge_score>=0.1.2
+transformers>=4.40,<5

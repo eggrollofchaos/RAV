@@ -4,18 +4,20 @@ This repo now has two tracks:
 1. Primary: CheXpert (default, recommended).
 2. POC: Kaggle chest-xray-pneumonia (first-iteration proof of concept).
 
-Dataset status (2026-02-27):
+Dataset status (2026-06-25):
 1. Active local primary dataset: CheXpert-v1.0-small (Kaggle mirror): https://www.kaggle.com/datasets/ashery/chexpert
 2. Full/regular CheXpert at scale: planned via GCP training workflow (WIP).
 3. CheXpert Plus: deferred for current class timeline due storage/ops footprint (~3.5 TB planning estimate).
 
-Current app version: `v0.2.22-chexpert-5task-policy`
+Current app version: `v0.2.46-profile-install-runtime-contracts`
 Changelog: `CHANGELOG.md`
+Initiative status: `docs/INITIATIVES.md`
+Imported reference lanes: `reference_pipelines/chest_xray_eva_vlm/README.md`
 
 ## 1) Setup
 
 ```bash
-cd /Users/wax/Documents/Programming/RAV
+cd /Users/wax/coding/RAV
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -199,7 +201,7 @@ python -c "import torch; print(torch.__version__)"
 
 If `streamlit run ...` still loads `/opt/anaconda3/...`:
 1. Use `python -m streamlit run app/streamlit_app.py`.
-2. Confirm `which python` points to `/Users/wax/Documents/Programming/RAV/.venv/bin/python`.
+2. Confirm `which python` points to `/Users/wax/coding/RAV/.venv/bin/python`.
 
 If data file errors occur:
 1. Re-run the appropriate prepare script.
