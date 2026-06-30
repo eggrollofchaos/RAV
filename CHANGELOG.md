@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## 2026-06-30
+
+### Added
+
+- RAV cleanup/import session closeout and reference-lane import learning:
+  `docs/retrospectives/2026-06-30_rav-cleanup-reference-lanes-closeout.md`
+  and
+  `docs/knowledge-base/learnings/2026-06-30_reference-lane-import-boundaries.md`.
+
 ## 2026-06-24
 
 ### Added

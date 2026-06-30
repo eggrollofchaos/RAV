@@ -22,6 +22,8 @@ This is the canonical documentation map for RAV.
 - [CHEST_RUNBOOK.md](CHEST_RUNBOOK.md) — end-to-end chest-track experiment/operator runbook.
 - [retrospectives/](retrospectives/) — durable work closeouts and closeout-linked retrospectives, including the 2026-06-04 chest-first planning, CheXpert local data-prep, Streamlit/LLM MVP, Sean workstation, and GCP runner addendum closeouts.
 - [knowledge-base/](knowledge-base/) — curated project learnings and decisions extracted from retrospectives and incidents, including RAV data-management decisions, MVP app ops, and CheXpert cloud-training learnings.
+- [retrospectives/2026-06-30_rav-cleanup-reference-lanes-closeout.md](retrospectives/2026-06-30_rav-cleanup-reference-lanes-closeout.md) — closeout for the cleanup/import PR, reference-lane quarantine, KB dedup, and warm project lifecycle mark.
+- [knowledge-base/learnings/2026-06-30_reference-lane-import-boundaries.md](knowledge-base/learnings/2026-06-30_reference-lane-import-boundaries.md) — project learning on importing older prototype code as reference lanes before activation.
 - [../reference_pipelines/chest_xray_eva_vlm/README.md](../reference_pipelines/chest_xray_eva_vlm/README.md) — sanitized reference lanes imported from the older chest X-ray prototype.
 - [coordination/](coordination/) — live coordination summary, history, and shift-note template for the repo-local `$coord-update` protocol.
 - [knowledge-base/qa/2026-06-24_rav-ops.md](knowledge-base/qa/2026-06-24_rav-ops.md) — RAV operational Q&A bank used by coord-update.
