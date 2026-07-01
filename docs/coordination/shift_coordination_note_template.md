@@ -1,3 +1,15 @@
+---
+title: Shift Coordination Note Template
+slug: shift-coordination-note-template
+type: reference
+status: live
+created: 2026-06-24
+updated: 2026-06-24
+owner: Wei Alexander Xin
+scope: project
+project: RAV
+---
+
 # Shift Coordination Note Template
 
 *Last updated: YYYY-MM-DD*

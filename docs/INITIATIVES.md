@@ -1,3 +1,15 @@
+---
+title: RAV Initiatives
+slug: initiatives
+type: reference
+status: live
+created: 2026-06-30
+updated: 2026-06-30
+owner: Wei Alexander Xin
+scope: project
+project: RAV
+---
+
 # RAV Initiatives
 
 Status date: 2026-06-25

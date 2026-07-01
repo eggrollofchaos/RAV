@@ -57,3 +57,32 @@ coverage/
 *.zst
 *.7z
 *.rar
+
+# BEGIN cgcignore escaping-symlinks (managed by sync_cgcignore.py — do not edit between markers)
+.githooks/pre-commit
+.githooks/pre-push
+.githooks/prepare-commit-msg
+list/bin/python
+list/bin/python3
+list/bin/python3.13
+scripts/allocate_id.py
+scripts/build_agents_mirror.py
+scripts/check_agents_rules_cap.py
+scripts/check_branch_base.py
+scripts/check_doctrine_grounding.py
+scripts/check_doctrine_mirror.py
+scripts/check_kb_frontmatter.py
+scripts/check_main_push.py
+scripts/check_mirror_equality.py
+scripts/check_pm_format.py
+scripts/check_skill_frontmatter.py
+scripts/check_tiny_commit.py
+scripts/compact_logs.py
+scripts/pm_audit.py
+scripts/repo_map
+scripts/review_core
+scripts/scan_errors.py
+scripts/sprint_project_root.py
+scripts/summarize_json.py
+scripts/sync_cgcignore.py
+# END cgcignore escaping-symlinks

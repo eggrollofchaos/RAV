@@ -1,3 +1,15 @@
+---
+title: Hardware Sizing (Chest-First)
+slug: hardware-sizing
+type: reference
+status: live
+created: 2026-02-26
+updated: 2026-02-26
+owner: Wei Alexander Xin
+scope: project
+project: RAV
+---
+
 # Hardware Sizing (Chest-First)
 
 This table is for the chest baseline (`densenet121`, 320x320 input, batch training with mixed precision where supported).

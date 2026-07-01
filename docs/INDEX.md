@@ -1,3 +1,15 @@
+---
+title: RAV Documentation Index
+slug: index
+type: reference
+status: live
+created: 2026-03-02
+updated: 2026-06-30
+owner: Wei Alexander Xin
+scope: project
+project: RAV
+---
+
 # RAV Documentation Index
 
 This is the canonical documentation map for RAV.

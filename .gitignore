@@ -66,3 +66,15 @@ docs/governance/taxonomy-reference.md
 # BEGIN coord-update local shift notes
 docs/coordination/shift_coordination_note__*.md
 # END coord-update local shift notes
+scripts/review_core
+scripts/check_main_push.py
+scripts/check_doctrine_mirror.py
+scripts/check_doctrine_grounding.py
+scripts/check_mirror_equality.py
+scripts/check_agents_rules_cap.py
+scripts/build_agents_mirror.py
+scripts/check_kb_frontmatter.py
+scripts/sync_cgcignore.py
+scripts/sprint_project_root.py
+scripts/check_pm_format.py
+.githooks/pre-commit
